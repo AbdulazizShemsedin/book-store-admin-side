@@ -5,7 +5,7 @@ import { Category } from '@/types/domain';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
-import { Folder, CornerDownRight, PencilSimple, Trash } from '@phosphor-icons/react';
+import { Folder, ArrowElbowDownRight, PencilSimple, Trash } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 
 interface CategoryTableProps {
@@ -132,7 +132,7 @@ export function CategoryTable({
                       className="hover:bg-slate-50/80 transition-colors bg-slate-50/30"
                     >
                       <td className="py-3 px-6 pl-12 text-slate-700 flex items-center gap-2">
-                        <CornerDownRight className="w-3.5 h-3.5 text-slate-400" />
+                        <ArrowElbowDownRight className="w-3.5 h-3.5 text-slate-400" />
                         <span>{sub.name}</span>
                         <Badge variant="outline" size="sm" className="text-[10px] py-0 text-slate-500">
                           Subcategory

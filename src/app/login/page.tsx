@@ -1,3 +1,5 @@
+'use client';
+
 import React, { Suspense } from 'react';
 import { LoginForm } from '@/features/auth/components/login-form';
 import { Spinner } from '@/components/ui/spinner';

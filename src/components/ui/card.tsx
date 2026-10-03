@@ -15,6 +15,12 @@ export function Card({ className, ...props }: CardProps) {
   );
 }
 
+export interface CardHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+  title?: React.ReactNode;
+  subtitle?: React.ReactNode;
+  action?: React.ReactNode;
+}
+
 export function CardHeader({
   className,
   title,
@@ -22,11 +28,7 @@ export function CardHeader({
   action,
   children,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & {
-  title?: React.ReactNode;
-  subtitle?: React.ReactNode;
-  action?: React.ReactNode;
-}) {
+}: CardHeaderProps) {
   return (
     <div
       className={cn('px-6 py-5 border-b border-slate-100 flex items-center justify-between', className)}
