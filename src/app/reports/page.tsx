@@ -1,0 +1,223 @@
+'use client';
+
+import React, { useState } from 'react';
+import { AdminShell } from '@/components/layout/admin-shell';
+import { PageHeader } from '@/components/layout/page-header';
+import { useReports } from '@/features/reports/hooks/use-reports';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { SalesChart } from '@/features/reports/components/sales-chart';
+import {
+  MostSoldBooksCard,
+  MostSoldAudiobooksCard,
+} from '@/features/reports/components/ranking-table';
+import { TransactionsTable } from '@/features/reports/components/transactions-table';
+import { Spinner } from '@/components/ui/spinner';
+import { ErrorState } from '@/components/ui/error-state';
+import {
+  BookOpen,
+  Headphones,
+  CurrencyDollar,
+  DownloadSimple,
+  Printer,
+  Calendar,
+  TrendUp,
+} from '@phosphor-icons/react';
+
+export default function ReportsPage() {
+  const [period, setPeriod] = useState<'today' | '7d' | '30d' | 'custom'>('30d');
+  const { data, isLoading, isError, error, refetch } = useReports(period);
+
+  if (isLoading) {
+    return (
+      <AdminShell>
+        <div className="py-24 flex flex-col items-center justify-center">
+          <Spinner size="lg" />
+          <p className="mt-3 text-xs text-slate-500 font-medium">Computing sales & circulation analytics...</p>
+        </div>
+      </AdminShell>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <AdminShell>
+        <ErrorState
+          title="Failed to load reports"
+          message={error?.message || 'Unable to retrieve financial and transaction records.'}
+          onRetry={() => refetch()}
+          isBackendGap
+        />
+      </AdminShell>
+    );
+  }
+
+  const { summary, dailyTrend, topBooks, topAudiobooks, transactions, totalTransactions } = data;
+
+  return (
+    <AdminShell>
+      {/* Top Page Header */}
+      <PageHeader
+        breadcrumbs={[{ label: 'Admin' }, { label: 'Reports' }]}
+        title="Reports"
+        subtitle="Real-time book sales analysis, digital circulation, and audio distribution records."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<DownloadSimple className="w-3.5 h-3.5" />}
+              onClick={() => alert('Exporting full analytics report PDF/CSV...')}
+            >
+              Export
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<Printer className="w-3.5 h-3.5" />}
+              onClick={() => window.print()}
+            >
+              Print Report
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Report Period Filter Bar */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-white rounded-xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-2">
+            Report Period
+          </span>
+          {[
+            { id: 'today', label: 'Today' },
+            { id: '7d', label: 'Last 7 days' },
+            { id: '30d', label: 'Last 30 days' },
+            { id: 'custom', label: 'Custom range' },
+          ].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setPeriod(item.id as typeof period)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                period === item.id
+                  ? 'bg-[#1e4634] text-white shadow-xs'
+                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Date Display Pill */}
+        <div className="flex items-center gap-2 text-xs font-medium text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/60">
+          <Calendar className="w-4 h-4 text-slate-500" />
+          <span>{summary.salesPeriodLabel}</span>
+        </div>
+      </div>
+
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        {/* Card 1: Books Sold */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e4634]" />
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                  Books Sold
+                </span>
+                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  {summary.booksSold.toLocaleString()}
+                </span>
+                <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-2">
+                  <TrendUp className="w-3.5 h-3.5" />
+                  <span>+{summary.booksSoldGrowthPercent}% vs previous 30 days</span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#1e4634] flex items-center justify-center">
+                <BookOpen className="w-5 h-5" weight="fill" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Total Income (Finance Reporting PM Requirement) */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e4634]" />
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                  Total Income (Finance)
+                </span>
+                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  ${summary.totalIncome.toLocaleString()}
+                </span>
+                <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-2">
+                  <TrendUp className="w-3.5 h-3.5" />
+                  <span>+{summary.totalIncomeGrowthPercent}% vs previous 30 days</span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-800 flex items-center justify-center">
+                <CurrencyDollar className="w-5 h-5" weight="bold" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 3: Audiobook Books */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e4634]" />
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                  Audiobook Books
+                </span>
+                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  {summary.audiobookBooks.toLocaleString()}
+                </span>
+                <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium mt-2">
+                  <TrendUp className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>{summary.audiobookSharePercent}% of total catalog sales</span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center">
+                <Headphones className="w-5 h-5" weight="fill" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Daily / Recent Books Sold Chart */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader
+            title="Daily / recent books sold"
+            subtitle="Circulation trends comparing digital ebooks and audiobook streaming units"
+          />
+          <CardContent className="pt-2">
+            <SalesChart data={dailyTrend} />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Two Side-by-Side Ranking Cards: Most-sold books & Most-sold audiobooks */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <MostSoldBooksCard books={topBooks} />
+        <MostSoldAudiobooksCard audiobooks={topAudiobooks} />
+      </div>
+
+      {/* Dedicated Transactions Table Section (PM Requirement: Transactions Table in Reports) */}
+      <div className="mb-8">
+        <TransactionsTable
+          transactions={transactions}
+          totalRecords={totalTransactions}
+        />
+      </div>
+    </AdminShell>
+  );
+}
