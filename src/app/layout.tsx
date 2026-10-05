@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
+import { MswProvider } from '@/providers/msw-provider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased min-h-screen bg-[#f8fafc]">
-        <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </QueryProvider>
+        <MswProvider>
+          <QueryProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </QueryProvider>
+        </MswProvider>
       </body>
     </html>
   );

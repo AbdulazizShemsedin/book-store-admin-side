@@ -27,7 +27,7 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      identifier: '+251911002233',
+      email: 'admin@tewba.com',
       pin: '123456',
     },
   });
@@ -35,17 +35,17 @@ export function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     setFormError(null);
     try {
-      await signin(data.identifier, data.pin);
+      await signin(data.email, data.pin);
       router.push(returnUrl);
     } catch (err) {
       if (err instanceof ApiError) {
-        if (err.fieldErrors.phone) {
-          setError('identifier', { message: err.fieldErrors.phone });
+        if (err.fieldErrors.email || err.fieldErrors.phone) {
+          setError('email', { message: err.fieldErrors.email || err.fieldErrors.phone });
         }
         if (err.fieldErrors.pin) {
           setError('pin', { message: err.fieldErrors.pin });
         }
-        setFormError(err.message || 'Invalid credentials. Please verify your phone and PIN.');
+        setFormError(err.message || 'Invalid credentials. Please verify your email and PIN.');
       } else {
         setFormError('Authentication failed. Please check network connectivity.');
       }
@@ -60,7 +60,6 @@ export function LoginForm() {
           <BookOpen className="w-7 h-7" weight="fill" />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Sign In</h2>
-        <p className="text-xs text-slate-500 mt-1">TEWBA Book Store Admin Portal</p>
       </div>
 
       {formError && (
@@ -72,10 +71,11 @@ export function LoginForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <Input
-            label="Phone Number or Email"
-            placeholder="e.g. +251 9... or admin@tewba.com"
-            error={errors.identifier?.message}
-            {...register('identifier')}
+            label="Email"
+            type="email"
+            placeholder="e.g. admin@tewba.com"
+            error={errors.email?.message}
+            {...register('email')}
           />
         </div>
 
@@ -104,6 +104,7 @@ export function LoginForm() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               aria-label={showPassword ? 'Hide PIN' : 'Show PIN'}
+              title={showPassword ? 'Hide PIN' : 'Show PIN'}
             >
               {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>

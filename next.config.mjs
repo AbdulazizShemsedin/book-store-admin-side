@@ -13,6 +13,9 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    optimizePackageImports: ['@phosphor-icons/react', 'recharts'],
+  },
 };
 
 export default nextConfig;

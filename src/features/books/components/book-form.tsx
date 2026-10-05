@@ -24,14 +24,65 @@ import {
   Plus,
   Image as ImageIcon,
   CheckCircle,
+  Check,
 } from '@phosphor-icons/react';
 import { ApiError } from '@/lib/api/error-handler';
+import { cn } from '@/lib/utils/cn';
+
+const PRESET_TAG_COLORS = [
+  { name: 'Emerald', value: '#10b981' },
+  { name: 'Teal', value: '#0d9488' },
+  { name: 'Sky', value: '#0284c7' },
+  { name: 'Blue', value: '#2563eb' },
+  { name: 'Indigo', value: '#4f46e5' },
+  { name: 'Purple', value: '#7c3aed' },
+  { name: 'Pink', value: '#db2777' },
+  { name: 'Rose', value: '#e11d48' },
+  { name: 'Amber', value: '#d97706' },
+  { name: 'Orange', value: '#ea580c' },
+  { name: 'Slate', value: '#475569' },
+];
 
 export function BookForm() {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
-  const [newTagInput, setNewTagInput] = useState('');
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+
+  // Tag list & color management
+  const [availableTags, setAvailableTags] = useState<string[]>([
+    'Fiction',
+    'Non-Fiction',
+    'Bestseller',
+    'Literary Fiction',
+    'Staff Pick',
+    'New Release',
+    'Classic',
+    'Islamic Studies',
+    'History',
+    'Biography',
+    'Philosophy',
+    'Science',
+    'Poetry',
+  ]);
+  const [selectedTagToAttach, setSelectedTagToAttach] = useState<string>('');
+  const [isAddingNewTag, setIsAddingNewTag] = useState<boolean>(false);
+  const [newTagName, setNewTagName] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('#10b981');
+  const [tagColors, setTagColors] = useState<Record<string, string>>({
+    'Bestseller': '#d97706',
+    'Literary Fiction': '#7c3aed',
+    'Fiction': '#10b981',
+    'Non-Fiction': '#0284c7',
+    'Staff Pick': '#db2777',
+    'New Release': '#2563eb',
+    'Classic': '#475569',
+    'Islamic Studies': '#059669',
+    'History': '#b45309',
+    'Biography': '#4f46e5',
+    'Philosophy': '#6b7280',
+    'Science': '#0d9488',
+    'Poetry': '#9333ea',
+  });
 
   const { data: authorsData } = useAuthors({ pageSize: 100 });
   const { data: categoriesData } = useCategories({ pageSize: 100 });
@@ -85,12 +136,25 @@ export function BookForm() {
     router.push(`/books/${bookId}`);
   });
 
-  const handleAddTag = () => {
-    const trimmed = newTagInput.trim();
-    if (trimmed && !watchedTags.includes(trimmed)) {
-      setValue('tags', [...watchedTags, trimmed]);
-      setNewTagInput('');
+  const handleAttachSelectedTag = () => {
+    if (selectedTagToAttach && !watchedTags.includes(selectedTagToAttach)) {
+      setValue('tags', [...watchedTags, selectedTagToAttach]);
+      setSelectedTagToAttach('');
     }
+  };
+
+  const handleCreateNewTag = () => {
+    const trimmed = newTagName.trim();
+    if (!trimmed) return;
+    if (!availableTags.includes(trimmed)) {
+      setAvailableTags((prev) => [...prev, trimmed]);
+    }
+    setTagColors((prev) => ({ ...prev, [trimmed]: selectedColor }));
+    if (!watchedTags.includes(trimmed)) {
+      setValue('tags', [...watchedTags, trimmed]);
+    }
+    setNewTagName('');
+    setIsAddingNewTag(false);
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
@@ -186,56 +250,183 @@ export function BookForm() {
                   {...register('pageCount')}
                 />
 
-                {/* Tags Field with Chip management (PM Requirement) */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
-                    Tags <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newTagInput}
-                      onChange={(e) => setNewTagInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                      placeholder="Add tag and press enter..."
-                      className="w-full h-10 px-3 text-xs bg-[#f8fafc] border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-700/20"
-                    />
+                {/* Tags Field (Dropdown + Search + Add Tag + Color Picker + Attached Tags) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                      Tags <span className="text-red-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingNewTag((prev) => !prev)}
+                      className="text-xs font-medium text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
+                    >
+                      <Plus className="w-3 h-3" weight="bold" />
+                      <span>{isAddingNewTag ? 'Cancel Add Tag' : 'Add New Tag'}</span>
+                    </button>
+                  </div>
+
+                  {/* Dropdown with Attach Button */}
+                  <div className="flex gap-2 items-start">
+                    <div className="flex-1">
+                      <Select
+                        placeholder="Select tag from list..."
+                        options={availableTags
+                          .filter((t) => !watchedTags.includes(t))
+                          .map((t) => ({ label: t, value: t }))}
+                        value={selectedTagToAttach}
+                        onChange={(e) => setSelectedTagToAttach(e.target.value)}
+                      />
+                    </div>
                     <Button
                       type="button"
-                      size="sm"
+                      size="md"
                       variant="secondary"
-                      onClick={handleAddTag}
-                      leftIcon={<Plus className="w-3.5 h-3.5" />}
+                      onClick={handleAttachSelectedTag}
+                      disabled={!selectedTagToAttach}
+                      className="h-10 px-4 font-medium"
                     >
-                      Add
+                      Attach
                     </Button>
                   </div>
-                  {/* Tag Chips */}
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {watchedTags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="primary"
-                        size="sm"
-                        className="flex items-center gap-1 font-medium bg-emerald-50 text-emerald-800 border-emerald-200"
-                      >
-                        <span>{tag}</span>
-                        <button
+
+                  {/* Add New Tag Drawer/Section */}
+                  {isAddingNewTag && (
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg space-y-3 animate-in fade-in duration-150">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          Tag Name
+                        </label>
+                        <input
+                          type="text"
+                          value={newTagName}
+                          onChange={(e) => setNewTagName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleCreateNewTag();
+                            }
+                          }}
+                          placeholder="e.g. Science Fiction, Academic..."
+                          className="w-full h-8 px-2.5 text-xs bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-700/20"
+                        />
+                      </div>
+
+                      {/* Color Picker Palette */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
+                          Tag Background Color
+                        </label>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {PRESET_TAG_COLORS.map((color) => (
+                            <button
+                              key={color.value}
+                              type="button"
+                              onClick={() => setSelectedColor(color.value)}
+                              title={color.name}
+                              className={cn(
+                                'w-6 h-6 rounded-full transition-transform flex items-center justify-center border border-white shadow-xs',
+                                selectedColor === color.value
+                                  ? 'scale-110 ring-2 ring-emerald-700 ring-offset-1'
+                                  : 'hover:scale-105'
+                              )}
+                              style={{ backgroundColor: color.value }}
+                            >
+                              {selectedColor === color.value && (
+                                <Check className="w-3 h-3 text-white" weight="bold" />
+                              )}
+                            </button>
+                          ))}
+                          {/* Custom Color Input */}
+                          <label
+                            title="Custom color"
+                            className="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center cursor-pointer overflow-hidden bg-white hover:border-slate-400"
+                          >
+                            <input
+                              type="color"
+                              value={selectedColor}
+                              onChange={(e) => setSelectedColor(e.target.value)}
+                              className="opacity-0 w-0 h-0"
+                            />
+                            <div className="w-full h-full" style={{ backgroundColor: selectedColor }} />
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1">
+                        <Button
                           type="button"
-                          onClick={() => handleRemoveTag(tag)}
-                          aria-label={`Remove tag ${tag}`}
-                          className="hover:text-red-600 rounded-full"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setIsAddingNewTag(false);
+                            setNewTagName('');
+                          }}
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleCreateNewTag}
+                          className="bg-[#1e4634] hover:bg-[#153426]"
+                        >
+                          Add & Attach
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Attached Tags (Excalidraw design: Attached tags) */}
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                      Attached tags
+                    </span>
+                    {watchedTags.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic">No tags attached yet.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {watchedTags.map((tag) => {
+                          const tagBgColor = tagColors[tag] || '#10b981';
+                          return (
+                            <span
+                              key={tag}
+                              style={{ backgroundColor: tagBgColor }}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-white shadow-xs"
+                            >
+                              <span>{tag}</span>
+                              {/* Color changer input */}
+                              <label
+                                title={`Change background color for "${tag}"`}
+                                className="w-3.5 h-3.5 rounded-full border border-white/60 cursor-pointer overflow-hidden flex items-center justify-center flex-shrink-0"
+                              >
+                                <input
+                                  type="color"
+                                  value={tagBgColor}
+                                  onChange={(e) =>
+                                    setTagColors((prev) => ({ ...prev, [tag]: e.target.value }))
+                                  }
+                                  className="opacity-0 w-0 h-0"
+                                />
+                                <div className="w-full h-full" style={{ backgroundColor: tagBgColor }} />
+                              </label>
+                              {/* Remove tag */}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTag(tag)}
+                                aria-label={`Remove tag ${tag}`}
+                                title={`Remove tag ${tag}`}
+                                className="text-white/80 hover:text-white transition-opacity ml-0.5"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
+
                   {errors.tags?.message && (
                     <p className="text-xs text-red-600 font-medium">{errors.tags.message}</p>
                   )}
@@ -398,8 +589,7 @@ export function BookForm() {
                         <Toggle
                           checked={field.value}
                           onChange={field.onChange}
-                          label="Enable Audiobook Release"
-                          description="Activate the audiobook track for mobile and web streaming"
+                          label="Has Audiobook ?"
                         />
                       )}
                     />

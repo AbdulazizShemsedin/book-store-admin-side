@@ -36,7 +36,6 @@ export function CardHeader({
     >
       <div>
         {title && <h3 className="text-base font-semibold text-slate-900">{title}</h3>}
-        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
         {children}
       </div>
       {action && <div className="flex items-center gap-2">{action}</div>}

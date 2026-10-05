@@ -1,12 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Category } from '@/types/domain';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
-import { Folder, ArrowElbowDownRight, PencilSimple, Trash } from '@phosphor-icons/react';
+import {
+  Folder,
+  PencilSimple,
+  Trash,
+  CaretRight,
+  CaretDown,
+  Tag,
+} from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
+import { Modal } from '@/components/ui/modal';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface CategoryTableProps {
   categories: Category[];
@@ -27,6 +37,16 @@ export function CategoryTable({
   onEdit,
   onDelete,
 }: CategoryTableProps) {
+  // Track expanded parent rows (default: all expanded for convenience)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  // Edit modal state
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editName, setEditName] = useState('');
+
+  // Delete modal state
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+
   if (isLoading) {
     return (
       <div className="py-20 flex flex-col items-center justify-center bg-white rounded-xl border border-slate-200">
@@ -50,12 +70,12 @@ export function CategoryTable({
     return (
       <EmptyState
         title="No categories found"
-        description="Register a category to begin grouping books in the catalog."
+        description="Register a category on the right to begin grouping books in the catalog."
       />
     );
   }
 
-  // Build hierarchical list: root categories followed by their subcategories
+  // Build hierarchical grouping: root categories and their child subcategories
   const rootCategories = categories.filter((c) => !c.parentId);
   const subcategoryMap = new Map<string, Category[]>();
 
@@ -67,107 +87,278 @@ export function CategoryTable({
     }
   });
 
+  const toggleExpand = (id: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleOpenEdit = (category: Category) => {
+    setEditingCategory(category);
+    setEditName(category.name);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingCategory || !editName.trim()) return;
+    if (onEdit) {
+      onEdit({ ...editingCategory, name: editName.trim() });
+    }
+    setEditingCategory(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deletingCategory && onDelete) {
+      onDelete(deletingCategory);
+    }
+    setDeletingCategory(null);
+  };
+
   return (
-    <div className="overflow-x-auto bg-white rounded-xl border border-slate-200/80 shadow-sm">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            <th className="py-3.5 px-6">Category</th>
-            <th className="py-3.5 px-6">ID</th>
-            <th className="py-3.5 px-6 text-right">Action</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 text-xs">
-          {rootCategories.map((root, index) => {
-            const rootId = root.id.startsWith('CAT-')
-              ? root.id
-              : `CAT-${String(index + 1).padStart(3, '0')}`;
-            const subcategories = subcategoryMap.get(root.id) || [];
+    <>
+      <div className="overflow-x-auto bg-white rounded-xl border border-slate-200/80 shadow-xs">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/60 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <th className="py-3.5 px-6 w-2/5">Category</th>
+              <th className="py-3.5 px-6 w-2/5">Subcategories</th>
+              <th className="py-3.5 px-6 w-1/6">ID</th>
+              <th className="py-3.5 px-6 text-right w-24">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 text-xs">
+            {rootCategories.map((root) => {
+              const rootDisplayId = root.id.length > 12 ? `${root.id.slice(0, 8)}...` : root.id;
+              const subcategories = subcategoryMap.get(root.id) || [];
+              const isExpanded = expandedRows.has(root.id);
 
-            return (
-              <React.Fragment key={root.id}>
-                {/* Parent / Root Category */}
-                <tr className="hover:bg-slate-50/60 transition-colors group bg-white font-medium">
-                  <td className="py-4 px-6 text-slate-900 flex items-center gap-2.5">
-                    <Folder className="w-4 h-4 text-[#1e4634]" weight="fill" />
-                    <span>{root.name}</span>
-                    {subcategories.length > 0 && (
-                      <Badge variant="default" size="sm" className="ml-2 font-normal text-[10px]">
-                        {subcategories.length} subcategories
-                      </Badge>
-                    )}
-                  </td>
-                  <td className="py-4 px-6 font-mono text-[11px] text-slate-500">
-                    {rootId}
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex items-center justify-end gap-2 text-slate-500">
-                      <button
-                        type="button"
-                        onClick={() => onEdit?.(root)}
-                        className="hover:text-slate-900 transition-colors inline-flex items-center gap-1"
-                      >
-                        <PencilSimple className="w-3.5 h-3.5" />
-                        <span>Edit</span>
-                      </button>
-                      <span className="text-slate-300">·</span>
-                      <button
-                        type="button"
-                        onClick={() => onDelete?.(root)}
-                        className="text-red-600 hover:text-red-700 transition-colors inline-flex items-center gap-1"
-                      >
-                        <Trash className="w-3.5 h-3.5" />
-                        <span>Delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Subcategories (PM Requirement: Subcategories hierarchy) */}
-                {subcategories.map((sub, subIdx) => {
-                  const subId = `${rootId}-${subIdx + 1}`;
-                  return (
-                    <tr
-                      key={sub.id}
-                      className="hover:bg-slate-50/80 transition-colors bg-slate-50/30"
-                    >
-                      <td className="py-3 px-6 pl-12 text-slate-700 flex items-center gap-2">
-                        <ArrowElbowDownRight className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{sub.name}</span>
-                        <Badge variant="outline" size="sm" className="text-[10px] py-0 text-slate-500">
-                          Subcategory
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-6 font-mono text-[11px] text-slate-400">
-                        {subId}
-                      </td>
-                      <td className="py-3 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2 text-slate-500">
+              return (
+                <React.Fragment key={root.id}>
+                  {/* Root Category Row */}
+                  <tr className="hover:bg-slate-50/70 transition-colors group bg-white">
+                    {/* Category Name & Hierarchy Toggle */}
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        {subcategories.length > 0 ? (
                           <button
                             type="button"
-                            onClick={() => onEdit?.(sub)}
-                            className="hover:text-slate-900 transition-colors text-xs"
+                            onClick={() => toggleExpand(root.id)}
+                            className="p-1 -ml-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
+                            aria-label={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
+                            title={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
                           >
-                            Edit
+                            {isExpanded ? (
+                              <CaretDown className="w-3.5 h-3.5" weight="bold" />
+                            ) : (
+                              <CaretRight className="w-3.5 h-3.5" weight="bold" />
+                            )}
                           </button>
-                          <span className="text-slate-300">·</span>
-                          <button
-                            type="button"
-                            onClick={() => onDelete?.(sub)}
-                            className="text-red-600 hover:text-red-700 transition-colors text-xs"
-                          >
-                            Delete
-                          </button>
+                        ) : (
+                          <span className="w-5" />
+                        )}
+                        <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center flex-shrink-0">
+                          <Folder className="w-4 h-4" weight="duotone" />
+                        </div>
+                        <span className="font-semibold text-slate-900">{root.name}</span>
+                        {subcategories.length > 0 && (
+                          <Badge variant="default" size="sm" className="font-normal text-[10px] text-slate-600 bg-slate-100">
+                            {subcategories.length}
+                          </Badge>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Subcategories preview tags */}
+                    <td className="py-4 px-6">
+                      {subcategories.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                          {subcategories.slice(0, 3).map((sub) => (
+                            <span
+                              key={sub.id}
+                              className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-50 text-slate-700 border border-slate-200/80"
+                            >
+                              {sub.name}
+                            </span>
+                          ))}
+                          {subcategories.length > 3 && (
+                            <button
+                              type="button"
+                              onClick={() => toggleExpand(root.id)}
+                              className="text-[10px] font-medium text-emerald-800 hover:underline"
+                            >
+                              +{subcategories.length - 3} more
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 italic text-[11px]">No subcategories</span>
+                      )}
+                    </td>
+
+                    {/* ID */}
+                    <td className="py-4 px-6 font-mono text-[11px] text-slate-500" title={root.id}>
+                      {rootDisplayId}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex items-center justify-end gap-1 text-slate-400 group-hover:text-slate-600">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(root)}
+                          className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                          title="Edit category"
+                          aria-label={`Edit ${root.name}`}
+                        >
+                          <PencilSimple className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingCategory(root)}
+                          className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                          title="Delete category"
+                          aria-label={`Delete ${root.name}`}
+                        >
+                          <Trash className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Expanded Subcategories Panel */}
+                  {isExpanded && subcategories.length > 0 && (
+                    <tr className="bg-slate-50/50 border-t border-slate-100/80">
+                      <td colSpan={4} className="py-3 px-6 pl-14">
+                        <div className="bg-white rounded-lg border border-slate-200/80 p-3 shadow-2xs space-y-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            Subcategories of {root.name}
+                          </p>
+                          <div className="divide-y divide-slate-100">
+                            {subcategories.map((sub) => {
+                              const subDisplayId =
+                                sub.id.length > 12 ? `${sub.id.slice(0, 8)}...` : sub.id;
+                              return (
+                                <div
+                                  key={sub.id}
+                                  className="flex items-center justify-between py-2 px-2 hover:bg-slate-50/60 rounded transition-colors group/sub text-xs"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Tag className="w-3.5 h-3.5 text-slate-400" />
+                                    <span className="font-medium text-slate-800">{sub.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-4">
+                                    <span
+                                      className="font-mono text-[11px] text-slate-400"
+                                      title={sub.id}
+                                    >
+                                      {subDisplayId}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenEdit(sub)}
+                                        className="p-1 hover:text-slate-900 hover:bg-slate-100 rounded text-slate-400 transition-colors"
+                                        title="Edit subcategory"
+                                      >
+                                        <PencilSimple className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setDeletingCategory(sub)}
+                                        className="p-1 hover:text-red-600 hover:bg-red-50 rounded text-slate-400 transition-colors"
+                                        title="Delete subcategory"
+                                      >
+                                        <Trash className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </td>
                     </tr>
-                  );
-                })}
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Edit Category Modal */}
+      {editingCategory && (
+        <Modal
+          isOpen={Boolean(editingCategory)}
+          onClose={() => setEditingCategory(null)}
+          title={`Edit ${editingCategory.parentId ? 'Subcategory' : 'Category'}`}
+        >
+          <div className="space-y-4">
+            <Input
+              label="Name"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Category name"
+              autoFocus
+            />
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setEditingCategory(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveEdit}
+                className="bg-[#1e4634] hover:bg-[#153426] text-white"
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingCategory && (
+        <Modal
+          isOpen={Boolean(deletingCategory)}
+          onClose={() => setDeletingCategory(null)}
+          title="Delete Category"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-600">
+              Are you sure you want to delete{' '}
+              <strong className="text-slate-900">{deletingCategory.name}</strong>? Books
+              currently filed under this category may need to be recataloged.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setDeletingCategory(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleConfirmDelete}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }

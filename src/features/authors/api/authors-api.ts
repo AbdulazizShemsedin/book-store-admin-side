@@ -36,12 +36,14 @@ export const authorsApi = {
       },
     });
 
-    const authors: Author[] = (response.authors || []).map((raw, idx) => ({
+    const authors: Author[] = (response.authors || []).map((raw) => ({
       id: raw.id,
       name: raw.string || 'Unknown Author',
-      nationality: 'Yemeni', // Domain default until backend stores nationality
+      nationality: raw.nationality || 'Yemeni',
       worksCount: 4,
       status: 'active',
+      bio: raw.bio,
+      photoUrl: raw.photo_url,
     }));
 
     return {
@@ -58,6 +60,9 @@ export const authorsApi = {
   async create(data: AuthorFormData): Promise<{ id: string }> {
     const body: CreateAuthorRequestBody = {
       name: data.name.trim(),
+      bio: data.bio?.trim() || undefined,
+      nationality: data.nationality?.trim() || 'Yemeni',
+      photo_url: data.photoUrl || undefined,
     };
 
     const response = await apiClient.post<CreateAuthorResponseBody>(

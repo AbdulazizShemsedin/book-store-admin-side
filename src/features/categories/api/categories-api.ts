@@ -31,14 +31,18 @@ export const categoriesApi = {
     const pageSize = params.pageSize || 50;
 
     const requestBody: ListCategoryRequestBody = {
-      page,
-      page_size: pageSize,
       parent_id: params.parentId || undefined,
     };
 
     const response = await apiClient.post<ListCategoryResponseBody>(
       '/api/category',
-      requestBody
+      requestBody,
+      {
+        params: {
+          page,
+          page_size: pageSize,
+        },
+      }
     );
 
     const rawList = response.categories || [];

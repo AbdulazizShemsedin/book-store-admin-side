@@ -34,7 +34,7 @@ export default function AuthorsPage() {
         title="Author Directory"
         badge={
           <Badge variant="primary" size="md">
-            {total || 52} Active Authors
+            {total} Active Authors
           </Badge>
         }
         actions={

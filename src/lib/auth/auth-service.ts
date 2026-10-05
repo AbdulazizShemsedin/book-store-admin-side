@@ -14,11 +14,11 @@ class AuthService {
    * Performs sign in using phone and PIN according to OpenAPI /api/auth/phone/signin.
    * If real backend is reachable, uses returned JWT access token.
    */
-  async signin(phone: string, pin: string): Promise<UserProfile> {
+  async signin(email: string, pin: string): Promise<UserProfile> {
     try {
       const response = await apiClient.post<TokenResponseBody>(
         '/api/auth/phone/signin',
-        { phone, pin } as SigninRequestBody,
+        { phone: email, email, pin } as unknown as SigninRequestBody,
         { skipAuth: true }
       );
 
@@ -27,7 +27,7 @@ class AuthService {
       }
     } catch (error) {
       // In development environments where the backend auth microservice is offline,
-      // allow testing the admin portal with valid formatted phone and PIN.
+      // allow testing the admin portal with valid formatted email and PIN.
       if (process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_API_BASE_URL) {
         console.warn('Backend signin failed, using development admin session fallback:', error);
         this.saveSession('dev-mock-admin-token-xyz', null);
@@ -40,8 +40,7 @@ class AuthService {
       id: 'admin-01',
       name: 'Ahmad Hassan',
       role: 'Content Manager',
-      phone,
-      email: 'ahmad.hassan@tewba.com',
+      email,
     };
 
     if (typeof window !== 'undefined') {

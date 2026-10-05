@@ -57,7 +57,6 @@ export function PageHeader({
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
           {badge && <div>{badge}</div>}
         </div>
-        {subtitle && <p className="mt-1 text-xs text-slate-500">{subtitle}</p>}
       </div>
 
       {actions && <div className="flex items-center gap-3 flex-wrap">{actions}</div>}

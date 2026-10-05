@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Book } from '@/types/domain';
-import { FormatBadge } from '@/components/ui/status-badge';
+import { FormatBadge, StatusBadge } from '@/components/ui/status-badge';
 import { PencilSimple, Eye, DotsThreeVertical, Book as BookIcon } from '@phosphor-icons/react';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -62,6 +62,7 @@ export function BookTable({
               <input
                 type="checkbox"
                 aria-label="Select all books"
+                title="Select all books"
                 className="rounded border-slate-300 text-emerald-800 focus:ring-emerald-700/20"
               />
             </th>
@@ -70,6 +71,7 @@ export function BookTable({
             <th className="py-3.5 px-6">Author</th>
             <th className="py-3.5 px-6">Publisher</th>
             <th className="py-3.5 px-6">Format</th>
+            <th className="py-3.5 px-6">Status</th>
             <th className="py-3.5 px-6">Created</th>
             <th className="py-3.5 px-6">Updated</th>
             <th className="py-3.5 px-6 text-right">Actions</th>
@@ -98,6 +100,7 @@ export function BookTable({
                   <input
                     type="checkbox"
                     aria-label={`Select ${book.name}`}
+                    title={`Select ${book.name}`}
                     className="rounded border-slate-300 text-emerald-800 focus:ring-emerald-700/20"
                   />
                 </td>
@@ -134,6 +137,11 @@ export function BookTable({
                   <FormatBadge hasAudiobook={book.hasAudiobook} />
                 </td>
 
+                {/* Status */}
+                <td className="py-4 px-6">
+                  <StatusBadge status={book.status || 'Published'} />
+                </td>
+
                 {/* Created Date */}
                 <td className="py-4 px-6 text-slate-500 whitespace-nowrap">
                   {createdFormatted}
@@ -151,6 +159,7 @@ export function BookTable({
                       href={`/books/${book.id}`}
                       className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
                       aria-label="View book details"
+                      title="View book details"
                     >
                       <Eye className="w-4 h-4" />
                     </Link>
@@ -158,6 +167,7 @@ export function BookTable({
                       href={`/books/${book.id}`}
                       className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
                       aria-label="Edit book"
+                      title="Edit book"
                     >
                       <PencilSimple className="w-4 h-4" />
                     </Link>
@@ -165,6 +175,7 @@ export function BookTable({
                       type="button"
                       className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
                       aria-label="More options"
+                      title="More options"
                     >
                       <DotsThreeVertical className="w-4 h-4" />
                     </button>

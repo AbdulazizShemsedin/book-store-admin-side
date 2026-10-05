@@ -33,6 +33,9 @@ export interface TokenResponseBody {
 export interface ListAuthorItem {
   id: string; // uuid
   string: string; // Backend calls display name "string"
+  bio?: string;
+  nationality?: string;
+  photo_url?: string;
 }
 
 export interface ListAuthorResponseBody {
@@ -44,10 +47,14 @@ export interface ListAuthorResponseBody {
 
 export interface CreateAuthorRequestBody {
   name: string;
+  bio?: string;
+  nationality?: string;
+  photo_url?: string;
 }
 
 export interface CreateAuthorResponseBody {
   id: string;
+  name: string;
 }
 
 // BOOKS
@@ -76,18 +83,21 @@ export interface CreateBookRequestBody {
 
 export interface CreateBookResponseBody {
   id: string;
+  name: string;
+  description: string | null;
+  author_id?: string;
+  thumbnail_id?: string;
 }
 
 export interface GetBookResponseBody {
   author?: string | null;
-  author_id?: string;
-  created_at: string;
-  description?: string | null;
+  description: string;
+  has_audio: boolean;
+  has_book: boolean;
   id: string;
   name: string;
-  status: string;
-  thumbnail_id?: string | null;
-  updated_at: string;
+  rating?: string | null;
+  tags?: string[] | null;
 }
 
 // BOOK ASSETS & TAGS
@@ -102,8 +112,6 @@ export interface AddBookTagRequestBody {
 
 // CATEGORIES
 export interface ListCategoryRequestBody {
-  page?: number;
-  page_size?: number;
   parent_id?: string;
 }
 

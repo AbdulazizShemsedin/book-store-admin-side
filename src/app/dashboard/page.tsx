@@ -170,10 +170,10 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  CATALOG HEALTH
+                  STAT 4
                 </span>
                 <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  99.8%
+                  -
                 </span>
               </div>
               <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center">

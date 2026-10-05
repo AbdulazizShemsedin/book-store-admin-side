@@ -72,6 +72,7 @@ export function SortableAdRow({
           {...attributes}
           {...listeners}
           aria-label={`Drag to reorder ${ad.message}`}
+          title="Drag to reorder"
           className="p-1 text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing rounded"
         >
           <DotsSixVertical className="w-5 h-5" />
@@ -147,6 +148,7 @@ export function SortableAdRow({
             onClick={onEdit}
             className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
             aria-label="Edit advertisement"
+            title="Edit advertisement"
           >
             <PencilSimple className="w-4 h-4" />
           </button>
@@ -164,6 +166,7 @@ export function SortableAdRow({
             onClick={onDelete}
             className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
             aria-label="Delete advertisement"
+            title="Delete advertisement"
           >
             <Trash className="w-4 h-4" />
           </button>

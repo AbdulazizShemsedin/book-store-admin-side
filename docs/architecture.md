@@ -15,7 +15,7 @@ The TEWBA Book Store Admin Web Application is engineered using a **Feature-First
 ```
 src/
 ├── app/                      # Next.js App Router (pages and layouts)
-│   ├── layout.tsx            # Root layout (fonts, providers, metadata)
+│   ├── layout.tsx            # Root layout (fonts, providers, metadata, MSW bootstrap)
 │   ├── page.tsx              # Root entry (redirects to dashboard or login)
 │   ├── login/                # Sign-in page
 │   ├── dashboard/            # Overview / Dashboard
@@ -52,7 +52,13 @@ src/
 │   ├── query/                # TanStack Query client & cache configuration
 │   └── utils/                # Styling helpers (cn), formatters
 │
-├── providers/                # React Context Providers (QueryProvider, AuthProvider)
+├── mocks/                    # Development-Only MSW Mock Layer
+│   ├── browser.ts            # Browser setupWorker
+│   ├── handlers.ts           # OpenAPI-compliant MSW handlers
+│   ├── store.ts              # In-memory stateful store with pagination & search
+│   └── data/                 # Realistic seed data (authors, books, categories, tags)
+│
+├── providers/                # React Context Providers (QueryProvider, AuthProvider, MswProvider)
 └── types/                    # Domain models, OpenAPI DTOs, common API response types
 ```
 
@@ -71,13 +77,13 @@ All application data flow follows a strict unidirectional path:
        ↓
 [Central HTTP Client (apiClient in src/lib/api/client.ts)]
        ↓
-[Backend Server (TEWBA Backend / Admin Endpoints)]
+[MSW Interceptor (Development) OR Real Backend (Production/Staging)]
 ```
 
 ### Why this boundary matters:
-- The UI layer does not know how `Authorization` bearer tokens are attached, how query strings are encoded, or how raw JSON errors are formatted.
+- The UI layer does not know how `Authorization` bearer tokens are attached, how query strings are encoded, or whether a network call is serviced by MSW or the live backend.
 - If an API URL changes or an endpoint field is updated, only the feature API module or domain adapter needs modification.
-- Testing components is simple because hooks can be mocked cleanly without intercepting raw network calls.
+- Components remain completely decoupled from mocking logic: no mock arrays, fake CRUD, or `if (mock)` branches inside components.
 
 ---
 
@@ -101,12 +107,26 @@ We apply the simplest suitable state mechanism for each need:
 
 ---
 
-## 5. Authentication & Route Protection
+## 5. Development Mock Layer (MSW)
+
+To allow full frontend testing before real backend deployment without inventing fictional contracts:
+- **Mock Service Worker (MSW 2)** intercepts network traffic at the browser service worker level (`public/mockServiceWorker.js`).
+- The mock layer strictly implements the request/response shapes defined in `references/openapi.yaml`. For instance:
+  - `GET /admin/api/author` returns `{ authors: [{ id, string }], total, page, page_size }`
+  - `GET /admin/api/book` returns `{ books: [{ id, name, author, status, created_at, updated_at }], total, page, page_size }`
+  - `POST /admin/api/upload/...` simulates the init, chunk URL, direct S3 PUT, and complete lifecycle.
+- **Single Switch**: Controlled via `NEXT_PUBLIC_USE_MOCK_API` in `.env.local`:
+  - `NEXT_PUBLIC_USE_MOCK_API=true`: Starts MSW worker in development.
+  - `NEXT_PUBLIC_USE_MOCK_API=false`: Completely bypasses MSW and speaks to `NEXT_PUBLIC_API_BASE_URL`.
+- **Production Guard**: In production builds (`process.env.NODE_ENV === 'production'`), MSW is statically excluded and never initialized, guaranteeing zero mock leakage.
+
+---
+
+## 6. Authentication & Route Protection
 
 - **Auth Service (`src/lib/auth/auth-service.ts`)**:
   - Handles login authentication tokens, session validation, and logout.
   - Supports Bearer token authentication compatible with OpenAPI `POST /api/auth/phone/signin` and admin credentials.
-  - Isolates token persistence behind a clean abstraction. If the backend later switches from Bearer tokens to HTTP-only cookies, only `auth-service.ts` changes.
 - **Auth Provider (`src/providers/auth-provider.tsx`)**:
   - Exposes `useAuth()` providing `user`, `isAuthenticated`, `isLoading`, `login()`, and `logout()`.
 - **Protected Layout (`src/components/layout/admin-shell.tsx`)**:
@@ -114,7 +134,7 @@ We apply the simplest suitable state mechanism for each need:
 
 ---
 
-## 6. Multipart File Upload Architecture
+## 7. Multipart File Upload Architecture
 
 Large book files (EPUB/PDF) and audiobooks (MP3/M4B) are uploaded directly from the browser to pre-signed cloud storage URLs using the backend contract:
 1. `POST /admin/api/upload/init` -> Allocates upload session and receives S3 upload ID and key.

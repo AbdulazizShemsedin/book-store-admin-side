@@ -9,7 +9,7 @@ interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signin: (phone: string, pin: string) => Promise<void>;
+  signin: (email: string, pin: string) => Promise<void>;
   signout: () => void;
 }
 
@@ -42,10 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const signin = async (phone: string, pin: string) => {
+  const signin = async (email: string, pin: string) => {
     setIsLoading(true);
     try {
-      const profile = await authService.signin(phone, pin);
+      const profile = await authService.signin(email, pin);
       setUser(profile);
       setIsAuthenticated(true);
     } finally {

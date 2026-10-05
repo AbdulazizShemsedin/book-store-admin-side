@@ -102,6 +102,7 @@ export function PublisherTable({
                       onClick={() => onEdit?.(pub)}
                       className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
                       aria-label="Edit publisher"
+                      title="Edit publisher"
                     >
                       <PencilSimple className="w-4 h-4" />
                     </button>
@@ -110,6 +111,7 @@ export function PublisherTable({
                       onClick={() => onDelete?.(pub)}
                       className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                       aria-label="Delete publisher"
+                      title="Delete publisher"
                     >
                       <Trash className="w-4 h-4" />
                     </button>

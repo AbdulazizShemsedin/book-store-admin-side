@@ -67,6 +67,7 @@ export function Pagination({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
           aria-label="Previous page"
+          title="Previous page"
           className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
         >
           <CaretLeft className="w-3.5 h-3.5" />
@@ -81,6 +82,7 @@ export function Pagination({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
           aria-label="Next page"
+          title="Next page"
           className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
         >
           <CaretRight className="w-3.5 h-3.5" />

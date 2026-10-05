@@ -8,6 +8,7 @@ import { BookTable } from '@/features/books/components/book-table';
 import { useBooks } from '@/features/books/hooks/use-books';
 import { Pagination } from '@/components/tables/pagination';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { Plus, MagnifyingGlass, ArrowClockwise, Funnel } from '@phosphor-icons/react';
 
 export default function BooksPage() {
@@ -65,46 +66,57 @@ export default function BooksPage() {
         </div>
 
         {/* Dropdown Filters & Refresh */}
-        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           {/* Category Dropdown */}
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="h-9 px-3 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 shadow-xs"
-          >
-            <option value="All">Category: All</option>
-            <option value="Fiction">Fiction</option>
-            <option value="Tafsir">Tafsir</option>
-            <option value="History">History</option>
-            <option value="Literature">Literature</option>
-          </select>
+          <div className="w-36">
+            <Select
+              size="sm"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              options={[
+                { label: 'Category: All', value: 'All' },
+                { label: 'Fiction', value: 'Fiction' },
+                { label: 'Tafsir', value: 'Tafsir' },
+                { label: 'History', value: 'History' },
+                { label: 'Literature', value: 'Literature' },
+              ]}
+            />
+          </div>
 
           {/* Format Filter */}
-          <select
-            className="h-9 px-3 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 shadow-xs"
-          >
-            <option value="All">Filter: Format</option>
-            <option value="Audiobook">has Audiobook</option>
-            <option value="Text">Text-only</option>
-          </select>
+          <div className="w-36">
+            <Select
+              size="sm"
+              defaultValue="All"
+              options={[
+                { label: 'Filter: Format', value: 'All' },
+                { label: 'has Audiobook', value: 'Audiobook' },
+                { label: 'Text-only', value: 'Text' },
+              ]}
+            />
+          </div>
 
           {/* Status Dropdown */}
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="h-9 px-3 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 shadow-xs"
-          >
-            <option value="All">Status: All</option>
-            <option value="Published">Published / Live</option>
-            <option value="Review">In Review</option>
-            <option value="Draft">Draft</option>
-          </select>
+          <div className="w-36">
+            <Select
+              size="sm"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              options={[
+                { label: 'Status: All', value: 'All' },
+                { label: 'Published / Live', value: 'Published' },
+                { label: 'In Review', value: 'Review' },
+                { label: 'Draft', value: 'Draft' },
+              ]}
+            />
+          </div>
 
           {/* Refresh Action */}
           <button
             type="button"
             onClick={() => refetch()}
             aria-label="Refresh table"
+            title="Refresh books list"
             className="p-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-colors shadow-xs"
           >
             <ArrowClockwise className="w-4 h-4" />

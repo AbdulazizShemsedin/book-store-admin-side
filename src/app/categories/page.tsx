@@ -7,8 +7,7 @@ import { CategoryTable } from '@/features/categories/components/category-table';
 import { CreateCategoryCard } from '@/features/categories/components/create-category-card';
 import { useCategories } from '@/features/categories/hooks/use-categories';
 import { Pagination } from '@/components/tables/pagination';
-import { Button } from '@/components/ui/button';
-import { Plus, MagnifyingGlass } from '@phosphor-icons/react';
+import { MagnifyingGlass } from '@phosphor-icons/react';
 
 export default function CategoriesPage() {
   const [page, setPage] = useState(1);
@@ -33,19 +32,6 @@ export default function CategoriesPage() {
       <PageHeader
         breadcrumbs={[{ label: 'Catalog' }, { label: 'Taxonomy' }]}
         title="Categories"
-        actions={
-          <Button
-            size="sm"
-            leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
-            onClick={() => {
-              const el = document.getElementById('category-name');
-              if (el) el.focus();
-            }}
-            className="bg-[#1e4634] hover:bg-[#153426]"
-          >
-            Add Category
-          </Button>
-        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -68,8 +54,14 @@ export default function CategoriesPage() {
             isError={isError}
             error={error}
             onRetry={() => refetch()}
-            onEdit={(cat) => alert(`Editing category: ${cat.name}`)}
-            onDelete={(cat) => alert(`Delete category: ${cat.name}`)}
+            onEdit={(cat) => {
+              // Domain handler for category update
+              refetch();
+            }}
+            onDelete={(cat) => {
+              // Domain handler for category deletion
+              refetch();
+            }}
           />
 
           <Pagination

@@ -13,6 +13,7 @@ export const authorSchema = z.object({
     .string()
     .max(1024, 'Biography must be at most 1024 characters')
     .optional(),
+  photoUrl: z.string().optional(),
 });
 
 export type AuthorFormData = z.infer<typeof authorSchema>;

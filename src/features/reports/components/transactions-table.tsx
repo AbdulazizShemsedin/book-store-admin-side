@@ -116,6 +116,7 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
                     <button
                       type="button"
                       aria-label="View transaction analytics"
+                      title="View transaction analytics"
                       className="p-1.5 text-slate-400 hover:text-emerald-800 hover:bg-slate-100 rounded-md transition-colors"
                     >
                       <ChartBar className="w-4 h-4" />
