@@ -16,18 +16,16 @@ export default function BooksPage() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  const [status, setStatus] = useState('All');
 
   const { data, isLoading, isError, error, refetch } = useBooks({
     page,
     pageSize,
     search,
     category: category !== 'All' ? category : undefined,
-    status: status !== 'All' ? status : undefined,
   });
 
   const books = data?.books || [];
-  const total = data?.total || 2850;
+  const total = data?.total || 0;
 
   return (
     <AdminShell>
@@ -92,21 +90,6 @@ export default function BooksPage() {
                 { label: 'Filter: Format', value: 'All' },
                 { label: 'has Audiobook', value: 'Audiobook' },
                 { label: 'Text-only', value: 'Text' },
-              ]}
-            />
-          </div>
-
-          {/* Status Dropdown */}
-          <div className="w-36">
-            <Select
-              size="sm"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              options={[
-                { label: 'Status: All', value: 'All' },
-                { label: 'Published / Live', value: 'Published' },
-                { label: 'In Review', value: 'Review' },
-                { label: 'Draft', value: 'Draft' },
               ]}
             />
           </div>

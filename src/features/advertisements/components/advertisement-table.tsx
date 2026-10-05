@@ -121,7 +121,6 @@ export function AdvertisementTable({
               <th className="py-3.5 px-4 w-44">Preview</th>
               <th className="py-3.5 px-6">Ad Message</th>
               <th className="py-3.5 px-4 w-28">Status</th>
-              <th className="py-3.5 px-2 w-16">Sort</th>
               <th className="py-3.5 px-6 text-right">Actions</th>
             </tr>
           </thead>

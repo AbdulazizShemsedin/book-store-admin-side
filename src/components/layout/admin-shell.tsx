@@ -6,7 +6,6 @@ import { useAuth } from '@/providers/auth-provider';
 import { Sidebar } from './sidebar';
 import { Header } from './header';
 import { Spinner } from '@/components/ui/spinner';
-import { SidebarProvider } from '@/providers/sidebar-provider';
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -35,14 +34,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans antialiased">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
-          <Header />
-          <main className="flex-1 p-8 overflow-y-auto">{children}</main>
-        </div>
+    <div className="flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans antialiased">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+        <Header />
+        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }

@@ -48,6 +48,24 @@ export const initialMockCategories: ListCategoryResponseItem[] = [
     name: 'Short Stories & Novellas',
     parent_id: 'c1000000-0000-4000-8000-000000000001',
   },
+  // Level 3 Subcategory (under Historical Novels)
+  {
+    id: 'c1000000-0000-4000-8000-000000000014',
+    name: 'Medieval & Ottoman Epics',
+    parent_id: 'c1000000-0000-4000-8000-000000000012',
+  },
+  // Level 4 Subcategory (under Medieval & Ottoman Epics)
+  {
+    id: 'c1000000-0000-4000-8000-000000000015',
+    name: 'Byzantine Frontier Chronicles',
+    parent_id: 'c1000000-0000-4000-8000-000000000014',
+  },
+  // Level 5 Subcategory (under Byzantine Frontier Chronicles)
+  {
+    id: 'c1000000-0000-4000-8000-000000000016',
+    name: '14th Century Constantinople',
+    parent_id: 'c1000000-0000-4000-8000-000000000015',
+  },
 
   // Subcategories for History & Middle Eastern Studies (c100...002)
   {

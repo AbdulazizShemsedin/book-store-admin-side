@@ -4,6 +4,7 @@ import './globals.css';
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { MswProvider } from '@/providers/msw-provider';
+import { SidebarProvider } from '@/providers/sidebar-provider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,7 +27,9 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen bg-[#f8fafc]">
         <MswProvider>
           <QueryProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <SidebarProvider>{children}</SidebarProvider>
+            </AuthProvider>
           </QueryProvider>
         </MswProvider>
       </body>

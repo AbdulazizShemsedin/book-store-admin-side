@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { AdvertisementTable } from '@/features/advertisements/components/advertisement-table';
@@ -18,6 +18,19 @@ import { Advertisement } from '@/types/domain';
 export default function AdvertisementsPage() {
   const [search, setSearch] = useState('');
   const { data: ads = [], isLoading, isError, error, refetch } = useAdvertisements();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#ad-editor-card') {
+      const el = document.getElementById('ad-editor-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+        setTimeout(() => {
+          el.classList.remove('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+        }, 2500);
+      }
+    }
+  }, []);
 
   const reorderMutation = useReorderAdvertisements();
   const toggleMutation = useToggleAdStatus();
@@ -68,9 +81,9 @@ export default function AdvertisementsPage() {
                 className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
               />
             </div>
-            <p className="text-xs text-slate-500 font-medium hidden sm:block">
-              Drag rows or use arrow buttons to reorder
-            </p>
+            <span className="text-[11px] text-slate-400 font-medium hidden sm:inline-block">
+              Drag rows to reorder sequence
+            </span>
           </div>
 
           <AdvertisementTable

@@ -72,7 +72,6 @@ export function AuthorTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              <th className="py-3.5 px-6">ID</th>
               <th className="py-3.5 px-6">Author</th>
               <th className="py-3.5 px-6">Works</th>
               <th className="py-3.5 px-6">Nationality</th>
@@ -81,18 +80,11 @@ export function AuthorTable({
           </thead>
           <tbody className="divide-y divide-slate-100 text-xs">
             {authors.map((author) => {
-              const shortId = author.id.length > 12 ? `${author.id.slice(0, 8)}...` : author.id;
-
               return (
                 <tr
                   key={author.id}
                   className="hover:bg-slate-50/60 transition-colors group"
                 >
-                  {/* ID */}
-                  <td className="py-4 px-6 font-mono text-[11px] text-slate-500" title={author.id}>
-                    {shortId}
-                  </td>
-
                   {/* Author Name & Profile Photo */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">

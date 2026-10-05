@@ -41,7 +41,7 @@ export function PublisherFormCard({ onCancel }: PublisherFormCardProps) {
   };
 
   return (
-    <Card className="h-fit shadow-sm border-slate-200">
+    <Card id="publisher-form-card" className="h-fit shadow-sm border-slate-200 scroll-mt-24 transition-all duration-500">
       <CardHeader
         title={
           <div className="flex items-center gap-2">

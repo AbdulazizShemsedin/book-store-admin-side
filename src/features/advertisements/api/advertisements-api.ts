@@ -37,7 +37,26 @@ const INITIAL_ADS: Advertisement[] = [
   },
 ];
 
-let inMemoryAds = [...INITIAL_ADS];
+function getStoredAds(): Advertisement[] {
+  if (typeof window === 'undefined') return [...INITIAL_ADS];
+  try {
+    const raw = localStorage.getItem('tewba_ads_db');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return [...INITIAL_ADS];
+}
+
+function saveStoredAds(ads: Advertisement[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('tewba_ads_db', JSON.stringify(ads));
+  } catch {}
+}
+
+let inMemoryAds = getStoredAds();
 
 export const advertisementsApi = {
   /**
@@ -63,6 +82,7 @@ export const advertisementsApi = {
     };
 
     inMemoryAds.push(newAd);
+    saveStoredAds(inMemoryAds);
     return newAd;
   },
 
@@ -79,6 +99,7 @@ export const advertisementsApi = {
     });
 
     inMemoryAds = updated.sort((a, b) => a.order - b.order);
+    saveStoredAds(inMemoryAds);
     return inMemoryAds;
   },
 
@@ -87,10 +108,12 @@ export const advertisementsApi = {
     if (!target) return null;
 
     target.status = target.status === 'active' ? 'disabled' : 'active';
+    saveStoredAds(inMemoryAds);
     return { ...target };
   },
 
   async delete(id: string): Promise<void> {
     inMemoryAds = inMemoryAds.filter((ad) => ad.id !== id);
+    saveStoredAds(inMemoryAds);
   },
 };

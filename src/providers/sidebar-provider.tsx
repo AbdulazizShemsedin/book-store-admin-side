@@ -11,12 +11,40 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('tewba_sidebar_collapsed') === 'true';
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
 
-  const toggleSidebar = () => setIsCollapsed((prev) => !prev);
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('tewba_sidebar_collapsed', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const setCollapsed = (collapsed: boolean) => {
+    setIsCollapsed(collapsed);
+    try {
+      localStorage.setItem('tewba_sidebar_collapsed', String(collapsed));
+    } catch {
+      // ignore
+    }
+  };
 
   return (
-    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar, setIsCollapsed }}>
+    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar, setIsCollapsed: setCollapsed }}>
       {children}
     </SidebarContext.Provider>
   );

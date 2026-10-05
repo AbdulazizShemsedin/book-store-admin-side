@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { CategoryTable } from '@/features/categories/components/category-table';
@@ -11,8 +11,22 @@ import { MagnifyingGlass } from '@phosphor-icons/react';
 
 export default function CategoriesPage() {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(50);
   const [search, setSearch] = useState('');
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#create-category-card') {
+      const el = document.getElementById('create-category-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+        setTimeout(() => {
+          el.classList.remove('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+        }, 2500);
+      }
+    }
+  }, []);
 
   const { data, isLoading, isError, error, refetch } = useCategories({
     page,
@@ -26,6 +40,18 @@ export default function CategoriesPage() {
   const filteredCategories = search
     ? categories.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
     : categories;
+
+  const handleAddSubcategoryFromTable = (parentCategory: { id: string }) => {
+    setSelectedParentId(parentCategory.id);
+    const el = document.getElementById('create-category-card');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+      setTimeout(() => {
+        el.classList.remove('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+      }, 2500);
+    }
+  };
 
   return (
     <AdminShell>
@@ -54,14 +80,13 @@ export default function CategoriesPage() {
             isError={isError}
             error={error}
             onRetry={() => refetch()}
-            onEdit={(cat) => {
-              // Domain handler for category update
+            onEdit={() => {
               refetch();
             }}
-            onDelete={(cat) => {
-              // Domain handler for category deletion
+            onDelete={() => {
               refetch();
             }}
+            onAddSubcategory={handleAddSubcategoryFromTable}
           />
 
           <Pagination
@@ -76,7 +101,11 @@ export default function CategoriesPage() {
 
         {/* Right Column: Create Category / Subcategory Card */}
         <div className="lg:col-span-1">
-          <CreateCategoryCard categories={categories} />
+          <CreateCategoryCard
+            categories={categories}
+            selectedParentId={selectedParentId}
+            onParentChange={setSelectedParentId}
+          />
         </div>
       </div>
     </AdminShell>

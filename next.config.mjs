@@ -13,6 +13,12 @@ const nextConfig = {
       },
     ],
   },
+  modularizeImports: {
+    '@phosphor-icons/react': {
+      transform: '@phosphor-icons/react/dist/ssr/{{member}}',
+      skipDefaultConversion: true,
+    },
+  },
   experimental: {
     optimizePackageImports: ['@phosphor-icons/react', 'recharts'],
   },

@@ -304,6 +304,38 @@ export const handlers = [
     return HttpResponse.json(data);
   }),
 
+  http.put('*/admin/api/category/:id', async ({ params, request }) => {
+    const id = params.id as string;
+    try {
+      const body = (await request.json()) as { name: string };
+      const updated = mockStore.updateCategory(id, body.name);
+      return HttpResponse.json(updated, { status: 200 });
+    } catch (err) {
+      return HttpResponse.json(
+        { title: 'Bad Request', detail: (err as Error).message, status: 400 },
+        { status: 400 }
+      );
+    }
+  }),
+
+  http.delete('*/admin/api/category/:id', ({ params }) => {
+    const id = params.id as string;
+    mockStore.deleteCategory(id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.delete('*/admin/api/author/:id', ({ params }) => {
+    const id = params.id as string;
+    mockStore.deleteAuthor(id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.delete('*/admin/api/book/:id', ({ params }) => {
+    const id = params.id as string;
+    mockStore.deleteBook(id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
   // ==========================================
   // UPLOADS
   // ==========================================

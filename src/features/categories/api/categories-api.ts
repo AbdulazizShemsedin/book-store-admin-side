@@ -78,4 +78,20 @@ export const categoriesApi = {
 
     return response;
   },
+
+  /**
+   * Updates an existing category via PUT /admin/api/category/:id.
+   */
+  async update(id: string, name: string): Promise<{ id: string; name: string }> {
+    return apiClient.put<{ id: string; name: string }>(`/admin/api/category/${id}`, {
+      name: name.trim(),
+    });
+  },
+
+  /**
+   * Deletes a category and its subcategories via DELETE /admin/api/category/:id.
+   */
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(`/admin/api/category/${id}`);
+  },
 };

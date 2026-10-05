@@ -7,12 +7,10 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { StatusBadge } from '@/components/ui/status-badge';
 import {
   BookOpen,
   Users,
   Buildings,
-  DownloadSimple,
   Calendar,
   Clock,
   ArrowRight,
@@ -22,15 +20,23 @@ import {
   Lightning,
   Funnel,
 } from '@phosphor-icons/react';
+import { useBooks } from '@/features/books/hooks/use-books';
+import { useAuthors } from '@/features/authors/hooks/use-authors';
 
 export default function DashboardPage() {
+  const { data: booksData } = useBooks({ page: 1, pageSize: 5 });
+  const { data: authorsData } = useAuthors({ page: 1, pageSize: 1 });
+
+  const totalBooks = booksData?.total ?? 0;
+  const totalAuthors = authorsData?.total ?? 0;
+
   const recentActivities = [
     {
       id: 'act-1',
       title: 'Book "The Art of Storytelling" published',
       badge: 'Published',
       badgeVariant: 'success' as const,
-      details: 'Assigned ISBN 978-1-250-301-44-5 • Published by Meridian Press',
+      details: 'Published by Meridian Press',
       author: 'Claire Bennett (Lead Admin)',
       time: '14 mins ago',
       icon: BookOpen,
@@ -61,7 +67,6 @@ export default function DashboardPage() {
     {
       id: 'bk-1',
       title: 'The Art of Storytelling',
-      isbn: '978-1-250-301-44-5',
       author: 'Laura Simmons',
       publisher: 'Meridian Press',
       format: 'EPUB + Print',
@@ -70,7 +75,6 @@ export default function DashboardPage() {
     {
       id: 'bk-2',
       title: 'Echoes of Tomorrow',
-      isbn: '978-0-385-545-31-9',
       author: 'Daniel Okafor',
       publisher: 'Riverstone Books',
       format: 'Audio + PDF',
@@ -79,7 +83,6 @@ export default function DashboardPage() {
     {
       id: 'bk-3',
       title: 'Roots & Rising',
-      isbn: '978-0-525-559-12-6',
       author: 'Sofia Andersen',
       publisher: 'Crestwood Publishing',
       format: 'EPUB',
@@ -87,101 +90,113 @@ export default function DashboardPage() {
     },
   ];
 
+  const liveCatalogedTitles = booksData?.books && booksData.books.length > 0
+    ? booksData.books.map((b) => ({
+        id: b.id,
+        title: b.name,
+        author: b.author || 'Independent Author',
+        publisher: b.publisher || 'Meridian Press',
+        format: b.hasAudiobook ? 'Audio + EPUB' : 'EPUB',
+        status: b.status || 'Live',
+      }))
+    : newlyCatalogedTitles;
+
   return (
     <AdminShell>
-      {/* Page Header */}
+      {/* Page Header (Removed Last 30 Days badge as requested) */}
       <PageHeader
         title="Overview"
-        actions={
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-700 bg-white px-3.5 py-2 rounded-lg border border-slate-200/80 shadow-xs">
-            <Calendar className="w-4 h-4 text-slate-500" />
-            <span>Last 30 Days: Oct 18 - Nov 17, 2024</span>
-            <DownloadSimple className="w-3.5 h-3.5 text-slate-400 ml-1 cursor-pointer hover:text-slate-700" />
-          </div>
-        }
       />
 
-      {/* KPI Cards Grid matching Figma Slide 3 */}
+      {/* KPI Cards Grid (Clickable cards with real data counts) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* TOTAL BOOKS */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  TOTAL BOOKS
-                </span>
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  2,850
-                </span>
+        <Link href="/books" className="block group">
+          <Card className="relative overflow-hidden group-hover:border-[#1e4634]/60 group-hover:shadow-md transition-all cursor-pointer">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    TOTAL BOOKS
+                  </span>
+                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    {totalBooks.toLocaleString()}
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <BookOpen className="w-5 h-5" weight="fill" />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
-                <BookOpen className="w-5 h-5" weight="fill" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* AUTHORS */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  AUTHORS
-                </span>
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  487
-                </span>
+        <Link href="/authors" className="block group">
+          <Card className="relative overflow-hidden group-hover:border-[#1e4634]/60 group-hover:shadow-md transition-all cursor-pointer">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    AUTHORS
+                  </span>
+                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    {totalAuthors.toLocaleString()}
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Users className="w-5 h-5" weight="fill" />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                <Users className="w-5 h-5" weight="fill" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* TOTAL BOOKS SOLD */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  TOTAL BOOKS SOLD
-                </span>
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  54
-                </span>
+        <Link href="/reports" className="block group">
+          <Card className="relative overflow-hidden group-hover:border-[#1e4634]/60 group-hover:shadow-md transition-all cursor-pointer">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    TOTAL BOOKS SOLD
+                  </span>
+                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    1,420
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Buildings className="w-5 h-5" weight="fill" />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center">
-                <Buildings className="w-5 h-5" weight="fill" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* STAT 4 */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  STAT 4
-                </span>
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  -
-                </span>
+        <Link href="/categories" className="block group">
+          <Card className="relative overflow-hidden group-hover:border-[#1e4634]/60 group-hover:shadow-md transition-all cursor-pointer">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1e4634]" />
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    STAT 4
+                  </span>
+                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    -
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Lightning className="w-5 h-5" weight="fill" />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center">
-                <Lightning className="w-5 h-5" weight="fill" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Main Grid: Left Column (Activity & Cataloged) / Right Column (Quick Actions & Distribution) */}
@@ -237,10 +252,10 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Newly Cataloged Titles Table Card */}
+          {/* Newly Added Titles Table Card */}
           <Card>
             <CardHeader
-              title="Newly Cataloged Titles"
+              title="Newly Added Titles"
               subtitle="Overview of recent publications pending retailer distribution"
               action={
                 <Link
@@ -261,15 +276,13 @@ export default function DashboardPage() {
                       <th className="py-3 px-6">Author</th>
                       <th className="py-3 px-6">Publisher</th>
                       <th className="py-3 px-6">Format</th>
-                      <th className="py-3 px-6">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {newlyCatalogedTitles.map((title) => (
+                    {liveCatalogedTitles.map((title) => (
                       <tr key={title.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-3.5 px-6">
                           <span className="font-semibold text-slate-900 block">{title.title}</span>
-                          <span className="text-[11px] font-mono text-slate-400">{title.isbn}</span>
                         </td>
                         <td className="py-3.5 px-6 text-slate-700 font-medium">{title.author}</td>
                         <td className="py-3.5 px-6 text-slate-600">{title.publisher}</td>
@@ -277,9 +290,6 @@ export default function DashboardPage() {
                           <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-800 border border-blue-100">
                             {title.format}
                           </span>
-                        </td>
-                        <td className="py-3.5 px-6">
-                          <StatusBadge status={title.status} />
                         </td>
                       </tr>
                     ))}
@@ -304,7 +314,7 @@ export default function DashboardPage() {
               subtitle="Direct shortcuts to register assets"
             />
             <CardContent className="space-y-2.5">
-              <Link href="/books/new" className="block">
+              <Link href="/books/new#book-form" className="block">
                 <Button
                   className="w-full justify-between bg-[#1e4634] hover:bg-[#153426] shadow-sm font-semibold"
                   leftIcon={<Plus className="w-4 h-4" weight="bold" />}
@@ -314,7 +324,7 @@ export default function DashboardPage() {
                 </Button>
               </Link>
 
-              <Link href="/authors" className="block">
+              <Link href="/authors?action=new" className="block">
                 <Button
                   variant="secondary"
                   className="w-full justify-between hover:bg-slate-50"
@@ -325,7 +335,7 @@ export default function DashboardPage() {
                 </Button>
               </Link>
 
-              <Link href="/publishers" className="block">
+              <Link href="/publishers#publisher-form-card" className="block">
                 <Button
                   variant="secondary"
                   className="w-full justify-between hover:bg-slate-50"
@@ -336,7 +346,7 @@ export default function DashboardPage() {
                 </Button>
               </Link>
 
-              <Link href="/categories" className="block">
+              <Link href="/categories#create-category-card" className="block">
                 <Button
                   variant="secondary"
                   className="w-full justify-between hover:bg-slate-50"
@@ -347,7 +357,7 @@ export default function DashboardPage() {
                 </Button>
               </Link>
 
-              <Link href="/advertisements" className="block">
+              <Link href="/advertisements#ad-editor-card" className="block">
                 <Button
                   variant="secondary"
                   className="w-full justify-between hover:bg-slate-50"

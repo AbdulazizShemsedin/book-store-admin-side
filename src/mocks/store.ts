@@ -31,12 +31,46 @@ class MockStore {
     this.resetToDefaults();
   }
 
+  private loadFromStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem('tewba_mock_db');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed.authors) && parsed.authors.length > 0) this.authors = parsed.authors;
+        if (Array.isArray(parsed.books) && parsed.books.length > 0) this.books = parsed.books;
+        if (Array.isArray(parsed.categories) && parsed.categories.length > 0) this.categories = parsed.categories;
+        if (Array.isArray(parsed.tags) && parsed.tags.length > 0) this.tags = parsed.tags;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  private saveToStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(
+        'tewba_mock_db',
+        JSON.stringify({
+          authors: this.authors,
+          books: this.books,
+          categories: this.categories,
+          tags: this.tags,
+        })
+      );
+    } catch {
+      // ignore
+    }
+  }
+
   resetToDefaults() {
     this.authors = JSON.parse(JSON.stringify(initialMockAuthors));
     this.books = JSON.parse(JSON.stringify(initialMockBooks));
     this.categories = JSON.parse(JSON.stringify(initialMockCategories));
     this.tags = JSON.parse(JSON.stringify(initialMockTags));
     this.activeScenario = 'NONE';
+    this.loadFromStorage();
   }
 
   setScenario(scenario: ErrorScenario) {
@@ -103,11 +137,22 @@ class MockStore {
 
     // Prepend so newly created author is immediately visible on page 1
     this.authors.unshift(newAuthor);
+    this.saveToStorage();
 
     return {
       id,
       name: trimmed,
     };
+  }
+
+  deleteAuthor(id: string): boolean {
+    const idx = this.authors.findIndex((a) => a.id === id);
+    if (idx !== -1) {
+      this.authors.splice(idx, 1);
+      this.saveToStorage();
+      return true;
+    }
+    return false;
   }
 
   // ==========================================
@@ -220,6 +265,7 @@ class MockStore {
     };
 
     this.books.unshift(newBook);
+    this.saveToStorage();
 
     return {
       id,
@@ -228,6 +274,16 @@ class MockStore {
       author_id: payload.author_id,
       thumbnail_id: payload.thumbnail_id,
     };
+  }
+
+  deleteBook(id: string): boolean {
+    const idx = this.books.findIndex((b) => b.id === id);
+    if (idx !== -1) {
+      this.books.splice(idx, 1);
+      this.saveToStorage();
+      return true;
+    }
+    return false;
   }
 
   attachAsset(bookId: string, assetType: 'book' | 'audio'): boolean {
@@ -240,6 +296,7 @@ class MockStore {
       book.has_audio = true;
     }
     book.updated_at = new Date().toISOString();
+    this.saveToStorage();
     return true;
   }
 
@@ -255,6 +312,7 @@ class MockStore {
       book.tags.push(tagName);
     }
     book.updated_at = new Date().toISOString();
+    this.saveToStorage();
     return true;
   }
 
@@ -310,7 +368,59 @@ class MockStore {
     };
 
     this.categories.push(newCategory);
+    this.saveToStorage();
     return { id };
+  }
+
+  updateCategory(id: string, name: string): { id: string; name: string } {
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.length > 128) {
+      throw new Error('Category name must be between 1 and 128 characters.');
+    }
+
+    const category = this.categories.find((c) => c.id === id);
+    if (!category) {
+      throw new Error('Category not found.');
+    }
+
+    category.name = trimmed;
+    this.saveToStorage();
+    return { id, name: trimmed };
+  }
+
+  deleteCategory(id: string): boolean {
+    const initialLen = this.categories.length;
+    // Recursively collect target category and all descendants (up to 5 levels)
+    const toDelete = new Set<string>([id]);
+    let added = true;
+    while (added) {
+      added = false;
+      for (const c of this.categories) {
+        if (c.parent_id && toDelete.has(c.parent_id) && !toDelete.has(c.id)) {
+          toDelete.add(c.id);
+          added = true;
+        }
+      }
+    }
+    this.categories = this.categories.filter((c) => !toDelete.has(c.id));
+    this.saveToStorage();
+    return this.categories.length < initialLen;
+  }
+
+  getTags(): MockTag[] {
+    this.loadFromStorage();
+    return [...this.tags];
+  }
+
+  createTag(name: string): MockTag {
+    this.loadFromStorage();
+    const newTag: MockTag = {
+      id: `tag_${Date.now()}`,
+      name: name.trim(),
+    };
+    this.tags.push(newTag);
+    this.saveToStorage();
+    return newTag;
   }
 }
 

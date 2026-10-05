@@ -58,7 +58,7 @@ export function AdEditorCard({ currentCount, onCancel }: AdEditorCardProps) {
   };
 
   return (
-    <Card className="h-fit shadow-sm border-slate-200">
+    <Card id="ad-editor-card" className="h-fit shadow-sm border-slate-200 scroll-mt-24 transition-all duration-500">
       <CardHeader
         title={
           <div className="flex items-center gap-2">

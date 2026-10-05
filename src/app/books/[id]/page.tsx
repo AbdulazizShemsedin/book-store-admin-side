@@ -516,7 +516,6 @@ export default function BookDetailsPage() {
           <Card>
             <CardHeader
               title="Performance & Stats"
-              subtitle="Last 30 Days"
             />
             <CardContent className="space-y-3">
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">

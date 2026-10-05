@@ -61,7 +61,6 @@ export function PublisherTable({
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             <th className="py-3.5 px-6">Publisher</th>
-            <th className="py-3.5 px-6">ID</th>
             <th className="py-3.5 px-6 text-right">Actions</th>
           </tr>
         </thead>
@@ -85,13 +84,6 @@ export function PublisherTable({
                       </span>
                     )}
                   </div>
-                </td>
-
-                {/* ID pill badge */}
-                <td className="py-4 px-6 font-mono text-[11px]">
-                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                    {pub.id}
-                  </span>
                 </td>
 
                 {/* Actions */}

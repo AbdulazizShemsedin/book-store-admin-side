@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PublisherTable } from '@/features/publishers/components/publisher-table';
@@ -13,6 +13,19 @@ export default function PublishersPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#publisher-form-card') {
+      const el = document.getElementById('publisher-form-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+        setTimeout(() => {
+          el.classList.remove('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
+        }, 2500);
+      }
+    }
+  }, []);
 
   const { data, isLoading, isError, error, refetch } = usePublishers({
     page,

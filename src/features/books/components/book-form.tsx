@@ -184,7 +184,7 @@ export function BookForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form id="book-form" onSubmit={handleSubmit(onSubmit)} className="space-y-8 scroll-mt-24 transition-all duration-500">
       {formError && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700">
           {formError}

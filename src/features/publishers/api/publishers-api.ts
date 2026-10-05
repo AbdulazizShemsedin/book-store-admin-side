@@ -24,7 +24,26 @@ const INITIAL_PUBLISHERS: Publisher[] = [
   { id: 'PUB-006', name: 'Dar Al-Qalam', monogram: 'DQ', booksCount: 75, status: 'Active' },
 ];
 
-let inMemoryPublishers = [...INITIAL_PUBLISHERS];
+function getStoredPublishers(): Publisher[] {
+  if (typeof window === 'undefined') return [...INITIAL_PUBLISHERS];
+  try {
+    const raw = localStorage.getItem('tewba_publishers_db');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return [...INITIAL_PUBLISHERS];
+}
+
+function saveStoredPublishers(pubs: Publisher[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('tewba_publishers_db', JSON.stringify(pubs));
+  } catch {}
+}
+
+let inMemoryPublishers = getStoredPublishers();
 
 export const publishersApi = {
   /**
@@ -79,6 +98,7 @@ export const publishersApi = {
     };
 
     inMemoryPublishers = [newPublisher, ...inMemoryPublishers];
+    saveStoredPublishers(inMemoryPublishers);
     return newPublisher;
   },
 
@@ -87,5 +107,6 @@ export const publishersApi = {
    */
   async delete(id: string): Promise<void> {
     inMemoryPublishers = inMemoryPublishers.filter((p) => p.id !== id);
+    saveStoredPublishers(inMemoryPublishers);
   },
 };

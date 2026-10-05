@@ -199,7 +199,31 @@ export default function ReportsPage() {
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-        {/* Card 1: Books Sold */}
+        {/* Card 1: Total income */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e4634]" />
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                  Total income
+                </span>
+                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  ${summary.totalIncome.toLocaleString()}
+                </span>
+                <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-2">
+                  <TrendUp className="w-3.5 h-3.5" />
+                  <span>+{summary.totalIncomeGrowthPercent}% vs previous 30 days</span>
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-800 flex items-center justify-center">
+                <CurrencyDollar className="w-5 h-5" weight="bold" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Books Sold */}
         <Card className="relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e4634]" />
           <CardContent className="p-6">
@@ -218,30 +242,6 @@ export default function ReportsPage() {
               </div>
               <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#1e4634] flex items-center justify-center">
                 <BookOpen className="w-5 h-5" weight="fill" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 2: Total Income (Finance Reporting PM Requirement) */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e4634]" />
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  Total Income (Finance)
-                </span>
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  ${summary.totalIncome.toLocaleString()}
-                </span>
-                <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-2">
-                  <TrendUp className="w-3.5 h-3.5" />
-                  <span>+{summary.totalIncomeGrowthPercent}% vs previous 30 days</span>
-                </div>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-800 flex items-center justify-center">
-                <CurrencyDollar className="w-5 h-5" weight="bold" />
               </div>
             </div>
           </CardContent>

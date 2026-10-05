@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
@@ -17,6 +17,7 @@ import {
   User,
   CaretLeft,
   CaretRight,
+  CaretDown,
 } from '@phosphor-icons/react';
 import { useSidebar } from '@/providers/sidebar-provider';
 
@@ -34,6 +35,18 @@ export function Sidebar() {
   const pathname = usePathname();
   const { user, signout } = useAuth();
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <aside
@@ -115,23 +128,52 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom User Card & Sign Out */}
-      <div className={cn('border-t border-slate-100', isCollapsed ? 'p-2 space-y-2' : 'p-4 space-y-3')}>
-        {isCollapsed ? (
-          <div className="flex flex-col items-center gap-2">
-            <div
-              className="w-9 h-9 rounded-full bg-[#1e4634]/10 text-[#1e4634] flex items-center justify-center font-bold text-xs"
-              title={`${user?.name || 'Ahmad Hassan'} (${user?.role || 'Content Manager'})`}
-            >
-              <User className="w-4 h-4" weight="bold" />
-            </div>
+      {/* Bottom User Card (Clickable to reveal Sign Out) */}
+      <div
+        ref={userMenuRef}
+        className={cn(
+          'border-t border-slate-100 relative',
+          isCollapsed ? 'p-2 space-y-2' : 'p-4 space-y-2'
+        )}
+      >
+        {/* Sign Out Popover Menu */}
+        {isUserMenuOpen && (
+          <div
+            className={cn(
+              'absolute bottom-full mb-2 bg-white border border-slate-200 rounded-xl shadow-lg p-1.5 z-50 transition-all',
+              isCollapsed ? 'left-2 w-44' : 'left-3 right-3'
+            )}
+          >
+            {isCollapsed && (
+              <div className="px-3 py-1.5 border-b border-slate-100 mb-1">
+                <p className="text-xs font-semibold text-slate-800 truncate">
+                  {user?.name || 'Ahmad Hassan'}
+                </p>
+              </div>
+            )}
             <button
-              onClick={signout}
-              title="Sign Out"
-              aria-label="Sign Out"
-              className="w-9 h-9 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              onClick={() => {
+                setIsUserMenuOpen(false);
+                signout();
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors text-left"
             >
               <SignOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        )}
+
+        {isCollapsed ? (
+          <div className="flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsUserMenuOpen((prev) => !prev)}
+              className="w-9 h-9 rounded-full bg-[#1e4634]/10 text-[#1e4634] flex items-center justify-center font-bold text-xs hover:ring-2 hover:ring-[#1e4634]/30 transition-all"
+              title={`${user?.name || 'Ahmad Hassan'} (Click to Sign Out)`}
+              aria-label="User account menu"
+            >
+              <User className="w-4 h-4" weight="bold" />
             </button>
             <button
               type="button"
@@ -144,29 +186,27 @@ export function Sidebar() {
             </button>
           </div>
         ) : (
-          <>
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-50 border border-slate-100">
+          <button
+            type="button"
+            onClick={() => setIsUserMenuOpen((prev) => !prev)}
+            className="w-full flex items-center justify-between gap-2.5 p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition-colors text-left group"
+            title="User account menu"
+            aria-label="User account menu"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#1e4634]/10 text-[#1e4634] flex items-center justify-center font-bold text-xs flex-shrink-0">
                 <User className="w-4 h-4" weight="bold" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-900 truncate">
-                  {user?.name || 'Ahmad Hassan'}
-                </p>
-                <p className="text-[11px] text-slate-500 truncate">
-                  {user?.role || 'Content Manager'}
-                </p>
-              </div>
+              <p className="text-xs font-semibold text-slate-900 truncate">
+                {user?.name || 'Ahmad Hassan'}
+              </p>
             </div>
-
-            <button
-              onClick={signout}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <SignOut className="w-4 h-4" />
-              <span>Sign Out</span>
-            </button>
-          </>
+            <CaretDown
+              className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-transform duration-200 flex-shrink-0 ${
+                isUserMenuOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
         )}
       </div>
     </aside>

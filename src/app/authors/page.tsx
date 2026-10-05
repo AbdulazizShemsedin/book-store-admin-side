@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { AuthorTable } from '@/features/authors/components/author-table';
@@ -16,6 +16,15 @@ export default function AuthorsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('action') === 'new' || window.location.hash === '#author-form') {
+        setIsModalOpen(true);
+      }
+    }
+  }, []);
 
   const { data, isLoading, isError, error, refetch } = useAuthors({
     page,

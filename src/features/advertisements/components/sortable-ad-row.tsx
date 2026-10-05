@@ -10,8 +10,6 @@ import {
   PencilSimple,
   Trash,
   Prohibit,
-  ArrowUp,
-  ArrowDown,
 } from '@phosphor-icons/react';
 
 interface SortableAdRowProps {
@@ -72,7 +70,6 @@ export function SortableAdRow({
           {...attributes}
           {...listeners}
           aria-label={`Drag to reorder ${ad.message}`}
-          title="Drag to reorder"
           className="p-1 text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing rounded"
         >
           <DotsSixVertical className="w-5 h-5" />
@@ -112,32 +109,6 @@ export function SortableAdRow({
       {/* Status */}
       <td className="py-4 px-4">
         <StatusBadge status={ad.status === 'active' ? 'Active' : 'Disabled'} />
-      </td>
-
-      {/* Accessible Reorder buttons (PM Requirement: Non-drag alternative) */}
-      <td className="py-4 px-2 w-16">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onMoveUp}
-            disabled={index === 0}
-            aria-label="Move banner up"
-            title="Move up"
-            className="p-1 rounded text-slate-400 hover:text-slate-800 disabled:opacity-30 disabled:pointer-events-none hover:bg-slate-100"
-          >
-            <ArrowUp className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={onMoveDown}
-            disabled={index === total - 1}
-            aria-label="Move banner down"
-            title="Move down"
-            className="p-1 rounded text-slate-400 hover:text-slate-800 disabled:opacity-30 disabled:pointer-events-none hover:bg-slate-100"
-          >
-            <ArrowDown className="w-3.5 h-3.5" />
-          </button>
-        </div>
       </td>
 
       {/* Actions */}
