@@ -4,15 +4,27 @@ import React, { useState } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { useReports } from '@/features/reports/hooks/use-reports';
+import dynamic from 'next/dynamic';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { SalesChart } from '@/features/reports/components/sales-chart';
+import { Spinner } from '@/components/ui/spinner';
+
+const SalesChart = dynamic(
+  () => import('@/features/reports/components/sales-chart').then((mod) => mod.SalesChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[280px] w-full flex items-center justify-center bg-slate-50/50 rounded-lg">
+        <Spinner size="md" />
+      </div>
+    ),
+  }
+);
 import {
   MostSoldBooksCard,
   MostSoldAudiobooksCard,
 } from '@/features/reports/components/ranking-table';
 import { TransactionsTable } from '@/features/reports/components/transactions-table';
-import { Spinner } from '@/components/ui/spinner';
 import { ErrorState } from '@/components/ui/error-state';
 import {
   BookOpen,

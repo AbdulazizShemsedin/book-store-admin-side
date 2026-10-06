@@ -11,7 +11,7 @@ export function useAuthors(params: ListAuthorsParams = {}) {
 
   return useQuery({
     queryKey: [AUTHORS_QUERY_KEY, { page, pageSize, search }],
-    queryFn: () => authorsApi.list({ page, pageSize, search }),
+    queryFn: ({ signal }) => authorsApi.list({ page, pageSize, search }, signal),
     placeholderData: (prev) => prev,
   });
 }

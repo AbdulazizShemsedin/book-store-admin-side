@@ -96,171 +96,23 @@ class ApiClient {
         throw error;
       }
 
-      // If backend is unreachable or not running, fallback to persistent mockStore in development
-      if (process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_USE_MOCK_API !== 'false') {
-        try {
-          const fallbackData = await this.fallbackToMockStore<T>(
-            fetchInit.method || 'GET',
-            normalizedEndpoint,
-            options
-          );
-          if (fallbackData !== undefined) {
-            return fallbackData;
-          }
-        } catch (mockErr) {
-          if (mockErr instanceof ApiError) throw mockErr;
-          throw new ApiError(400, (mockErr as Error).message);
-        }
+      // If the request was intentionally aborted (e.g. user navigation or unmount),
+      // re-throw genuine AbortError so TanStack Query handles it without retrying
+      if (
+        (error instanceof Error && error.name === 'AbortError') ||
+        Boolean(fetchInit.signal?.aborted)
+      ) {
+        const abortErr = error instanceof Error ? error : new Error('Request was aborted');
+        abortErr.name = 'AbortError';
+        throw abortErr;
       }
 
-      // Network failures or aborted requests
+      // Network failures or unreachable backend
       throw new ApiError(
         0,
         error instanceof Error ? error.message : 'Network error or backend unreachable'
       );
     }
-  }
-
-  /**
-   * Seamless fallback to persistent mockStore when real backend port 8000 is not active.
-   */
-  private async fallbackToMockStore<T>(
-    method: string,
-    endpoint: string,
-    options: RequestOptions
-  ): Promise<T | undefined> {
-    const { mockStore } = await import('@/mocks/store');
-    const upperMethod = method.toUpperCase();
-    const params = options.params || {};
-
-    // Authors
-    if (endpoint === '/admin/api/author') {
-      if (upperMethod === 'GET') {
-        const page = typeof params.page === 'number' ? params.page : parseInt(String(params.page || '1'), 10);
-        const pageSize = typeof params.page_size === 'number' ? params.page_size : parseInt(String(params.page_size || '10'), 10);
-        const search = params.search ? String(params.search) : undefined;
-        return mockStore.getAuthors({ page, pageSize, search }) as unknown as T;
-      }
-      if (upperMethod === 'POST') {
-        const body = (options.body as { name?: string; bio?: string; nationality?: string; photo_url?: string }) || {};
-        return mockStore.createAuthor(body.name || '', body.bio, body.nationality, body.photo_url) as unknown as T;
-      }
-    }
-
-    if (endpoint.startsWith('/admin/api/author/')) {
-      const id = endpoint.replace('/admin/api/author/', '');
-      if (upperMethod === 'DELETE') {
-        mockStore.deleteAuthor(id);
-        return {} as T;
-      }
-    }
-
-    // Books
-    if (endpoint === '/admin/api/book') {
-      if (upperMethod === 'GET') {
-        const page = typeof params.page === 'number' ? params.page : parseInt(String(params.page || '1'), 10);
-        const pageSize = typeof params.page_size === 'number' ? params.page_size : parseInt(String(params.page_size || '10'), 10);
-        const search = params.search ? String(params.search) : undefined;
-        const status = params.status ? String(params.status) : undefined;
-        return mockStore.getBooks({ page, pageSize, search, status }) as unknown as T;
-      }
-      if (upperMethod === 'POST') {
-        const body = (options.body as { name?: string; author_id?: string; description?: string; thumbnail_id?: string }) || {};
-        return mockStore.createBook({
-          name: body.name || '',
-          author_id: body.author_id,
-          description: body.description,
-          thumbnail_id: body.thumbnail_id,
-        }) as unknown as T;
-      }
-    }
-
-    if (endpoint.startsWith('/api/book/') || endpoint.startsWith('/admin/api/book/')) {
-      const id = endpoint.split('/').pop() || '';
-      if (upperMethod === 'GET') {
-        const book = mockStore.getBookById(id);
-        if (book) return book as unknown as T;
-      }
-      if (upperMethod === 'DELETE') {
-        mockStore.deleteBook(id);
-        return {} as T;
-      }
-    }
-
-    // Categories
-    if (endpoint === '/api/category' || endpoint === '/admin/api/category') {
-      if (upperMethod === 'POST') {
-        const body = (options.body as { name?: string; parent_id?: string }) || {};
-        // Read listing: POST /api/category
-        if (endpoint === '/api/category' && !body.name) {
-          const page = typeof params.page === 'number' ? params.page : parseInt(String(params.page || '1'), 10);
-          const pageSize = typeof params.page_size === 'number' ? params.page_size : parseInt(String(params.page_size || '50'), 10);
-          return mockStore.getCategories({ page, pageSize, parentId: body.parent_id }) as unknown as T;
-        }
-        // Creation: POST /admin/api/category
-        return mockStore.createCategory(body.name || '', body.parent_id) as unknown as T;
-      }
-    }
-
-    if (endpoint.startsWith('/admin/api/category/')) {
-      const id = endpoint.replace('/admin/api/category/', '');
-      if (upperMethod === 'PUT') {
-        const body = (options.body as { name?: string }) || {};
-        return mockStore.updateCategory(id, body.name || '') as unknown as T;
-      }
-      if (upperMethod === 'DELETE') {
-        mockStore.deleteCategory(id);
-        return {} as T;
-      }
-    }
-
-    // Tags
-    if (endpoint === '/admin/api/tag') {
-      if (upperMethod === 'GET') {
-        return { tags: mockStore.getTags() } as unknown as T;
-      }
-      if (upperMethod === 'POST') {
-        const body = (options.body as { name?: string }) || {};
-        return mockStore.createTag(body.name || '') as unknown as T;
-      }
-    }
-
-    // Book Asset / Tag bindings
-    if (endpoint === '/admin/api/book/add-asset' && upperMethod === 'POST') {
-      const body = (options.body as { book_id?: string; asset_type?: 'book' | 'audio' }) || {};
-      if (body.book_id && body.asset_type) {
-        mockStore.attachAsset(body.book_id, body.asset_type);
-      }
-      return {} as T;
-    }
-
-    if (endpoint === '/admin/api/book/add-tag' && upperMethod === 'POST') {
-      const body = (options.body as { book_id?: string; tag_id?: string }) || {};
-      if (body.book_id && body.tag_id) {
-        mockStore.attachTag(body.book_id, body.tag_id);
-      }
-      return {} as T;
-    }
-
-    // Upload endpoints
-    if (endpoint === '/admin/api/upload/init' && upperMethod === 'POST') {
-      const sessionId = `sess_${Date.now()}`;
-      return {
-        key: `uploads/${sessionId}/asset`,
-        session_id: sessionId,
-        upload_id: `upload_${Date.now()}`,
-      } as unknown as T;
-    }
-
-    if (endpoint === '/admin/api/upload/get-part' && upperMethod === 'POST') {
-      return { url: `/mock-upload-storage/part` } as unknown as T;
-    }
-
-    if (endpoint === '/admin/api/upload/complete' && upperMethod === 'POST') {
-      return {} as T;
-    }
-
-    return undefined;
   }
 
   get<T>(endpoint: string, options?: Omit<RequestOptions, 'method' | 'body'>): Promise<T> {

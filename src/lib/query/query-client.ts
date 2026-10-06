@@ -9,7 +9,14 @@ export function createQueryClient(): QueryClient {
         gcTime: 5 * 60 * 1000, // 5 minutes cache retention
         refetchOnWindowFocus: false, // Prevent jarring refetches while admin is editing forms
         retry: (failureCount, error) => {
-          // Never retry on 4xx validation or unauthorized errors
+          // Never retry aborted requests (from route/navigation cancellation or component unmount)
+          if (
+            error?.name === 'AbortError' ||
+            (error instanceof Error && error.message.toLowerCase().includes('abort'))
+          ) {
+            return false;
+          }
+          // Never retry on 4xx validation, unauthorized, or forbidden errors
           if (error instanceof ApiError && (error.isValidationError || error.isUnauthorized || error.isForbidden)) {
             return false;
           }

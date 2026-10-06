@@ -23,7 +23,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check initial session
+    const isDemoMode =
+      process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+
     const hasToken = authService.isAuthenticated();
+
     if (hasToken) {
       const storedUser = authService.getUser();
       setUser(
@@ -34,6 +39,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: 'ahmad.hassan@tewba.com',
         }
       );
+      setIsAuthenticated(true);
+    } else if (isDemoMode) {
+      // In demo mode, automatically seed the default demo admin session
+      // so stakeholders immediately land on the working admin portal
+      const demoUser = {
+        id: 'admin-01',
+        name: 'Ahmad Hassan',
+        role: 'Content Manager',
+        email: 'ahmad.hassan@tewba.com',
+      };
+      authService.saveSession('demo-mock-jwt-token-active', null);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tewba_user_profile', JSON.stringify(demoUser));
+      }
+      setUser(demoUser);
       setIsAuthenticated(true);
     } else {
       setUser(null);

@@ -13,7 +13,7 @@ export function useBooks(params: ListBooksParams = {}) {
 
   return useQuery({
     queryKey: [BOOKS_QUERY_KEY, { page, pageSize, search, category, status }],
-    queryFn: () => booksApi.list({ page, pageSize, search, category, status }),
+    queryFn: ({ signal }) => booksApi.list({ page, pageSize, search, category, status }, signal),
     placeholderData: (prev) => prev,
   });
 }

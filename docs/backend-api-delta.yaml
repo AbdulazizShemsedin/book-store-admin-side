@@ -1,0 +1,1460 @@
+openapi: 3.1.0
+info:
+  title: TEWBA Admin API - Backend Delta Specification
+  version: 1.1.0
+  description: >
+    Additive OpenAPI 3.1.0 specification defining new endpoints, extended schemas,
+    and missing CRUD operations required by the current TEWBA Admin frontend.
+    This document serves as an exact machine-readable implementation delta to be applied
+    on top of the base references/openapi.yaml contract.
+
+servers:
+  - url: http://localhost:8000
+    description: Local development backend
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: admin-books
+    description: Book catalog administration
+  - name: admin-authors
+    description: Author directory management
+  - name: admin-publishers
+    description: Publisher imprints and distribution management
+  - name: admin-categories
+    description: 5-level category and subcategory taxonomy management
+  - name: admin-advertisements
+    description: Mobile app promotional carousel banner management
+  - name: admin-reports
+    description: Business intelligence, circulation reporting, and financial settlement
+  - name: admin-tags
+    description: Tag catalog discovery and book attachment
+  - name: admin-uploads
+    description: Multipart upload lifecycle and asset binding
+
+paths:
+  # ============================================================================
+  # 1. PUBLISHERS (Completely Missing in Base OpenAPI)
+  # ============================================================================
+  /admin/api/publisher:
+    get:
+      summary: List publishers with search and pagination
+      operationId: list-publishers
+      tags:
+        - admin-publishers
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          required: false
+          description: Search term matching publisher name or monogram
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated list of publishers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListPublisherResponseBody"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    post:
+      summary: Register a new publisher
+      operationId: create-publisher
+      tags:
+        - admin-publishers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePublisherRequestBody"
+      responses:
+        "201":
+          description: Publisher created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublisherDetail"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /admin/api/publisher/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Publisher unique identifier (UUID or PUB-xxx code)
+        schema:
+          type: string
+    get:
+      summary: Retrieve publisher details
+      operationId: get-publisher
+      tags:
+        - admin-publishers
+      responses:
+        "200":
+          description: Publisher record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublisherDetail"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    put:
+      summary: Update publisher information
+      operationId: update-publisher
+      tags:
+        - admin-publishers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePublisherRequestBody"
+      responses:
+        "200":
+          description: Publisher updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublisherDetail"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    delete:
+      summary: Remove publisher
+      operationId: delete-publisher
+      tags:
+        - admin-publishers
+      responses:
+        "204":
+          description: Publisher deleted
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ============================================================================
+  # 2. ADVERTISEMENTS (Completely Missing in Base OpenAPI)
+  # ============================================================================
+  /admin/api/advertisement:
+    get:
+      summary: List promotional carousel banners ordered by display position
+      operationId: list-advertisements
+      tags:
+        - admin-advertisements
+      responses:
+        "200":
+          description: Array of advertisements ordered by 'order' ascending
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdvertisementItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    post:
+      summary: Create promotional banner
+      operationId: create-advertisement
+      tags:
+        - admin-advertisements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdvertisementRequestBody"
+      responses:
+        "201":
+          description: Advertisement created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdvertisementItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /admin/api/advertisement/reorder:
+    put:
+      summary: Atomically reorder promotional banners
+      operationId: reorder-advertisements
+      tags:
+        - admin-advertisements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReorderAdvertisementsRequestBody"
+      responses:
+        "200":
+          description: Reordered list of advertisements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdvertisementItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /admin/api/advertisement/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      summary: Update advertisement banner
+      operationId: update-advertisement
+      tags:
+        - admin-advertisements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdvertisementRequestBody"
+      responses:
+        "200":
+          description: Advertisement updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdvertisementItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    delete:
+      summary: Delete promotional banner
+      operationId: delete-advertisement
+      tags:
+        - admin-advertisements
+      responses:
+        "204":
+          description: Advertisement deleted
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /admin/api/advertisement/{id}/status:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    patch:
+      summary: Toggle banner active/disabled status
+      operationId: toggle-advertisement-status
+      tags:
+        - admin-advertisements
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, disabled]
+      responses:
+        "200":
+          description: Updated status record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdvertisementItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ============================================================================
+  # 3. REPORTS & TRANSACTIONS (Completely Missing in Base OpenAPI)
+  # ============================================================================
+  /admin/api/reports:
+    get:
+      summary: Retrieve business intelligence report summary, trends, and rankings
+      operationId: get-reports-overview
+      tags:
+        - admin-reports
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [today, 7d, 30d, custom]
+            default: 30d
+        - name: start_date
+          in: query
+          required: false
+          description: Start date when period is 'custom' (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: false
+          description: End date when period is 'custom' (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Reporting analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportOverviewResponseBody"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /admin/api/reports/transactions:
+    get:
+      summary: List catalog title financial transactions and multi-format sales distribution
+      operationId: list-report-transactions
+      tags:
+        - admin-reports
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          required: false
+          description: Search by book title, author, or publisher
+          schema:
+            type: string
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [today, 7d, 30d, custom]
+            default: 30d
+        - name: start_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Paginated transaction records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListTransactionsResponseBody"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ============================================================================
+  # 4. TAGS DISCOVERY & DETACH (Missing in Base OpenAPI)
+  # ============================================================================
+  /admin/api/tag:
+    get:
+      summary: List all catalog tags available for book categorization
+      operationId: list-tags
+      tags:
+        - admin-tags
+      responses:
+        "200":
+          description: List of registered tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TagItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    post:
+      summary: Create a new tag with optional default badge color
+      operationId: create-tag
+      tags:
+        - admin-tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTagRequestBody"
+      responses:
+        "201":
+          description: Tag created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /admin/api/book/{book_id}/tag/{tag_id}:
+    delete:
+      summary: Detach a tag from a book
+      operationId: remove-book-tag
+      tags:
+        - admin-tags
+      parameters:
+        - name: book_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: tag_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Tag successfully unlinked from book
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ============================================================================
+  # 5. CATEGORIES - EXTENSIONS & MISSING OPERATIONS
+  # ============================================================================
+  /admin/api/category/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      summary: Update category or subcategory name
+      operationId: update-category
+      tags:
+        - admin-categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 128
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryItem"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    delete:
+      summary: Delete category and cascade delete its descendant subcategories
+      operationId: delete-category
+      tags:
+        - admin-categories
+      responses:
+        "204":
+          description: Category deleted
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ============================================================================
+  # 6. AUTHORS - EXTENSIONS & MISSING OPERATIONS
+  # ============================================================================
+  /admin/api/author/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Retrieve author details including biography and published books
+      operationId: get-author-detail
+      tags:
+        - admin-authors
+      responses:
+        "200":
+          description: Author profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtendedAuthorDetail"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    put:
+      summary: Update author metadata, biography, nationality, or photo
+      operationId: update-author
+      tags:
+        - admin-authors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAuthorRequestBody"
+      responses:
+        "200":
+          description: Author updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtendedAuthorDetail"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    delete:
+      summary: Delete author from directory
+      operationId: delete-author
+      tags:
+        - admin-authors
+      responses:
+        "204":
+          description: Author deleted
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  # ============================================================================
+  # 7. BOOKS - EXTENSIONS & MISSING OPERATIONS
+  # ============================================================================
+  /admin/api/book/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      summary: Update book catalog metadata and classification
+      operationId: update-book
+      tags:
+        - admin-books
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookRequestBody"
+      responses:
+        "200":
+          description: Book updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtendedBookDetail"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+    delete:
+      summary: Delete or archive a catalog book title
+      operationId: delete-book
+      tags:
+        - admin-books
+      responses:
+        "204":
+          description: Book deleted
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ErrorResponse:
+      description: Standard RFC 7807 problem error model
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ErrorModel"
+
+  schemas:
+    # --------------------------------------------------------------------------
+    # Error Model (Preserved from Base Contract)
+    # --------------------------------------------------------------------------
+    ErrorDetail:
+      type: object
+      properties:
+        location:
+          type: string
+        message:
+          type: string
+        value: {}
+
+    ErrorModel:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/ErrorDetail"
+
+    # --------------------------------------------------------------------------
+    # Publisher Schemas
+    # --------------------------------------------------------------------------
+    PublisherDetail:
+      type: object
+      required:
+        - id
+        - name
+        - monogram
+      properties:
+        id:
+          type: string
+          example: "PUB-001"
+        name:
+          type: string
+          example: "Darussalam Publishers"
+        monogram:
+          type: string
+          example: "DP"
+        books_count:
+          type: integer
+          default: 0
+          example: 142
+        status:
+          type: string
+          enum: [Active, Inactive]
+          default: Active
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ListPublisherResponseBody:
+      type: object
+      required:
+        - publishers
+        - total
+        - page
+        - page_size
+      properties:
+        publishers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublisherDetail"
+        total:
+          type: integer
+          example: 6
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 10
+
+    CreatePublisherRequestBody:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          example: "Darussalam Publishers"
+        monogram:
+          type: string
+          maxLength: 8
+          description: "Optional 2-3 letter uppercase monogram avatar. Backend should auto-generate from name if omitted."
+          example: "DP"
+
+    UpdatePublisherRequestBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        monogram:
+          type: string
+          maxLength: 8
+        status:
+          type: string
+          enum: [Active, Inactive]
+
+    # --------------------------------------------------------------------------
+    # Advertisement Schemas
+    # --------------------------------------------------------------------------
+    AdvertisementItem:
+      type: object
+      required:
+        - id
+        - message
+        - image_url
+        - order
+        - status
+      properties:
+        id:
+          type: string
+          example: "ad-01"
+        message:
+          type: string
+          maxLength: 128
+          example: "Ramadan & Eid Book Fair — 30% OFF Classical Works"
+        image_url:
+          type: string
+          format: uri
+          example: "https://images.unsplash.com/photo-1512820790803-83ca734da794"
+        order:
+          type: integer
+          minimum: 1
+          description: "1-based sort order for mobile carousel display"
+          example: 1
+        status:
+          type: string
+          enum: [active, disabled]
+          default: active
+          example: "active"
+        created_at:
+          type: string
+          format: date-time
+
+    CreateAdvertisementRequestBody:
+      type: object
+      required:
+        - message
+        - image_url
+        - order
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 128
+          example: "Scholar Spotlight: Imam Al-Ghazali Collection — 20% OFF"
+        image_url:
+          type: string
+          description: "Storage URL or asset key of the banner background image"
+          example: "https://storage.tewba.com/banners/al-ghazali.png"
+        order:
+          type: integer
+          minimum: 1
+          default: 1
+          example: 2
+        status:
+          type: string
+          enum: [active, disabled]
+          default: active
+
+    UpdateAdvertisementRequestBody:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 128
+        image_url:
+          type: string
+        order:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [active, disabled]
+
+    ReorderAdvertisementsRequestBody:
+      type: object
+      required:
+        - ordered_ids
+      properties:
+        ordered_ids:
+          type: array
+          items:
+            type: string
+          description: "Array of advertisement IDs in the desired order (index 0 is position 1)"
+          example: ["ad-02", "ad-01", "ad-03", "ad-04"]
+
+    # --------------------------------------------------------------------------
+    # Report & Analytics Schemas
+    # --------------------------------------------------------------------------
+    ReportSummary:
+      type: object
+      required:
+        - books_sold
+        - books_sold_growth_percent
+        - total_income
+        - total_income_growth_percent
+        - audiobook_books
+        - audiobook_share_percent
+        - sales_period_label
+      properties:
+        books_sold:
+          type: integer
+          example: 1420
+        books_sold_growth_percent:
+          type: number
+          format: float
+          example: 14.8
+        total_income:
+          type: number
+          format: double
+          example: 544989.00
+        total_income_growth_percent:
+          type: number
+          format: float
+          example: 150.0
+        audiobook_books:
+          type: integer
+          example: 642
+        audiobook_share_percent:
+          type: number
+          format: float
+          example: 45.2
+        sales_period_label:
+          type: string
+          example: "May 01, 2024 – May 31, 2024"
+
+    DailySalesDataPoint:
+      type: object
+      required:
+        - date
+        - books_sold
+        - audiobooks_sold
+        - revenue
+      properties:
+        date:
+          type: string
+          example: "May 01"
+        books_sold:
+          type: integer
+          example: 180
+        audiobooks_sold:
+          type: integer
+          example: 90
+        revenue:
+          type: number
+          format: double
+          example: 14200.00
+
+    TopSoldBookItem:
+      type: object
+      required:
+        - rank
+        - title
+        - sold_count
+        - percent_of_sales
+      properties:
+        rank:
+          type: integer
+          example: 1
+        book_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "The Sealed Nectar"
+        subtitle:
+          type: string
+          nullable: true
+          example: "Ar-Raheeq Al-Makhtum"
+        sold_count:
+          type: integer
+          example: 420
+        percent_of_sales:
+          type: number
+          format: float
+          example: 30.0
+
+    TopSoldAudiobookItem:
+      type: object
+      required:
+        - rank
+        - title
+        - sold_count
+        - hours_played
+      properties:
+        rank:
+          type: integer
+          example: 1
+        book_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "The Sealed Nectar"
+        subtitle:
+          type: string
+          nullable: true
+          example: "Ar-Raheeq Al-Makhtum"
+        sold_count:
+          type: integer
+          example: 420
+        hours_played:
+          type: number
+          format: float
+          example: 500.0
+
+    ReportOverviewResponseBody:
+      type: object
+      required:
+        - summary
+        - daily_trend
+        - top_books
+        - top_audiobooks
+      properties:
+        summary:
+          $ref: "#/components/schemas/ReportSummary"
+        daily_trend:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailySalesDataPoint"
+        top_books:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopSoldBookItem"
+        top_audiobooks:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopSoldAudiobookItem"
+
+    TransactionRecordItem:
+      type: object
+      required:
+        - id
+        - title
+        - category
+        - author
+        - publisher
+        - formats
+        - units_sold
+        - income
+      properties:
+        id:
+          type: string
+          example: "TXN-01"
+        book_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "Sahih Bukhari"
+        category:
+          type: string
+          example: "Hadith"
+        author:
+          type: string
+          example: "Imam Al-Bukhari"
+        publisher:
+          type: string
+          example: "Darussalam Publishing house"
+        formats:
+          type: array
+          items:
+            type: string
+            enum: [EPUB, Audio, Print]
+          example: ["EPUB", "Audio"]
+        units_sold:
+          type: integer
+          example: 5420
+        income:
+          type: number
+          format: double
+          example: 32520.00
+        date:
+          type: string
+          format: date-time
+
+    ListTransactionsResponseBody:
+      type: object
+      required:
+        - transactions
+        - total
+        - page
+        - page_size
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionRecordItem"
+        total:
+          type: integer
+          example: 342
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 10
+
+    # --------------------------------------------------------------------------
+    # Tag Schemas
+    # --------------------------------------------------------------------------
+    TagItem:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Literary Fiction"
+        color:
+          type: string
+          nullable: true
+          example: "#7c3aed"
+
+    CreateTagRequestBody:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+          example: "Classical Tafsir"
+        color:
+          type: string
+          pattern: "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+          example: "#10b981"
+
+    # --------------------------------------------------------------------------
+    # Category Schemas (Extended)
+    # --------------------------------------------------------------------------
+    CategoryItem:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Quranic Sciences"
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+          example: "b3f2e100-0000-4000-8000-000000000001"
+        subcategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryItem"
+
+    # --------------------------------------------------------------------------
+    # Authors Schemas (Desired Final Extended Specification)
+    # --------------------------------------------------------------------------
+    ExtendedAuthorItem:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: "Author full name. Standardized replacement for existing 'string' attribute."
+          example: "Naguib Mahfouz"
+        bio:
+          type: string
+          nullable: true
+          maxLength: 1024
+          example: "Egyptian writer who won the 1988 Nobel Prize in Literature."
+        nationality:
+          type: string
+          nullable: true
+          maxLength: 64
+          default: "Yemeni"
+          example: "Egyptian"
+        photo_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://storage.tewba.com/authors/mahfouz.jpg"
+        works_count:
+          type: integer
+          default: 0
+          example: 4
+        status:
+          type: string
+          enum: [active, inactive]
+          default: active
+
+    ExtendedAuthorDetail:
+      allOf:
+        - $ref: "#/components/schemas/ExtendedAuthorItem"
+        - type: object
+          properties:
+            books:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  status:
+                    type: string
+                  cover_url:
+                    type: string
+                    nullable: true
+
+    ExtendedCreateAuthorRequestBody:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          example: "Ghassan Kanafani"
+        nationality:
+          type: string
+          maxLength: 64
+          default: "Yemeni"
+          example: "Palestinian"
+        bio:
+          type: string
+          maxLength: 1024
+          example: "Palestinian author and a leading member of the Popular Front for the Liberation of Palestine."
+        photo_url:
+          type: string
+          format: uri
+          description: "Storage URL obtained from multipart upload"
+
+    UpdateAuthorRequestBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        nationality:
+          type: string
+          maxLength: 64
+        bio:
+          type: string
+          maxLength: 1024
+        photo_url:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum: [active, inactive]
+
+    # --------------------------------------------------------------------------
+    # Books Schemas (Desired Final Extended Specification)
+    # --------------------------------------------------------------------------
+    ExtendedListBookItem:
+      type: object
+      required:
+        - id
+        - name
+        - status
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "The Midnight Library"
+        author:
+          type: string
+          nullable: true
+          example: "Matt Haig"
+        author_id:
+          type: string
+          format: uuid
+          nullable: true
+        publisher:
+          type: string
+          nullable: true
+          example: "Canongate Books"
+        publisher_id:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+          example: "Fiction / Literary"
+        category_id:
+          type: string
+          format: uuid
+          nullable: true
+        has_audiobook:
+          type: boolean
+          default: false
+          example: true
+        thumbnail_id:
+          type: string
+          format: uuid
+          nullable: true
+        cover_url:
+          type: string
+          nullable: true
+          example: "https://storage.tewba.com/covers/midnight.jpg"
+        status:
+          type: string
+          enum: [Published, Draft, Review, Archived]
+          default: Published
+          example: "Published"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ExtendedCreateBookRequestBody:
+      type: object
+      required:
+        - name
+        - author_id
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          example: "The Midnight Library"
+        author_id:
+          type: string
+          format: uuid
+          example: "c79435b6-6f78-4ea7-9a40-02daff90e501"
+        publisher_id:
+          type: string
+          nullable: true
+          example: "PUB-001"
+        category_id:
+          type: string
+          format: uuid
+          nullable: true
+        subcategory_id:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+          maxLength: 1024
+          nullable: true
+        page_count:
+          type: integer
+          minimum: 1
+          nullable: true
+          example: 384
+        language:
+          type: string
+          default: "English"
+          description: "Master language applying to BOTH book text and audiobook narration"
+          example: "English"
+        thumbnail_id:
+          type: string
+          format: uuid
+          nullable: true
+        has_audiobook:
+          type: boolean
+          default: false
+        narrator:
+          type: string
+          maxLength: 128
+          nullable: true
+          example: "Carey Mulligan"
+        tags:
+          type: array
+          items:
+            type: string
+          description: "List of tag names or tag IDs to bind upon creation"
+
+    UpdateBookRequestBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+        author_id:
+          type: string
+          format: uuid
+        publisher_id:
+          type: string
+        category_id:
+          type: string
+          format: uuid
+        subcategory_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          maxLength: 1024
+        page_count:
+          type: integer
+          minimum: 1
+        language:
+          type: string
+        status:
+          type: string
+          enum: [Published, Draft, Review, Archived]
+        narrator:
+          type: string
+          maxLength: 128
+
+    ExtendedBookDetail:
+      type: object
+      required:
+        - id
+        - name
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        author:
+          type: string
+          nullable: true
+        author_id:
+          type: string
+          format: uuid
+          nullable: true
+        publisher:
+          type: string
+          nullable: true
+        publisher_id:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        category_id:
+          type: string
+          format: uuid
+          nullable: true
+        subcategory:
+          type: string
+          nullable: true
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        page_count:
+          type: integer
+          nullable: true
+        language:
+          type: string
+        description:
+          type: string
+          nullable: true
+        has_audiobook:
+          type: boolean
+        narrator:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        rating:
+          type: string
+          nullable: true
+          example: "4.9"
+        units_sold:
+          type: integer
+          example: 3840
+        audio_plays:
+          type: integer
+          example: 12460
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # --------------------------------------------------------------------------
+    # Upload Completion Response (Handoff contract fix)
+    # --------------------------------------------------------------------------
+    CompleteBookUploadResponseBody:
+      type: object
+      required:
+        - file_id
+      properties:
+        file_id:
+          type: string
+          format: uuid
+          description: "Persistent UUID assigned to the finalized file asset. Must be provided so frontend can bind it to book assets or covers."
+          example: "d1234567-e89b-12d3-a456-426614174000"
+        key:
+          type: string
+          example: "uploads/sess_123/asset"
+        size_bytes:
+          type: integer
+          example: 54525952

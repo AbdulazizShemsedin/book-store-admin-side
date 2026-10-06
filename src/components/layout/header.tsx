@@ -50,6 +50,16 @@ export function Header() {
 
       {/* Right Actions */}
       <div className="flex items-center gap-4">
+        {Boolean(
+          process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+          process.env.NEXT_PUBLIC_USE_MOCK_API === 'true'
+        ) && (
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/80 text-[11px] font-medium text-amber-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>Demo Mode (Mock Backend)</span>
+          </div>
+        )}
+
         {/* Global Primary Action Button */}
         <Link href="/books/new">
           <Button

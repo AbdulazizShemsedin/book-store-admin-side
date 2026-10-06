@@ -28,15 +28,20 @@ export const booksApi = {
   /**
    * Retrieves paginated books via GET /admin/api/book.
    */
-  async list(params: ListBooksParams = {}): Promise<ListBooksResult> {
+  async list(params: ListBooksParams = {}, signal?: AbortSignal): Promise<ListBooksResult> {
     const page = params.page || 1;
     const pageSize = params.pageSize || 10;
 
+    const queryParams: Record<string, string | number | undefined> = {
+      page,
+      page_size: pageSize,
+    };
+    if (params.search?.trim()) queryParams.search = params.search.trim();
+    if (params.status?.trim()) queryParams.status = params.status.trim();
+
     const response = await apiClient.get<ListBookResponseBody>('/admin/api/book', {
-      params: {
-        page,
-        page_size: pageSize,
-      },
+      params: queryParams,
+      signal,
     });
 
     const rawBooks = response.books || [];

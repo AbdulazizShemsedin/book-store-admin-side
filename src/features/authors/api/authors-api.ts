@@ -25,15 +25,21 @@ export const authorsApi = {
    * Retrieves paginated authors from GET /admin/api/author.
    * Normalizes the backend's "string" property to frontend domain "name".
    */
-  async list(params: ListAuthorsParams = {}): Promise<ListAuthorsResult> {
+  async list(params: ListAuthorsParams = {}, signal?: AbortSignal): Promise<ListAuthorsResult> {
     const page = params.page || 1;
     const pageSize = params.pageSize || 10;
 
+    const queryParams: Record<string, string | number | undefined> = {
+      page,
+      page_size: pageSize,
+    };
+    if (params.search?.trim()) {
+      queryParams.search = params.search.trim();
+    }
+
     const response = await apiClient.get<ListAuthorResponseBody>('/admin/api/author', {
-      params: {
-        page,
-        page_size: pageSize,
-      },
+      params: queryParams,
+      signal,
     });
 
     const authors: Author[] = (response.authors || []).map((raw) => ({
