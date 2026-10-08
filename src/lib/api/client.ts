@@ -107,12 +107,11 @@ class ApiClient {
         throw abortErr;
       }
 
-      // If backend is unreachable or not running, fallback to persistent mockStore in development
+      // If backend is unreachable or not running, fallback to persistent mockStore
       const isMockEnabled =
-        process.env.NODE_ENV !== 'production' &&
-        (process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-          process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' ||
-          process.env.NEXT_PUBLIC_USE_MOCK_API !== 'false');
+        process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+        process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' ||
+        process.env.NEXT_PUBLIC_USE_MOCK_API !== 'false';
 
       if (isMockEnabled) {
         try {

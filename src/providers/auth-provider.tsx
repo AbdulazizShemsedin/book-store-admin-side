@@ -25,7 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check initial session
     const isDemoMode =
       process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' ||
+      process.env.NEXT_PUBLIC_USE_MOCK_API !== 'false';
 
     const hasToken = authService.isAuthenticated();
 

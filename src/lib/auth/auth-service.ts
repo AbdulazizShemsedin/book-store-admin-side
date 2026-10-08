@@ -26,10 +26,15 @@ class AuthService {
         this.saveSession(response.access_token, response.refresh_token || null);
       }
     } catch (error) {
-      // In development environments where the backend auth microservice is offline,
+      // In environments where the backend auth microservice is offline,
       // allow testing the admin portal with valid formatted email and PIN.
-      if (process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_API_BASE_URL) {
-        console.warn('Backend signin failed, using development admin session fallback:', error);
+      if (
+        process.env.NODE_ENV === 'development' ||
+        !process.env.NEXT_PUBLIC_API_BASE_URL ||
+        process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+        process.env.NEXT_PUBLIC_USE_MOCK_API !== 'false'
+      ) {
+        console.warn('Backend signin failed, using admin session fallback:', error);
         this.saveSession('dev-mock-admin-token-xyz', null);
       } else {
         throw error;
