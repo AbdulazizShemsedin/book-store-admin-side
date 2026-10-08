@@ -36,6 +36,7 @@ export interface ListAuthorItem {
   bio?: string;
   nationality?: string;
   photo_url?: string;
+  works_count?: number;
 }
 
 export interface ListAuthorResponseBody {
@@ -65,6 +66,8 @@ export interface ListBookItem {
   name: string;
   status: string;
   updated_at: string; // ISO date-time
+  has_audio?: boolean;
+  publisher?: string;
 }
 
 export interface ListBookResponseBody {

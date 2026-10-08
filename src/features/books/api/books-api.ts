@@ -46,15 +46,25 @@ export const booksApi = {
 
     const rawBooks = response.books || [];
 
+    const MOCK_PUBLISHERS = [
+      'Darussalam Publishers',
+      'Islamic Texts Society',
+      'Turath Publishing',
+      'Kube Publishing',
+      'Dar Al-Qalam',
+      'AUC Press',
+      'Hurst Publishers',
+    ];
+
     const books: Book[] = rawBooks.map((item, index) => {
-      // Infer hasAudiobook for display badges (alternating in mockup if not specified)
-      const hasAudio = index % 2 === 0;
+      const hasAudio = typeof item.has_audio === 'boolean' ? item.has_audio : index % 2 === 0;
+      const publisher = item.publisher || MOCK_PUBLISHERS[index % MOCK_PUBLISHERS.length];
 
       return {
         id: item.id,
         name: item.name,
         author: item.author || 'Author Name',
-        publisher: 'HarperCollins',
+        publisher,
         status: item.status || 'Published',
         hasAudiobook: hasAudio,
         createdAt: item.created_at,

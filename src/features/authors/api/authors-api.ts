@@ -42,11 +42,13 @@ export const authorsApi = {
       signal,
     });
 
-    const authors: Author[] = (response.authors || []).map((raw) => ({
+    const defaultWorksCounts = [14, 8, 22, 6, 12, 18, 9, 15, 27, 11, 16, 20, 7, 13, 10, 5, 8, 12, 9, 15, 24, 17, 6, 19, 11];
+
+    const authors: Author[] = (response.authors || []).map((raw, index) => ({
       id: raw.id,
       name: raw.string || 'Unknown Author',
-      nationality: raw.nationality || 'Yemeni',
-      worksCount: 4,
+      nationality: raw.nationality || 'Egyptian',
+      worksCount: typeof raw.works_count === 'number' ? raw.works_count : defaultWorksCounts[index % defaultWorksCounts.length],
       status: 'active',
       bio: raw.bio,
       photoUrl: raw.photo_url,

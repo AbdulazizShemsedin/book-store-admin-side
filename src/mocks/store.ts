@@ -202,6 +202,8 @@ class MockStore {
       status: b.status,
       created_at: b.created_at,
       updated_at: b.updated_at,
+      has_audio: b.has_audio,
+      publisher: (b as any).publisher,
     }));
 
     return {
