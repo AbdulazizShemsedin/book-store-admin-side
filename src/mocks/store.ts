@@ -203,7 +203,10 @@ class MockStore {
       created_at: b.created_at,
       updated_at: b.updated_at,
       has_audio: b.has_audio,
-      publisher: (b as any).publisher,
+      has_book: b.has_book ?? true,
+      language: b.language || 'en',
+      thumbnail: b.thumbnail || null,
+      publisher: (b as any).publisher || null,
     }));
 
     return {
@@ -256,6 +259,9 @@ class MockStore {
       author: authorName,
       author_id: payload.author_id || '',
       thumbnail_id: payload.thumbnail_id,
+      thumbnail: null,
+      publisher: null,
+      language: 'en',
       description: payload.description || '',
       status: 'Published',
       has_audio: false,
@@ -271,10 +277,6 @@ class MockStore {
 
     return {
       id,
-      name: trimmedName,
-      description: payload.description || null,
-      author_id: payload.author_id,
-      thumbnail_id: payload.thumbnail_id,
     };
   }
 
@@ -356,7 +358,7 @@ class MockStore {
     };
   }
 
-  createCategory(name: string, parentId?: string): { id: string } {
+  createCategory(name: string, parentId?: string, color?: string): { id: string } {
     const trimmed = name.trim();
     if (!trimmed || trimmed.length > 128) {
       throw new Error('Category name must be between 1 and 128 characters.');
@@ -367,6 +369,7 @@ class MockStore {
       id,
       name: trimmed,
       parent_id: parentId || null,
+      color: color || null,
     };
 
     this.categories.push(newCategory);

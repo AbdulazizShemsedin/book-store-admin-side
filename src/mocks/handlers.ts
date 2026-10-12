@@ -198,23 +198,16 @@ export const handlers = [
       );
     }
 
-    if (!body.file_id) {
-      return HttpResponse.json(
-        {
-          title: 'Unprocessable Entity',
-          status: 422,
-          errors: [{ location: 'body.file_id', message: 'file_id UUID is required' }],
-        },
-        { status: 422 }
-      );
-    }
-
     const success = mockStore.attachAsset(bookId, body.asset_type);
     if (!success) {
       return HttpResponse.json({ title: 'Book Not Found', status: 404 }, { status: 404 });
     }
 
-    return new HttpResponse(null, { status: 200 });
+    return HttpResponse.json({
+      key: `assets/${bookId}/${body.name || 'asset'}`,
+      upload_id: `upload_${Date.now()}`,
+      session_id: `sess_${Date.now()}`,
+    });
   }),
 
   http.post('*/admin/api/book/:id/tag', async ({ params, request }) => {
@@ -270,7 +263,7 @@ export const handlers = [
       );
     }
 
-    const created = mockStore.createCategory(body.name, body.parent_id);
+    const created = mockStore.createCategory(body.name, body.parent_id, body.color);
     return HttpResponse.json(created, { status: 201 });
   }),
 
@@ -369,7 +362,7 @@ export const handlers = [
       );
     }
 
-    const sessionId = body.session_id || `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const sessionId = (body as any).session_id || `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const uploadId = `upload_${Date.now()}`;
     const key = `uploads/${sessionId}/asset`;
 

@@ -30,7 +30,8 @@ export function useCreateBook(onSuccessCallback?: (bookId: string) => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: BookFormData) => booksApi.create(data),
+    mutationFn: (data: BookFormData & { coverFile?: File; bookFile?: File; audioFile?: File }) =>
+      booksApi.create(data),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: [BOOKS_QUERY_KEY] });
       if (onSuccessCallback) {

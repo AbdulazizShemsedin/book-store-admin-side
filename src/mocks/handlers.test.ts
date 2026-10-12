@@ -113,8 +113,6 @@ describe('OpenAPI Compliance: Books Endpoints', () => {
     expect(res.status).toBe(201);
     const created = (await res.json()) as CreateBookResponseBody;
     expect(created).toHaveProperty('id');
-    expect(created).toHaveProperty('name', 'The Cairo Awakening');
-    expect(created.description).toBe('A study of literary trends.');
 
     // Verify GET by ID returns GetBookResponseBody
     const getRes = await fetch(`http://localhost:8000/api/book/${created.id}`);

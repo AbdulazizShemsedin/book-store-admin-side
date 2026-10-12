@@ -14,6 +14,7 @@ import {
   CaretDown,
   MagnifyingGlass,
   TreeStructure,
+  Check,
 } from '@phosphor-icons/react';
 import { ApiError } from '@/lib/api/error-handler';
 import { useQueryClient } from '@tanstack/react-query';
@@ -22,6 +23,8 @@ import {
   flattenCategoryTree,
   CategoryTreeNode,
 } from '../utils/category-tree';
+import { PRESET_CATEGORY_COLORS } from './category-tree-select';
+import { cn } from '@/lib/utils/cn';
 
 interface CreateCategoryCardProps {
   categories: Category[];
@@ -75,6 +78,7 @@ export function CreateCategoryCard({
 
   // Field 1: Category Name
   const [categoryName, setCategoryName] = useState('');
+  const [categoryColor, setCategoryColor] = useState<string>('#10b981');
 
   // Field 2: Child Subcategories (multi-item list)
   const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -173,6 +177,7 @@ export function CreateCategoryCard({
       const created = await categoriesApi.create({
         name: trimmedName,
         parentId: selectedParentNode ? selectedParentNode.id : null,
+        color: categoryColor,
       });
 
       const newCategoryId = created.id;
@@ -191,6 +196,7 @@ export function CreateCategoryCard({
       await queryClient.invalidateQueries({ queryKey: [CATEGORIES_QUERY_KEY] });
 
       setCategoryName('');
+      setCategoryColor('#10b981');
       setSubcategories([]);
       setNewSubInput('');
       setParentId(null);
@@ -396,6 +402,47 @@ export function CreateCategoryCard({
               }
               className="w-full h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
             />
+          </div>
+
+          {/* Category Color Selection Palette */}
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 block mb-1.5">
+              Category Color
+            </label>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {PRESET_CATEGORY_COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setCategoryColor(c.value)}
+                  title={c.name}
+                  className={cn(
+                    'w-6 h-6 rounded-full transition-transform flex items-center justify-center border border-white shadow-xs',
+                    categoryColor === c.value
+                      ? 'scale-110 ring-2 ring-emerald-700 ring-offset-1'
+                      : 'hover:scale-105'
+                  )}
+                  style={{ backgroundColor: c.value }}
+                >
+                  {categoryColor === c.value && (
+                    <Check className="w-3 h-3 text-white" weight="bold" />
+                  )}
+                </button>
+              ))}
+              {/* Custom Color Input */}
+              <label
+                title="Custom color"
+                className="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center cursor-pointer overflow-hidden bg-white hover:border-slate-400"
+              >
+                <input
+                  type="color"
+                  value={categoryColor}
+                  onChange={(e) => setCategoryColor(e.target.value)}
+                  className="opacity-0 w-0 h-0"
+                />
+                <div className="w-full h-full" style={{ backgroundColor: categoryColor }} />
+              </label>
+            </div>
           </div>
 
           {/* Field 2: Direct Child Subcategories (Available if targetDepth < 5) */}

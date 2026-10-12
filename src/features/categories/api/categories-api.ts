@@ -52,6 +52,7 @@ export const categoriesApi = {
       id: item.id,
       name: item.name,
       parentId: item.parent_id,
+      color: item.color || undefined,
     }));
 
     return {
@@ -71,27 +72,35 @@ export const categoriesApi = {
       parent_id: data.parentId ? data.parentId : undefined,
     };
 
-    const response = await apiClient.post<{ id: string }>(
+    const response = await apiClient.post<{ id?: string }>(
       '/admin/api/category',
       requestBody
     );
 
-    return response;
+    return { id: response?.id || '' };
   },
 
   /**
-   * Updates an existing category via PUT /admin/api/category/:id.
+   * Category update is documented as missing from backend contract (BLOCKER-05).
    */
   async update(id: string, name: string): Promise<{ id: string; name: string }> {
-    return apiClient.put<{ id: string; name: string }>(`/admin/api/category/${id}`, {
-      name: name.trim(),
-    });
+    try {
+      return await apiClient.put<{ id: string; name: string }>(`/admin/api/category/${id}`, {
+        name: name.trim(),
+      });
+    } catch {
+      throw new Error('Category updating is not yet supported by the backend API contract.');
+    }
   },
 
   /**
-   * Deletes a category and its subcategories via DELETE /admin/api/category/:id.
+   * Category deletion is documented as missing from backend contract (BLOCKER-05).
    */
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/admin/api/category/${id}`);
+    try {
+      await apiClient.delete(`/admin/api/category/${id}`);
+    } catch {
+      throw new Error('Category deletion is not yet supported by the backend API contract.');
+    }
   },
 };

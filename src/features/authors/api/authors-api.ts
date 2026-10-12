@@ -48,15 +48,15 @@ export const authorsApi = {
       id: raw.id,
       name: raw.string || 'Unknown Author',
       nationality: raw.nationality || 'Egyptian',
-      worksCount: typeof raw.works_count === 'number' ? raw.works_count : defaultWorksCounts[index % defaultWorksCounts.length],
+      worksCount: typeof raw.works_count === 'number' ? raw.works_count : (index % 10) + 1,
       status: 'active',
-      bio: raw.bio,
-      photoUrl: raw.photo_url,
+      bio: raw.description || raw.bio || undefined,
+      photoUrl: raw.avatar || raw.photo_url || undefined,
     }));
 
     return {
       authors,
-      total: response.total || authors.length,
+      total: response.total ?? authors.length,
       page: response.page || page,
       pageSize: response.page_size || pageSize,
     };
@@ -64,13 +64,13 @@ export const authorsApi = {
 
   /**
    * Registers a new author via POST /admin/api/author.
+   * If an avatar file is provided, automatically uploads it via POST /admin/api/author/{author_id}/avatar.
    */
-  async create(data: AuthorFormData): Promise<{ id: string }> {
+  async create(data: AuthorFormData, avatarFile?: File): Promise<{ id: string }> {
     const body: CreateAuthorRequestBody = {
       name: data.name.trim(),
-      bio: data.bio?.trim() || undefined,
-      nationality: data.nationality?.trim() || 'Yemeni',
-      photo_url: data.photoUrl || undefined,
+      nationality: data.nationality?.trim() || undefined,
+      description: data.bio?.trim() || undefined,
     };
 
     const response = await apiClient.post<CreateAuthorResponseBody>(
@@ -78,6 +78,25 @@ export const authorsApi = {
       body
     );
 
-    return { id: response.id };
+    const authorId = response.id;
+
+    if (avatarFile && authorId) {
+      try {
+        await this.uploadAvatar(authorId, avatarFile);
+      } catch (uploadErr) {
+        console.warn('Failed to upload author avatar:', uploadErr);
+      }
+    }
+
+    return { id: authorId };
+  },
+
+  /**
+   * Uploads author avatar image via POST /admin/api/author/{author_id}/avatar (multipart/form-data).
+   */
+  async uploadAvatar(authorId: string, file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    await apiClient.post(`/admin/api/author/${authorId}/avatar`, formData);
   },
 };

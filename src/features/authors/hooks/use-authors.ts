@@ -20,7 +20,8 @@ export function useCreateAuthor(onSuccessCallback?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: AuthorFormData) => authorsApi.create(data),
+    mutationFn: ({ data, avatarFile }: { data: AuthorFormData; avatarFile?: File }) =>
+      authorsApi.create(data, avatarFile),
     onSuccess: () => {
       // Invalidate authors queries to refetch latest table data
       queryClient.invalidateQueries({ queryKey: [AUTHORS_QUERY_KEY] });

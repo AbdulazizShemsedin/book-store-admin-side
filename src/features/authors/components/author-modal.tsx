@@ -21,6 +21,7 @@ interface AuthorModalProps {
 export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const {
@@ -43,6 +44,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
   const createAuthorMutation = useCreateAuthor(() => {
     reset();
     setPhotoPreview(null);
+    setSelectedFile(null);
     onClose();
   });
 
@@ -55,6 +57,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
       return;
     }
 
+    setSelectedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
@@ -67,6 +70,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
   const handleRemovePhoto = (e: React.MouseEvent) => {
     e.stopPropagation();
     setPhotoPreview(null);
+    setSelectedFile(null);
     setValue('photoUrl', '');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -77,8 +81,8 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
     setFormError(null);
     try {
       await createAuthorMutation.mutateAsync({
-        ...data,
-        photoUrl: photoPreview || undefined,
+        data,
+        avatarFile: selectedFile || undefined,
       });
     } catch (err) {
       if (err instanceof ApiError) {

@@ -7,87 +7,42 @@ import { useRouter } from 'next/navigation';
 import { bookFormSchema, BookFormData } from '../schemas/book-schema';
 import { useCreateBook } from '../hooks/use-books';
 import { useAuthors } from '@/features/authors/hooks/use-authors';
+import { usePublishers } from '@/features/publishers/hooks/use-publishers';
 import { useCategories } from '@/features/categories/hooks/use-categories';
+import { CategoryTreeSelect } from '@/features/categories/components/category-tree-select';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Toggle } from '@/components/ui/toggle';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { FileDropzone } from '@/components/uploads/file-dropzone';
 import {
   BookOpen,
   Headphones,
   Sparkle,
-  X,
-  Plus,
   Image as ImageIcon,
   CheckCircle,
-  Check,
+  FileText,
+  Books,
 } from '@phosphor-icons/react';
 import { ApiError } from '@/lib/api/error-handler';
 import { cn } from '@/lib/utils/cn';
-
-const PRESET_TAG_COLORS = [
-  { name: 'Emerald', value: '#10b981' },
-  { name: 'Teal', value: '#0d9488' },
-  { name: 'Sky', value: '#0284c7' },
-  { name: 'Blue', value: '#2563eb' },
-  { name: 'Indigo', value: '#4f46e5' },
-  { name: 'Purple', value: '#7c3aed' },
-  { name: 'Pink', value: '#db2777' },
-  { name: 'Rose', value: '#e11d48' },
-  { name: 'Amber', value: '#d97706' },
-  { name: 'Orange', value: '#ea580c' },
-  { name: 'Slate', value: '#475569' },
-];
 
 export function BookForm() {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
-
-  // Tag list & color management
-  const [availableTags, setAvailableTags] = useState<string[]>([
-    'Fiction',
-    'Non-Fiction',
-    'Bestseller',
-    'Literary Fiction',
-    'Staff Pick',
-    'New Release',
-    'Classic',
-    'Islamic Studies',
-    'History',
-    'Biography',
-    'Philosophy',
-    'Science',
-    'Poetry',
-  ]);
-  const [selectedTagToAttach, setSelectedTagToAttach] = useState<string>('');
-  const [isAddingNewTag, setIsAddingNewTag] = useState<boolean>(false);
-  const [newTagName, setNewTagName] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<string>('#10b981');
-  const [tagColors, setTagColors] = useState<Record<string, string>>({
-    'Bestseller': '#d97706',
-    'Literary Fiction': '#7c3aed',
-    'Fiction': '#10b981',
-    'Non-Fiction': '#0284c7',
-    'Staff Pick': '#db2777',
-    'New Release': '#2563eb',
-    'Classic': '#475569',
-    'Islamic Studies': '#059669',
-    'History': '#b45309',
-    'Biography': '#4f46e5',
-    'Philosophy': '#6b7280',
-    'Science': '#0d9488',
-    'Poetry': '#9333ea',
-  });
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [bookFile, setBookFile] = useState<File | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [categoryColors, setCategoryColors] = useState<Record<string, string>>({});
 
   const { data: authorsData } = useAuthors({ pageSize: 100 });
+  const { data: publishersData } = usePublishers({ pageSize: 100 });
   const { data: categoriesData } = useCategories({ pageSize: 100 });
 
   const authors = authorsData?.authors || [];
+  const publishers = publishersData?.publishers || [];
   const categories = categoriesData?.categories || [];
 
   const {
@@ -103,71 +58,47 @@ export function BookForm() {
     defaultValues: {
       name: '',
       authorId: '',
-      publisherId: 'pub-01',
-      pageCount: 384,
-      tags: ['Bestseller', 'Literary Fiction'],
+      publisherId: '',
+      bookFormat: 'both',
+      categoryIds: [],
+      tags: [],
       categoryId: '',
       subcategoryId: '',
       description: '',
-      language: 'English',
+      language: 'en',
+      bookPrice: '',
+      audioPrice: '',
+      totalPrice: '',
       audiobookOption: 'has_audiobook',
-      hasAudiobook: false,
+      hasAudiobook: true,
       narrator: '',
     },
   });
 
   const watchedTitle = watch('name') || 'Book Title Preview';
   const watchedAuthorId = watch('authorId');
-  const watchedCategoryId = watch('categoryId');
-  const watchedTags = watch('tags') || [];
-  const watchedHasAudiobook = watch('hasAudiobook');
+  const watchedCategoryIds = watch('categoryIds') || [];
+  const watchedBookFormat = watch('bookFormat') || 'both';
   const watchedAudioOption = watch('audiobookOption');
 
-  // Derive author and category display names for live preview
+  // Derive author and primary category display names for live preview
   const selectedAuthor = authors.find((a) => a.id === watchedAuthorId);
-  const selectedCategory = categories.find((c) => c.id === watchedCategoryId);
-
-  // Subcategories derived from chosen primary category
-  const availableSubcategories = categories.filter(
-    (c) => c.parentId && c.parentId === watchedCategoryId
-  );
+  const primaryCategoryId = watchedCategoryIds[0];
+  const selectedPrimaryCategory = categories.find((c) => c.id === primaryCategoryId);
 
   const createBookMutation = useCreateBook((bookId) => {
     router.push(`/books/${bookId}`);
   });
 
-  const handleAttachSelectedTag = () => {
-    if (selectedTagToAttach && !watchedTags.includes(selectedTagToAttach)) {
-      setValue('tags', [...watchedTags, selectedTagToAttach]);
-      setSelectedTagToAttach('');
-    }
-  };
-
-  const handleCreateNewTag = () => {
-    const trimmed = newTagName.trim();
-    if (!trimmed) return;
-    if (!availableTags.includes(trimmed)) {
-      setAvailableTags((prev) => [...prev, trimmed]);
-    }
-    setTagColors((prev) => ({ ...prev, [trimmed]: selectedColor }));
-    if (!watchedTags.includes(trimmed)) {
-      setValue('tags', [...watchedTags, trimmed]);
-    }
-    setNewTagName('');
-    setIsAddingNewTag(false);
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setValue(
-      'tags',
-      watchedTags.filter((t) => t !== tagToRemove)
-    );
-  };
-
   const onSubmit = async (data: BookFormData) => {
     setFormError(null);
     try {
-      await createBookMutation.mutateAsync(data);
+      await createBookMutation.mutateAsync({
+        ...data,
+        coverFile: coverFile || undefined,
+        bookFile: bookFile || undefined,
+        audioFile: audioFile || undefined,
+      });
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.fieldErrors.name) {
@@ -184,7 +115,11 @@ export function BookForm() {
   };
 
   return (
-    <form id="book-form" onSubmit={handleSubmit(onSubmit)} className="space-y-8 scroll-mt-24 transition-all duration-500">
+    <form
+      id="book-form"
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 scroll-mt-24 transition-all duration-500"
+    >
       {formError && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700">
           {formError}
@@ -228,244 +163,44 @@ export function BookForm() {
                 <Select
                   label="Publisher"
                   placeholder="Select publisher..."
-                  options={[
-                    { label: 'Darussalam Publishers', value: 'pub-01' },
-                    { label: 'Islamic Texts Society', value: 'pub-02' },
-                    { label: 'Turath Publishing', value: 'pub-03' },
-                    { label: 'Kube Publishing', value: 'pub-04' },
-                    { label: 'Canongate Books', value: 'pub-05' },
-                  ]}
+                  options={publishers.map((p) => ({ label: p.name, value: p.id }))}
                   error={errors.publisherId?.message}
                   {...register('publisherId')}
                 />
               </div>
 
-              {/* Number of Pages & Tags */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Number of Pages"
-                  type="number"
-                  placeholder="e.g. 384"
-                  error={errors.pageCount?.message}
-                  {...register('pageCount')}
-                />
-
-                {/* Tags Field (Dropdown + Search + Add Tag + Color Picker + Attached Tags) */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
-                      Tags <span className="text-red-500">*</span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingNewTag((prev) => !prev)}
-                      className="text-xs font-medium text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
-                    >
-                      <Plus className="w-3 h-3" weight="bold" />
-                      <span>{isAddingNewTag ? 'Cancel Add Tag' : 'Add New Tag'}</span>
-                    </button>
-                  </div>
-
-                  {/* Dropdown with Attach Button */}
-                  <div className="flex gap-2 items-start">
-                    <div className="flex-1">
-                      <Select
-                        placeholder="Select tag from list..."
-                        options={availableTags
-                          .filter((t) => !watchedTags.includes(t))
-                          .map((t) => ({ label: t, value: t }))}
-                        value={selectedTagToAttach}
-                        onChange={(e) => setSelectedTagToAttach(e.target.value)}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      size="md"
-                      variant="secondary"
-                      onClick={handleAttachSelectedTag}
-                      disabled={!selectedTagToAttach}
-                      className="h-10 px-4 font-medium"
-                    >
-                      Attach
-                    </Button>
-                  </div>
-
-                  {/* Add New Tag Drawer/Section */}
-                  {isAddingNewTag && (
-                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg space-y-3 animate-in fade-in duration-150">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                          Tag Name
-                        </label>
-                        <input
-                          type="text"
-                          value={newTagName}
-                          onChange={(e) => setNewTagName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleCreateNewTag();
-                            }
-                          }}
-                          placeholder="e.g. Science Fiction, Academic..."
-                          className="w-full h-8 px-2.5 text-xs bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-700/20"
-                        />
-                      </div>
-
-                      {/* Color Picker Palette */}
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
-                          Tag Background Color
-                        </label>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {PRESET_TAG_COLORS.map((color) => (
-                            <button
-                              key={color.value}
-                              type="button"
-                              onClick={() => setSelectedColor(color.value)}
-                              title={color.name}
-                              className={cn(
-                                'w-6 h-6 rounded-full transition-transform flex items-center justify-center border border-white shadow-xs',
-                                selectedColor === color.value
-                                  ? 'scale-110 ring-2 ring-emerald-700 ring-offset-1'
-                                  : 'hover:scale-105'
-                              )}
-                              style={{ backgroundColor: color.value }}
-                            >
-                              {selectedColor === color.value && (
-                                <Check className="w-3 h-3 text-white" weight="bold" />
-                              )}
-                            </button>
-                          ))}
-                          {/* Custom Color Input */}
-                          <label
-                            title="Custom color"
-                            className="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center cursor-pointer overflow-hidden bg-white hover:border-slate-400"
-                          >
-                            <input
-                              type="color"
-                              value={selectedColor}
-                              onChange={(e) => setSelectedColor(e.target.value)}
-                              className="opacity-0 w-0 h-0"
-                            />
-                            <div className="w-full h-full" style={{ backgroundColor: selectedColor }} />
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end gap-2 pt-1">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
-                            setIsAddingNewTag(false);
-                            setNewTagName('');
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={handleCreateNewTag}
-                          className="bg-[#1e4634] hover:bg-[#153426]"
-                        >
-                          Add & Attach
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Attached Tags (Excalidraw design: Attached tags) */}
-                  <div className="space-y-1.5 pt-1">
-                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                      Attached tags
-                    </span>
-                    {watchedTags.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic">No tags attached yet.</p>
-                    ) : (
-                      <div className="flex flex-wrap gap-1.5">
-                        {watchedTags.map((tag) => {
-                          const tagBgColor = tagColors[tag] || '#10b981';
-                          return (
-                            <span
-                              key={tag}
-                              style={{ backgroundColor: tagBgColor }}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-white shadow-xs"
-                            >
-                              <span>{tag}</span>
-                              {/* Color changer input */}
-                              <label
-                                title={`Change background color for "${tag}"`}
-                                className="w-3.5 h-3.5 rounded-full border border-white/60 cursor-pointer overflow-hidden flex items-center justify-center flex-shrink-0"
-                              >
-                                <input
-                                  type="color"
-                                  value={tagBgColor}
-                                  onChange={(e) =>
-                                    setTagColors((prev) => ({ ...prev, [tag]: e.target.value }))
-                                  }
-                                  className="opacity-0 w-0 h-0"
-                                />
-                                <div className="w-full h-full" style={{ backgroundColor: tagBgColor }} />
-                              </label>
-                              {/* Remove tag */}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveTag(tag)}
-                                aria-label={`Remove tag ${tag}`}
-                                title={`Remove tag ${tag}`}
-                                className="text-white/80 hover:text-white transition-opacity ml-0.5"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {errors.tags?.message && (
-                    <p className="text-xs text-red-600 font-medium">{errors.tags.message}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Category & Subcategory (PM Requirement: Subcategories) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                  label="Primary Category"
-                  required
-                  placeholder="Assign category..."
-                  options={categories
-                    .filter((c) => !c.parentId)
-                    .map((c) => ({ label: c.name, value: c.id }))}
-                  error={errors.categoryId?.message}
-                  {...register('categoryId')}
-                />
-
-                <Select
-                  label="Subcategory"
-                  placeholder={
-                    availableSubcategories.length > 0
-                      ? 'Select subcategory...'
-                      : 'No subcategories available'
-                  }
-                  options={availableSubcategories.map((sub) => ({
-                    label: sub.name,
-                    value: sub.id,
-                  }))}
-                  disabled={availableSubcategories.length === 0}
-                  helperText={
-                    availableSubcategories.length === 0
-                      ? 'Select a parent category to enable subcategories'
-                      : undefined
-                  }
-                  {...register('subcategoryId')}
-                />
-              </div>
+              {/* Unified Category Selector (Replaces separate Tags, Category, & Subcategory) */}
+              <Controller
+                name="categoryIds"
+                control={control}
+                render={({ field }) => (
+                  <CategoryTreeSelect
+                    label="Category"
+                    helperText="Select from the nested 5-level folder tree or search. Up to 5 categories (optional)."
+                    categories={categories}
+                    selectedCategoryIds={field.value || []}
+                    onChange={(ids) => {
+                      field.onChange(ids);
+                      // Map to tags and primary categoryId for backward compatibility
+                      const selectedNames = ids.map((id) => {
+                        const found = categories.find((c) => c.id === id);
+                        return found ? found.name : id;
+                      });
+                      setValue('tags', selectedNames);
+                      if (ids.length > 0) {
+                        setValue('categoryId', ids[0]);
+                      } else {
+                        setValue('categoryId', '');
+                      }
+                    }}
+                    categoryColors={categoryColors}
+                    onColorChange={(catId, color) => {
+                      setCategoryColors((prev) => ({ ...prev, [catId]: color }));
+                    }}
+                    error={errors.categoryIds?.message || errors.tags?.message}
+                  />
+                )}
+              />
 
               {/* Description */}
               <Textarea
@@ -476,18 +211,15 @@ export function BookForm() {
                 {...register('description')}
               />
 
-              {/* Master Language (PM Requirement: Applies to BOTH book & audiobook) */}
+              {/* Master Language */}
               <Select
                 label="Book & Audiobook Master Language"
                 required
                 helperText="Master Language applies to both the written book file and the audiobook edition."
                 options={[
-                  { label: 'English', value: 'English' },
-                  { label: 'Amharic (አማርኛ)', value: 'Amharic' },
-                  { label: 'Arabic (العربية)', value: 'Arabic' },
-                  { label: 'French (Français)', value: 'French' },
-                  { label: 'Oromo (Afaan Oromoo)', value: 'Oromo' },
-                  { label: 'Somali (Soomaali)', value: 'Somali' },
+                  { label: 'English (en)', value: 'en' },
+                  { label: 'Amharic (am)', value: 'am' },
+                  { label: 'Arabic (ar)', value: 'ar' },
                 ]}
                 error={errors.language?.message}
                 {...register('language')}
@@ -495,130 +227,272 @@ export function BookForm() {
             </CardContent>
           </Card>
 
-          {/* Section 2: Assets & Audiobook Upload */}
+          {/* Section 2: Product Format & Assets Upload */}
           <Card>
             <CardHeader
               title={
                 <div className="flex items-center gap-2 text-slate-900">
                   <Headphones className="w-5 h-5 text-[#1e4634]" />
-                  <span>Assets & Audiobook Upload</span>
+                  <span>Format & Asset Uploads</span>
                 </div>
               }
+              subtitle="Configure whether this title is an E-Book, an Audiobook-only release, or both."
             />
             <CardContent className="space-y-6">
-              {/* Book File Upload (EPUB / PDF) */}
-              <FileDropzone
-                label="Book File (EPUB or PDF)"
-                required
-                accept={{
-                  'application/epub+zip': ['.epub'],
-                  'application/pdf': ['.pdf'],
-                }}
-                maxSizeMB={100}
-                iconType="file"
-                helperText="Drag & drop EPUB or PDF master file (Max 100MB)"
-                onUploaded={(result) => setValue('bookFileId', result.fileId)}
-              />
-
-              {/* Condition Choice between Has Audiobook vs Generated Using AI (PM Requirement) */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/60">
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-800">
-                      Audiobook Production Option
-                    </h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Choose between providing recorded audio master or reserving future AI generation
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+              {/* Product Format Selection: Book Only, Audiobook Only, Both */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
+                  Product Format
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Option 1: Book Only */}
+                  <label
+                    className={cn(
+                      'p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5',
+                      watchedBookFormat === 'book_only'
+                        ? 'border-emerald-700 bg-emerald-50/50 ring-1 ring-emerald-700'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-slate-800 font-semibold text-xs">
+                        <FileText className="w-4 h-4 text-emerald-700" />
+                        <span>Book Only</span>
+                      </div>
                       <input
                         type="radio"
-                        value="has_audiobook"
-                        checked={watchedAudioOption === 'has_audiobook'}
+                        value="book_only"
+                        checked={watchedBookFormat === 'book_only'}
                         onChange={() => {
-                          setValue('audiobookOption', 'has_audiobook');
-                          setValue('hasAudiobook', true);
-                        }}
-                        className="text-emerald-800 focus:ring-emerald-700/20"
-                      />
-                      <span>Has Recorded Audio</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 text-xs font-medium text-slate-500 cursor-not-allowed opacity-75">
-                      <input
-                        type="radio"
-                        value="ai_generated"
-                        checked={watchedAudioOption === 'ai_generated'}
-                        onChange={() => {
-                          setValue('audiobookOption', 'ai_generated');
+                          setValue('bookFormat', 'book_only');
                           setValue('hasAudiobook', false);
                         }}
                         className="text-emerald-800 focus:ring-emerald-700/20"
                       />
-                      <span className="flex items-center gap-1">
-                        <Sparkle className="w-3.5 h-3.5 text-amber-500" />
-                        <span>Generated Using AI (Future)</span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Standard e-book (EPUB or PDF). No audio track required.
+                    </p>
+                  </label>
 
-                {/* AI Audio Notice (Future feature: confirmed PM requirement not to run actual generation) */}
-                {watchedAudioOption === 'ai_generated' && (
-                  <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-start gap-2">
-                    <Sparkle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  {/* Option 2: Audiobook Only */}
+                  <label
+                    className={cn(
+                      'p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5',
+                      watchedBookFormat === 'audiobook_only'
+                        ? 'border-emerald-700 bg-emerald-50/50 ring-1 ring-emerald-700'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-slate-800 font-semibold text-xs">
+                        <Headphones className="w-4 h-4 text-emerald-700" />
+                        <span>Audiobook Only</span>
+                      </div>
+                      <input
+                        type="radio"
+                        value="audiobook_only"
+                        checked={watchedBookFormat === 'audiobook_only'}
+                        onChange={() => {
+                          setValue('bookFormat', 'audiobook_only');
+                          setValue('hasAudiobook', true);
+                          setValue('audiobookOption', 'has_audiobook');
+                        }}
+                        className="text-emerald-800 focus:ring-emerald-700/20"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Audio-first release. E-book file is not required.
+                    </p>
+                  </label>
+
+                  {/* Option 3: Both Book & Audiobook */}
+                  <label
+                    className={cn(
+                      'p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5',
+                      watchedBookFormat === 'both'
+                        ? 'border-emerald-700 bg-emerald-50/50 ring-1 ring-emerald-700'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-slate-800 font-semibold text-xs">
+                        <Books className="w-4 h-4 text-emerald-700" />
+                        <span>Book & Audiobook</span>
+                      </div>
+                      <input
+                        type="radio"
+                        value="both"
+                        checked={watchedBookFormat === 'both'}
+                        onChange={() => {
+                          setValue('bookFormat', 'both');
+                          setValue('hasAudiobook', true);
+                          setValue('audiobookOption', 'has_audiobook');
+                        }}
+                        className="text-emerald-800 focus:ring-emerald-700/20"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Complete package with text e-book and recorded audio.
+                    </p>
+                  </label>
+                </div>
+              </div>
+
+              {/* Pricing Section (per documented OpenAPI CreateBookRequestBody fields) */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-4">
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-800">
+                    Pricing
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Enter the sales price according to the chosen product format.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {(watchedBookFormat === 'book_only' || watchedBookFormat === 'both') && (
+                    <Input
+                      label="Book Price"
+                      placeholder="e.g. 19.99"
+                      error={errors.bookPrice?.message}
+                      {...register('bookPrice')}
+                    />
+                  )}
+                  {(watchedBookFormat === 'audiobook_only' || watchedBookFormat === 'both') && (
+                    <Input
+                      label="Audiobook Price"
+                      placeholder="e.g. 24.99"
+                      error={errors.audioPrice?.message}
+                      {...register('audioPrice')}
+                    />
+                  )}
+                  {watchedBookFormat === 'both' && (
+                    <Input
+                      label="Combined Total Price"
+                      placeholder="e.g. 34.99"
+                      helperText="Official bundled package price"
+                      error={errors.totalPrice?.message}
+                      {...register('totalPrice')}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Book File Upload (EPUB / PDF) - required unless Audiobook Only */}
+              {watchedBookFormat !== 'audiobook_only' ? (
+                <FileDropzone
+                  label="Book File (EPUB or PDF)"
+                  required
+                  accept={{
+                    'application/epub+zip': ['.epub'],
+                    'application/pdf': ['.pdf'],
+                  }}
+                  maxSizeMB={100}
+                  iconType="file"
+                  helperText="Drag & drop EPUB or PDF master file (Max 100MB)"
+                  onFileSelected={(file) => setBookFile(file)}
+                />
+              ) : (
+                <div className="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-xs text-slate-600 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Headphones className="w-4 h-4 text-emerald-700" />
+                    <span>
+                      <strong>Audiobook-Only Title:</strong> EPUB/PDF manuscript file is omitted and not required.
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">
+                    Omitted
+                  </span>
+                </div>
+              )}
+
+              {/* Audiobook Section (For Audiobook-Only or Both) */}
+              {watchedBookFormat !== 'book_only' && (
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/60">
                     <div>
-                      <span className="font-semibold">AI Audiobook Generation (Roadmap Feature):</span>
-                      <p className="text-[11px] text-amber-800 mt-0.5">
-                        This title will be flagged for automated synthesis once the AI conversion
-                        pipeline is activated by the engineering team.
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-800">
+                        Audiobook Production
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Provide recorded master track or reserve automated AI synthesis
                       </p>
                     </div>
-                  </div>
-                )}
-
-                {/* Has Audiobook Toggle and Form Fields */}
-                {watchedAudioOption === 'has_audiobook' && (
-                  <div className="space-y-4 pt-1">
-                    <Controller
-                      name="hasAudiobook"
-                      control={control}
-                      render={({ field }) => (
-                        <Toggle
-                          checked={field.value}
-                          onChange={field.onChange}
-                          label="Has Audiobook ?"
-                        />
-                      )}
-                    />
-
-                    {watchedHasAudiobook && (
-                      <div className="space-y-4 p-4 bg-white rounded-lg border border-slate-200 animate-in fade-in">
-                        <Input
-                          label="Narrator Name"
-                          placeholder="e.g. Jane Smith"
-                          error={errors.narrator?.message}
-                          {...register('narrator')}
-                        />
-
-                        <FileDropzone
-                          label="Audio Master Track File"
-                          accept={{
-                            'audio/mpeg': ['.mp3'],
-                            'audio/mp4': ['.m4b', '.m4a'],
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          value="has_audiobook"
+                          checked={watchedAudioOption === 'has_audiobook'}
+                          onChange={() => {
+                            setValue('audiobookOption', 'has_audiobook');
+                            setValue('hasAudiobook', true);
                           }}
-                          maxSizeMB={500}
-                          iconType="audio"
-                          helperText="Drag & drop MP3, M4B audio master file (Recommended 192kbps+ stereo track, Max 500MB)"
-                          onUploaded={(result) => setValue('audioFileId', result.fileId)}
+                          className="text-emerald-800 focus:ring-emerald-700/20"
                         />
-                      </div>
-                    )}
+                        <span>Recorded Audio Master</span>
+                      </label>
+
+                      <label className="flex items-center gap-2 text-xs font-medium text-slate-500 cursor-pointer">
+                        <input
+                          type="radio"
+                          value="ai_generated"
+                          checked={watchedAudioOption === 'ai_generated'}
+                          onChange={() => {
+                            setValue('audiobookOption', 'ai_generated');
+                            setValue('hasAudiobook', false);
+                          }}
+                          className="text-emerald-800 focus:ring-emerald-700/20"
+                          disabled={true}
+                        />
+                        <span className="flex items-center gap-1">  
+                          <Sparkle className="w-3.5 h-3.5 text-amber-500" />
+                          <span>Generate Using AI (Future)</span>
+                        </span>
+                      </label>
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  {/* AI Audio Notice */}
+                  {watchedAudioOption === 'ai_generated' && (
+                    <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-start gap-2">
+                      <Sparkle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">AI Audiobook Generation (Roadmap Feature):</span>
+                        <p className="text-[11px] text-amber-800 mt-0.5">
+                          This title will be queued for automated voice synthesis once the AI conversion pipeline is deployed.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recorded Audio Upload */}
+                  {watchedAudioOption === 'has_audiobook' && (
+                    <div className="space-y-4 p-4 bg-white rounded-lg border border-slate-200 animate-in fade-in">
+                      <Input
+                        label="Narrator Name"
+                        required={watchedBookFormat === 'audiobook_only'}
+                        placeholder="e.g. Jane Smith, Michael Kramer"
+                        error={errors.narrator?.message}
+                        {...register('narrator')}
+                      />
+
+                      <FileDropzone
+                        label="Audio Master Track File"
+                        required={watchedBookFormat === 'audiobook_only'}
+                        accept={{
+                          'audio/mpeg': ['.mp3'],
+                          'audio/mp4': ['.m4b', '.m4a'],
+                        }}
+                        maxSizeMB={500}
+                        iconType="audio"
+                        helperText="Drag & drop MP3, M4B audio master file (Recommended 192kbps+ stereo track, Max 500MB)"
+                        onFileSelected={(file) => setAudioFile(file)}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -647,7 +521,7 @@ export function BookForm() {
                 {/* Overlaid preview badge */}
                 <div className="relative z-10 bg-white/90 backdrop-blur-md p-3 rounded-lg shadow-sm border border-white/50">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-                    {selectedCategory?.name || 'Category'}
+                    {selectedPrimaryCategory?.name || 'Category'}
                   </p>
                   <p className="text-sm font-bold text-slate-900 line-clamp-1">
                     {watchedTitle}
@@ -669,11 +543,13 @@ export function BookForm() {
                 maxSizeMB={10}
                 iconType="image"
                 helperText="PNG, JPG or WEBP (1200x1600 recommended)"
-                onUploaded={(result) => {
-                  setValue('coverFileId', result.fileId);
-                  setCoverPreviewUrl(
-                    `https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80`
-                  );
+                onFileSelected={(file) => {
+                  setCoverFile(file);
+                  if (file) {
+                    setCoverPreviewUrl(URL.createObjectURL(file));
+                  } else {
+                    setCoverPreviewUrl(null);
+                  }
                 }}
               />
             </CardContent>

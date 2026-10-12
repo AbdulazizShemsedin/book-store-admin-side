@@ -274,9 +274,9 @@ export function CategoryTable({
                 {depthBadgeConfig.label}
               </span>
 
-              {/* Icon */}
+              {/* Icon & Color Indicator */}
               <div
-                className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
+                className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 relative ${
                   node.depth === 1
                     ? 'bg-emerald-50 text-emerald-800'
                     : 'bg-slate-100 text-slate-600'
@@ -287,6 +287,11 @@ export function CategoryTable({
                 ) : (
                   <Tag className="w-3 h-3" />
                 )}
+                <span
+                  className="w-2 h-2 rounded-full absolute -bottom-0.5 -right-0.5 border border-white shadow-2xs"
+                  style={{ backgroundColor: node.color || '#10b981' }}
+                  title={`Tag/Category Color: ${node.color || '#10b981'}`}
+                />
               </div>
 
               {/* Name */}
@@ -315,14 +320,15 @@ export function CategoryTable({
             </div>
           </td>
 
-          {/* Direct Subcategories Preview Tags */}
+          {/* Direct Subcategories Preview Tags with Tag Colors */}
           <td className="py-3 px-4">
             {hasChildren ? (
               <div className="flex flex-wrap gap-1.5 items-center">
                 {node.children.slice(0, 3).map((child) => (
                   <span
                     key={child.id}
-                    className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-50 text-slate-700 border border-slate-200/80"
+                    className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium text-white shadow-2xs"
+                    style={{ backgroundColor: child.color || '#10b981' }}
                   >
                     {child.name}
                   </span>
