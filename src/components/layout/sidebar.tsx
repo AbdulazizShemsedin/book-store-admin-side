@@ -147,14 +147,14 @@ export function Sidebar() {
             {isCollapsed && (
               <div className="px-3 py-1.5 border-b border-slate-100 mb-1">
                 <p className="text-xs font-semibold text-slate-800 truncate">
-                  {user?.name || 'Ahmad Hassan'}
+                  {user?.name || user?.email || 'Admin'}
                 </p>
               </div>
             )}
             <button
-              onClick={() => {
+              onClick={async () => {
                 setIsUserMenuOpen(false);
-                signout();
+                await signout();
               }}
               className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors text-left"
             >
@@ -170,7 +170,7 @@ export function Sidebar() {
               type="button"
               onClick={() => setIsUserMenuOpen((prev) => !prev)}
               className="w-9 h-9 rounded-full bg-[#1e4634]/10 text-[#1e4634] flex items-center justify-center font-bold text-xs hover:ring-2 hover:ring-[#1e4634]/30 transition-all"
-              title={`${user?.name || 'Ahmad Hassan'} (Click to Sign Out)`}
+              title={`${user?.name || user?.email || 'Admin'} (Click to Sign Out)`}
               aria-label="User account menu"
             >
               <User className="w-4 h-4" weight="bold" />
@@ -198,7 +198,7 @@ export function Sidebar() {
                 <User className="w-4 h-4" weight="bold" />
               </div>
               <p className="text-xs font-semibold text-slate-900 truncate">
-                {user?.name || 'Ahmad Hassan'}
+                {user?.name || user?.email || 'Admin'}
               </p>
             </div>
             <CaretDown
