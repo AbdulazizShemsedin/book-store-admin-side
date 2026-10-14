@@ -16,7 +16,13 @@ class ApiClient {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const raw = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+    // When calling live tewba.et from browser, use local same-origin proxy to eliminate CORS errors
+    if (typeof window !== 'undefined' && (raw.includes('tewba.et') || !raw)) {
+      this.baseUrl = '';
+    } else {
+      this.baseUrl = (raw || 'http://localhost:8000').replace(/\/+$/, '');
+    }
   }
 
   /**
@@ -36,7 +42,10 @@ class ApiClient {
 
     // Build URL with query params
     const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const url = new URL(`${this.baseUrl}${normalizedEndpoint}`);
+    const base =
+      this.baseUrl ||
+      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001');
+    const url = new URL(`${base}${normalizedEndpoint}`);
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {

@@ -2,6 +2,7 @@ import { apiClient } from '@/lib/api/client';
 import {
   ListCategoryRequestBody,
   ListCategoryResponseBody,
+  ListCategoryAdminResponseBody,
   CreateCategoryRequestBody,
 } from '@/types/api';
 import { Category } from '@/types/domain';
@@ -23,44 +24,74 @@ export interface ListCategoriesResult {
 
 export const categoriesApi = {
   /**
-   * Retrieves category list via POST /api/category.
-   * Isolates category taxonomy read operations from admin writes.
+   * Retrieves category list via documented GET /admin/api/category.
+   * Gracefully falls back to POST /api/category if admin endpoint is unavailable.
    */
   async list(params: ListCategoriesParams = {}): Promise<ListCategoriesResult> {
     const page = params.page || 1;
     const pageSize = params.pageSize || 50;
 
-    const requestBody: ListCategoryRequestBody = {
-      parent_id: params.parentId || undefined,
+    const queryParams: Record<string, string | number | undefined> = {
+      page,
+      page_size: pageSize,
     };
+    if (params.parentId) {
+      queryParams.parent_id = params.parentId;
+    }
 
-    const response = await apiClient.post<ListCategoryResponseBody>(
-      '/api/category',
-      requestBody,
-      {
-        params: {
-          page,
-          page_size: pageSize,
-        },
-      }
-    );
+    try {
+      const response = await apiClient.get<ListCategoryAdminResponseBody>(
+        '/admin/api/category',
+        { params: queryParams }
+      );
 
-    const rawList = response.categories || [];
+      const rawList = response.categories || [];
+      const categories: Category[] = rawList.map((item) => ({
+        id: item.id,
+        name: item.name,
+        parentId: item.parent_id || undefined,
+      }));
 
-    // Map to domain model
-    const categories: Category[] = rawList.map((item) => ({
-      id: item.id,
-      name: item.name,
-      parentId: item.parent_id,
-      color: item.color || undefined,
-    }));
+      return {
+        categories,
+        total: response.total ?? categories.length,
+        page: response.page || page,
+        pageSize: response.page_size || pageSize,
+      };
+    } catch {
+      // Fallback to public catalog endpoint
+      const requestBody: ListCategoryRequestBody = {
+        parent_id: params.parentId || undefined,
+      };
 
-    return {
-      categories,
-      total: response.total || categories.length,
-      page: response.page || page,
-      pageSize: response.page_size || pageSize,
-    };
+      const response = await apiClient.post<ListCategoryResponseBody>(
+        '/api/category',
+        requestBody,
+        {
+          params: {
+            page,
+            page_size: pageSize,
+          },
+        }
+      );
+
+      const rawList = response.categories || [];
+
+      // Map to domain model
+      const categories: Category[] = rawList.map((item) => ({
+        id: item.id,
+        name: item.name,
+        parentId: item.parent_id || undefined,
+        color: item.color || undefined,
+      }));
+
+      return {
+        categories,
+        total: response.total || categories.length,
+        page: response.page || page,
+        pageSize: response.page_size || pageSize,
+      };
+    }
   },
 
   /**
