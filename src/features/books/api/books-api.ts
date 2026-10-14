@@ -3,9 +3,10 @@ import {
   ListBookResponseBody,
   CreateBookRequestBody,
   CreateBookResponseBody,
-  AddBookAssetRequestBody,
   AddBookTagRequestBody,
+  GetBookResponseBody,
 } from '@/types/api';
+import { uploadBookThumbnail, uploadBookAsset } from '@/lib/upload/multipart-upload';
 import { Book } from '@/types/domain';
 import { BookFormData } from '../schemas/book-schema';
 
@@ -46,96 +47,71 @@ export const booksApi = {
 
     const rawBooks = response.books || [];
 
-    const MOCK_PUBLISHERS = [
-      'Darussalam Publishers',
-      'Islamic Texts Society',
-      'Turath Publishing',
-      'Kube Publishing',
-      'Dar Al-Qalam',
-      'AUC Press',
-      'Hurst Publishers',
-    ];
-
-    const books: Book[] = rawBooks.map((item, index) => {
-      const hasAudio = typeof item.has_audio === 'boolean' ? item.has_audio : index % 2 === 0;
-      const publisher = item.publisher || MOCK_PUBLISHERS[index % MOCK_PUBLISHERS.length];
-
-      return {
-        id: item.id,
-        name: item.name,
-        author: item.author || 'Author Name',
-        publisher,
-        status: item.status || 'Published',
-        hasAudiobook: hasAudio,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at,
-      };
-    });
+    const books: Book[] = rawBooks.map((item) => ({
+      id: item.id,
+      name: item.name,
+      author: item.author || '—',
+      publisher: item.publisher || '—',
+      status: item.status || 'Published',
+      hasAudiobook: Boolean(item.has_audio),
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+    }));
 
     return {
       books,
-      total: response.total || books.length,
+      total: response.total ?? books.length,
       page: response.page || page,
       pageSize: response.page_size || pageSize,
     };
   },
 
   /**
-   * Retrieves detailed book record for [id] page.
+   * Retrieves detailed book record for [id] page via GET /api/book/{book_id}.
    */
   async getById(id: string): Promise<Book> {
-    try {
-      const response = await apiClient.get<Record<string, unknown>>(`/api/book/${id}`);
-      return {
-        id: (response.id as string) || id,
-        name: (response.name as string) || 'The Midnight Library',
-        author: (response.author as string) || 'Matt Haig',
-        publisher: 'Canongate Books',
-        status: (response.status as string) || 'Published',
-        pageCount: 304,
-        description:
-          (response.description as string) ||
-          'Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices... Would you have done anything different, if you had the chance to undo your regrets?',
-        language: 'English',
-        category: 'Fiction / Literary',
-        tags: ['Literary Fiction', 'Bestseller', 'Staff Pick'],
-        hasAudiobook: true,
-        narrator: 'Carey Mulligan',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-    } catch {
-      // Domain model fallback when backend get book endpoint is unreachable
-      return {
-        id,
-        name: 'The Midnight Library',
-        author: 'Matt Haig',
-        publisher: 'Canongate Books',
-        status: 'Published',
-        pageCount: 304,
-        description:
-          'Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived. To see how things would be if you had made other choices...',
-        language: 'English',
-        category: 'Fiction / Literary',
-        tags: ['Literary Fiction', 'Bestseller', 'Staff Pick'],
-        hasAudiobook: true,
-        narrator: 'Carey Mulligan',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-    }
+    const response = await apiClient.get<GetBookResponseBody>(`/api/book/${id}`);
+    return {
+      id: response.id || id,
+      name: response.name,
+      author: response.author || '—',
+      publisher: '—',
+      status: 'Published',
+      pageCount: 0,
+      description: response.description,
+      language: 'English',
+      category: (response.tags && response.tags[0]) || 'General',
+      tags: response.tags || [],
+      hasAudiobook: Boolean(response.has_audio),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
   },
 
   /**
-   * Submits a new book to POST /admin/api/book and binds assets & tags.
+   * Submits a new book to POST /admin/api/book, attaches assets & tags.
    */
-  async create(data: BookFormData): Promise<{ id: string }> {
-    // 1. Core book creation
+  async create(
+    data: BookFormData & { coverFile?: File; bookFile?: File; audioFile?: File }
+  ): Promise<{ id: string }> {
+    const langCode =
+      data.language === 'Amharic'
+        ? 'am'
+        : data.language === 'Arabic'
+        ? 'ar'
+        : ['en', 'am', 'ar'].includes(data.language)
+        ? data.language
+        : 'en';
+
     const requestBody: CreateBookRequestBody = {
       name: data.name.trim(),
-      description: data.description?.trim(),
-      author_id: data.authorId,
-      thumbnail_id: data.coverFileId || undefined,
+      language: langCode,
+      description: data.description?.trim() || undefined,
+      author_id: data.authorId || undefined,
+      publisher_id: data.publisherId || undefined,
+      book_price: data.bookPrice?.trim() || undefined,
+      audio_price: data.audioPrice?.trim() || undefined,
+      total_price: data.totalPrice?.trim() || undefined,
     };
 
     const response = await apiClient.post<CreateBookResponseBody>(
@@ -145,27 +121,46 @@ export const booksApi = {
 
     const bookId = response.id;
 
-    // 2. Attach book EPUB asset if uploaded
-    if (data.bookFileId && bookId) {
+    // Attach thumbnail via documented POST /admin/api/book/{book_id}/thumbnail if coverFile provided
+    if (data.coverFile && bookId) {
       try {
-        await apiClient.post(`/admin/api/book/${bookId}/asset`, {
-          asset_type: 'book',
-          file_id: data.bookFileId,
-        } as AddBookAssetRequestBody);
-      } catch (assetErr) {
-        console.warn('Failed to bind book EPUB asset:', assetErr);
+        await uploadBookThumbnail(bookId, data.coverFile);
+      } catch (thumbErr) {
+        console.warn('Failed to upload book thumbnail:', thumbErr);
       }
     }
 
-    // 3. Attach audiobook MP3 asset if uploaded
-    if (data.hasAudiobook && data.audioFileId && bookId) {
+    // Attach manuscript EPUB via documented POST /admin/api/book/{book_id}/asset if bookFile provided
+    if (data.bookFormat !== 'audiobook_only' && data.bookFile && bookId) {
       try {
-        await apiClient.post(`/admin/api/book/${bookId}/asset`, {
-          asset_type: 'audio',
-          file_id: data.audioFileId,
-        } as AddBookAssetRequestBody);
+        await uploadBookAsset(bookId, 'book', data.bookFile);
+      } catch (assetErr) {
+        console.warn('Failed to upload manuscript asset:', assetErr);
+      }
+    }
+
+    // Attach audiobook MP3 via documented POST /admin/api/book/{book_id}/asset if audioFile provided
+    if (data.hasAudiobook && data.audioFile && bookId) {
+      try {
+        await uploadBookAsset(bookId, 'audio', data.audioFile);
       } catch (audioErr) {
-        console.warn('Failed to bind audiobook asset:', audioErr);
+        console.warn('Failed to upload audiobook asset:', audioErr);
+      }
+    }
+
+    // Attach categories/tags via documented POST /admin/api/book/{book_id}/tag
+    const tagsToAttach =
+      data.categoryIds && data.categoryIds.length > 0
+        ? data.categoryIds
+        : data.tags || [];
+
+    for (const tagId of tagsToAttach) {
+      try {
+        await apiClient.post(`/admin/api/book/${bookId}/tag`, {
+          tag_id: tagId,
+        } as AddBookTagRequestBody);
+      } catch (tagErr) {
+        console.warn(`Failed to attach category/tag ${tagId}:`, tagErr);
       }
     }
 
@@ -175,11 +170,8 @@ export const booksApi = {
   /**
    * Attaches an asset (book or audio) via POST /admin/api/book/{book_id}/asset.
    */
-  async attachAsset(bookId: string, assetType: 'book' | 'audio', fileId: string): Promise<void> {
-    await apiClient.post(`/admin/api/book/${bookId}/asset`, {
-      asset_type: assetType,
-      file_id: fileId,
-    } as AddBookAssetRequestBody);
+  async attachAsset(bookId: string, assetType: 'book' | 'audio', file: File): Promise<void> {
+    await uploadBookAsset(bookId, assetType, file);
   },
 
   /**

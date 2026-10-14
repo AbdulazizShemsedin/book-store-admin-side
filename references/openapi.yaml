@@ -1,20 +1,5 @@
 components:
   schemas:
-    AddBookAssetRequestBody:
-      additionalProperties: false
-      properties:
-        asset_type:
-          enum:
-            - book
-            - audio
-          type: string
-        file_id:
-          format: uuid
-          type: string
-      required:
-        - asset_type
-        - file_id
-      type: object
     AddBookTagRequestBody:
       additionalProperties: false
       properties:
@@ -95,6 +80,27 @@ components:
       required:
         - score
       type: object
+    AdminSigninRequestBody:
+      additionalProperties: false
+      properties:
+        email:
+          format: email
+          type: string
+        password:
+          minLength: 8
+          type: string
+      required:
+        - email
+        - password
+      type: object
+    AdminSigninResponseBody:
+      additionalProperties: false
+      properties:
+        token:
+          type: string
+      required:
+        - token
+      type: object
     ApplyInviteCodeRequestBody:
       additionalProperties: false
       properties:
@@ -102,6 +108,32 @@ components:
           type: string
       required:
         - code
+      type: object
+    ApplyPasswordResetRequestBody:
+      additionalProperties: false
+      properties:
+        code:
+          examples:
+            - "123456"
+          maxLength: 6
+          minLength: 6
+          pattern: ^[0-9]+$
+          type: string
+        phone:
+          examples:
+            - "+251900000000"
+          type: string
+        pin:
+          examples:
+            - "123456"
+          maxLength: 6
+          minLength: 6
+          pattern: ^[0-9]+$
+          type: string
+      required:
+        - phone
+        - code
+        - pin
       type: object
     ChangePasswordRequestBody:
       additionalProperties: false
@@ -142,7 +174,15 @@ components:
     CreateAuthorRequestBody:
       additionalProperties: false
       properties:
+        description:
+          maxLength: 1024
+          minLength: 1
+          type: string
         name:
+          maxLength: 128
+          minLength: 1
+          type: string
+        nationality:
           maxLength: 128
           minLength: 1
           type: string
@@ -155,56 +195,55 @@ components:
         id:
           format: uuid
           type: string
-        name:
-          maxLength: 128
-          minLength: 1
-          type: string
       required:
         - id
-        - name
       type: object
     CreateBookRequestBody:
       additionalProperties: false
       properties:
+        audio_price:
+          examples:
+            - "67.69"
+          type: string
         author_id:
           format: uuid
           type: string
+        book_price:
+          examples:
+            - "67.69"
+          type: string
         description:
           maxLength: 1024
+          type: string
+        language:
+          default: en
+          enum:
+            - am
+            - ar
+            - en
           type: string
         name:
           maxLength: 128
           minLength: 1
           type: string
-        thumbnail_id:
+        publisher_id:
           format: uuid
+          type: string
+        total_price:
+          examples:
+            - "67.69"
           type: string
       required:
         - name
+        - language
       type: object
     CreateBookResposneBody:
       additionalProperties: false
       properties:
-        author_id:
-          format: uuid
-          type: string
-        description:
-          type:
-            - string
-            - "null"
         id:
-          type: string
-        name:
-          type: string
-        thumbnail_id:
-          format: uuid
           type: string
       required:
         - id
-        - name
-        - description
-        - author_id
-        - thumbnail_id
       type: object
     CreateCategoryRequestBody:
       additionalProperties: false
@@ -218,6 +257,46 @@ components:
           type: string
       required:
         - name
+      type: object
+    CreateFeedbackRequestBody:
+      additionalProperties: false
+      properties:
+        comment:
+          maxLength: 1024
+          minLength: 1
+          type: string
+      required:
+        - comment
+      type: object
+    CreateProgressRequestBody:
+      additionalProperties: false
+      properties:
+        book_id:
+          format: uuid
+          type: string
+        locator: {}
+      required:
+        - book_id
+        - locator
+      type: object
+    CreatePublisherRequestBody:
+      additionalProperties: false
+      properties:
+        name:
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - name
+      type: object
+    CreatePublisherResponseBody:
+      additionalProperties: false
+      properties:
+        id:
+          format: uuid
+          type: string
+      required:
+        - id
       type: object
     CreateReadingListRequestBody:
       additionalProperties: false
@@ -345,6 +424,12 @@ components:
           type: string
         name:
           type: string
+        owns_audio:
+          type: boolean
+        owns_book:
+          type: boolean
+        price:
+          $ref: "#/components/schemas/PriceStruct"
         rating:
           type:
             - string
@@ -366,6 +451,9 @@ components:
         - description
         - has_book
         - has_audio
+        - owns_book
+        - owns_audio
+        - price
         - tags
         - thumbnail
       type: object
@@ -394,6 +482,31 @@ components:
       required:
         - url
       type: object
+    GetOwnedRatingResponseBody:
+      additionalProperties: false
+      properties:
+        comment:
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        edited_at:
+          format: date-time
+          type:
+            - string
+            - "null"
+        id:
+          type: string
+        score:
+          format: int64
+          type: integer
+      required:
+        - id
+        - score
+        - comment
+        - created_at
+        - edited_at
+      type: object
     GetProfileResponseBody:
       additionalProperties: false
       properties:
@@ -407,6 +520,8 @@ components:
         id:
           type: string
         is_owner:
+          type: boolean
+        is_renewal_due:
           type: boolean
         name:
           type: string
@@ -426,6 +541,7 @@ components:
         - created_at
         - subscription
         - is_owner
+        - is_renewal_due
       type: object
     HealthCheckResponseBody:
       additionalProperties: false
@@ -434,41 +550,6 @@ components:
           type: string
       required:
         - status
-      type: object
-    InitBookUploadRequestBody:
-      additionalProperties: false
-      properties:
-        content_type:
-          enum:
-            - application/epub+zip
-            - audio/mpeg
-            - image/png
-            - image/jpeg
-            - image/webp
-          type: string
-        expected_parts:
-          format: int64
-          maximum: 10000
-          minimum: 1
-          type: integer
-        session_id:
-          type: string
-      required:
-        - content_type
-        - expected_parts
-      type: object
-    InitBookUploadResponseBody:
-      additionalProperties: false
-      properties:
-        key:
-          type: string
-        session_id:
-          type: string
-        upload_id:
-          type: string
-      required:
-        - key
-        - upload_id
       type: object
     IntiateSubscriptionRequestBody:
       additionalProperties: false
@@ -506,14 +587,30 @@ components:
     ListAuthorItem:
       additionalProperties: false
       properties:
+        avatar:
+          type:
+            - string
+            - "null"
+        description:
+          maxLength: 1024
+          minLength: 1
+          type: string
         id:
           format: uuid
           type: string
+        nationality:
+          maxLength: 128
+          minLength: 1
+          type:
+            - string
+            - "null"
         string:
           type: string
       required:
         - id
         - string
+        - nationality
+        - avatar
       type: object
     ListAuthorResponseBody:
       additionalProperties: false
@@ -623,19 +720,38 @@ components:
         created_at:
           format: date-time
           type: string
+        has_audio:
+          type: boolean
+        has_book:
+          type: boolean
         id:
           format: uuid
           type: string
+        language:
+          type: string
         name:
           type: string
+        publisher:
+          type:
+            - string
+            - "null"
         status:
           type: string
+        thumbnail:
+          type:
+            - string
+            - "null"
         updated_at:
           format: date-time
           type: string
       required:
         - id
         - name
+        - publisher
+        - thumbnail
+        - language
+        - has_book
+        - has_audio
         - status
         - created_at
         - updated_at
@@ -715,6 +831,58 @@ components:
         - id
         - location
         - created_at
+      type: object
+    ListCategoryAdminRequestBody:
+      additionalProperties: false
+      properties:
+        parent_id:
+          format: uuid
+          type: string
+      type: object
+    ListCategoryAdminResponseBody:
+      additionalProperties: false
+      properties:
+        categories:
+          items:
+            $ref: "#/components/schemas/ListCategoryAdminResponseItem"
+          type:
+            - array
+            - "null"
+        page:
+          default: 1
+          format: int64
+          maximum: 10000000
+          minimum: 1
+          type: integer
+        page_size:
+          default: 10
+          format: int64
+          maximum: 100
+          minimum: 1
+          type: integer
+        total:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - categories
+        - total
+        - page
+        - page_size
+      type: object
+    ListCategoryAdminResponseItem:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        parent_id:
+          type: string
+      required:
+        - id
+        - name
+        - parent_id
       type: object
     ListCategoryRequestBody:
       additionalProperties: false
@@ -822,6 +990,102 @@ components:
         - location
         - created_at
         - edited_at
+      type: object
+    ListNotificationResponseBody:
+      additionalProperties: false
+      properties:
+        notifications:
+          items:
+            $ref: "#/components/schemas/ListNotificationResponseItem"
+          type:
+            - array
+            - "null"
+        page:
+          default: 1
+          format: int64
+          maximum: 10000000
+          minimum: 1
+          type: integer
+        page_size:
+          default: 10
+          format: int64
+          maximum: 100
+          minimum: 1
+          type: integer
+        total:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - notifications
+        - total
+        - page
+        - page_size
+      type: object
+    ListNotificationResponseItem:
+      additionalProperties: false
+      properties:
+        ID:
+          format: uuid
+          type: string
+        body:
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        status:
+          type: string
+        title:
+          type: string
+      required:
+        - ID
+        - title
+        - body
+        - status
+        - created_at
+      type: object
+    ListPublisherResponseBody:
+      additionalProperties: false
+      properties:
+        page:
+          default: 1
+          format: int64
+          maximum: 10000000
+          minimum: 1
+          type: integer
+        page_size:
+          default: 10
+          format: int64
+          maximum: 100
+          minimum: 1
+          type: integer
+        publishers:
+          items:
+            $ref: "#/components/schemas/ListPublisherResponseItem"
+          type:
+            - array
+            - "null"
+        total:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - publishers
+        - total
+        - page
+        - page_size
+      type: object
+    ListPublisherResponseItem:
+      additionalProperties: false
+      properties:
+        id:
+          format: uuid
+          type: string
+        string:
+          type: string
+      required:
+        - id
+        - string
       type: object
     ListRatingResponseBody:
       additionalProperties: false
@@ -934,6 +1198,67 @@ components:
         - name
         - created_at
         - updated_at
+      type: object
+    ListSubscriptionMemberProgressResponseBody:
+      additionalProperties: false
+      properties:
+        page:
+          default: 1
+          format: int64
+          maximum: 10000000
+          minimum: 1
+          type: integer
+        page_size:
+          default: 10
+          format: int64
+          maximum: 100
+          minimum: 1
+          type: integer
+        progress:
+          items:
+            $ref: "#/components/schemas/ListSubscriptionMemberProgressResponseItem"
+          type:
+            - array
+            - "null"
+        total:
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+        - progress
+        - total
+        - page
+        - page_size
+      type: object
+    ListSubscriptionMemberProgressResponseItem:
+      additionalProperties: false
+      properties:
+        book:
+          $ref: "#/components/schemas/ListSubscriptionMemberProgressResponseItemBookStruct"
+        created_at:
+          format: date-time
+          type: string
+        locator: {}
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - book
+        - locator
+        - created_at
+        - updated_at
+      type: object
+    ListSubscriptionMemberProgressResponseItemBookStruct:
+      additionalProperties: false
+      properties:
+        id:
+          format: uuid
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
       type: object
     ListSubscriptionMembersResponseBody:
       additionalProperties: false
@@ -1071,6 +1396,80 @@ components:
         - part_number
         - etag
       type: object
+    PriceStruct:
+      additionalProperties: false
+      properties:
+        audio_only:
+          examples:
+            - "67.69"
+          type:
+            - string
+            - "null"
+        book_only:
+          examples:
+            - "67.69"
+          type:
+            - string
+            - "null"
+        total:
+          examples:
+            - "67.69"
+          type:
+            - string
+            - "null"
+      required:
+        - book_only
+        - audio_only
+        - total
+      type: object
+    PurchaseBookRequestBody:
+      additionalProperties: false
+      properties:
+        type:
+          enum:
+            - book_only
+            - audio_only
+            - both
+          type: string
+      required:
+        - type
+      type: object
+    PurchaseBookResponseBody:
+      additionalProperties: false
+      properties:
+        url:
+          format: url
+          type: string
+      required:
+        - url
+      type: object
+    ReadUptoNotificationRequestBody:
+      additionalProperties: false
+      properties:
+        id:
+          format: uuid
+          type: string
+      required:
+        - id
+      type: object
+    RenewSubscriptionResponseBody:
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+      required:
+        - url
+      type: object
+    ResetPasswordRequestBody:
+      additionalProperties: false
+      properties:
+        phone:
+          examples:
+            - "+251900000000"
+          type: string
+      required:
+        - phone
+      type: object
     SearchBookResponseBody:
       additionalProperties: false
       properties:
@@ -1131,6 +1530,23 @@ components:
         - owned
         - thumbnail
       type: object
+    ShowNotificationCountResponseBody:
+      additionalProperties: false
+      properties:
+        read:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+        unread:
+          format: int64
+          type: integer
+      required:
+        - read
+        - unread
+        - total
+      type: object
     ShowPlansResposneBody:
       additionalProperties: false
       properties:
@@ -1174,11 +1590,14 @@ components:
       properties:
         device_info:
           $ref: "#/components/schemas/DeviceInfo"
+        fcm_id:
+          type: string
         id_token:
           type: string
       required:
         - id_token
         - device_info
+        - fcm_id
       type: object
     SignInWithGoogleResponseBody:
       additionalProperties: false
@@ -1276,6 +1695,85 @@ components:
           format: int64
           type: integer
       type: object
+    UploadBookAssetRequestBody:
+      additionalProperties: false
+      properties:
+        asset_type:
+          enum:
+            - book
+            - audio
+          type: string
+        content_type:
+          enum:
+            - application/epub+zip
+            - audio/mpeg
+          type: string
+        expected_parts:
+          format: int64
+          maximum: 10000
+          minimum: 1
+          type: integer
+        name:
+          description: name of the file
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - asset_type
+        - name
+        - content_type
+        - expected_parts
+      type: object
+    UploadBookAssetResponseBody:
+      additionalProperties: false
+      properties:
+        key:
+          type: string
+        session_id:
+          type: string
+        upload_id:
+          type: string
+      required:
+        - key
+        - upload_id
+      type: object
+    UploadBookThumbnailRequestBody:
+      additionalProperties: false
+      properties:
+        content_type:
+          enum:
+            - image/jpeg
+            - image/png
+            - image/webp
+          type: string
+        expected_parts:
+          format: int64
+          maximum: 10000
+          minimum: 1
+          type: integer
+        name:
+          description: name of the file
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - name
+        - content_type
+        - expected_parts
+      type: object
+    UploadBookThumbnailResponseBody:
+      additionalProperties: false
+      properties:
+        key:
+          type: string
+        session_id:
+          type: string
+        upload_id:
+          type: string
+      required:
+        - key
+        - upload_id
+      type: object
     VerifyTwoFactorOTPRequestBody:
       additionalProperties: false
       properties:
@@ -1288,6 +1786,8 @@ components:
           type: string
         device_info:
           $ref: "#/components/schemas/DeviceInfo"
+        fcm_id:
+          type: string
         phone:
           examples:
             - "+251900000000"
@@ -1296,6 +1796,7 @@ components:
         - phone
         - code
         - device_info
+        - fcm_id
       type: object
     VerifyTwoFactorOTPResponseBody:
       additionalProperties: false
@@ -1356,7 +1857,7 @@ components:
       type: http
 info:
   title: tewba
-  version: "'6c3de1b'"
+  version: "'f7a21fc'"
 openapi: 3.1.0
 paths:
   /admin/api/author:
@@ -1394,9 +1895,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: list authors
       tags:
-        - admin
+        - admin.author
     post:
       operationId: create-author
       requestBody:
@@ -1418,9 +1921,49 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: create author
       tags:
-        - admin
+        - admin.author
+  /admin/api/author/{author_id}/avatar:
+    post:
+      operationId: upload-author-avatar
+      parameters:
+        - in: path
+          name: author_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding:
+              avatar:
+                contentType: image/png,image/jpeg
+            schema:
+              properties:
+                avatar:
+                  contentEncoding: binary
+                  contentMediaType: application/octet-stream
+                  format: binary
+                  type: string
+              type: object
+      responses:
+        "201":
+          description: Created
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - auth: null
+      summary: upload author avatar
+      tags:
+        - admin.author
   /admin/api/book:
     get:
       operationId: list-book
@@ -1456,9 +1999,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: list books
       tags:
-        - admin
+        - admin.book
     post:
       operationId: create-book
       requestBody:
@@ -1480,13 +2025,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: create book
       tags:
-        - admin
+        - admin.book
   /admin/api/book/{book_id}/asset:
     post:
       operationId: add-book-asset
       parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
         - in: path
           name: book_id
           required: true
@@ -1496,10 +2047,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AddBookAssetRequestBody"
+              $ref: "#/components/schemas/UploadBookAssetRequestBody"
         required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadBookAssetResponseBody"
           description: OK
         default:
           content:
@@ -1507,9 +2062,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: add asset to book
       tags:
-        - admin
+        - admin.book
   /admin/api/book/{book_id}/tag:
     post:
       operationId: add-book-tag
@@ -1534,10 +2091,94 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: add tag to book
       tags:
-        - admin
+        - admin.book
+  /admin/api/book/{book_id}/thumbnail:
+    post:
+      operationId: add-book-thumbnail
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+        - in: path
+          name: book_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadBookThumbnailRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadBookThumbnailResponseBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - auth: null
+      summary: add thumbnail to book
+      tags:
+        - admin.book
   /admin/api/category:
+    get:
+      operationId: list-category-admin
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            maximum: 10000000
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: page_size
+          schema:
+            default: 10
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListCategoryAdminRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListCategoryAdminResponseBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - auth: null
+      summary: list categories
+      tags:
+        - admin.category
     post:
       operationId: create-category
       requestBody:
@@ -1555,12 +2196,105 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: create category
       tags:
-        - admin
+        - admin.category
+  /admin/api/publisher:
+    get:
+      operationId: list-publisher
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            maximum: 10000000
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: page_size
+          schema:
+            default: 10
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListPublisherResponseBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - auth: null
+      summary: admin.publisher
+      tags:
+        - admin.publisher
+    post:
+      operationId: create-publisher
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePublisherRequestBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatePublisherResponseBody"
+          description: Created
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      security:
+        - auth: null
+      summary: create publisher
+      tags:
+        - admin.publisher
+  /admin/api/signin:
+    post:
+      operationId: admin-sign-in
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSigninRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSigninResponseBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: admin sign in
+      tags:
+        - admin.auth
   /admin/api/upload/complete:
     post:
-      operationId: complete-book-upload
+      operationId: complete-upload
       requestBody:
         content:
           application/json:
@@ -1576,12 +2310,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: complete book upload
       tags:
-        - admin
+        - admin.upload
   /admin/api/upload/get-part:
     post:
-      operationId: get-book-upload-part-url
+      operationId: get-upload-part-url
       requestBody:
         content:
           application/json:
@@ -1601,34 +2337,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Error
+      security:
+        - auth: null
       summary: get book upload part url
       tags:
-        - admin
-  /admin/api/upload/init:
-    post:
-      operationId: init-book-upload
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InitBookUploadRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InitBookUploadResponseBody"
-          description: OK
-        default:
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Error
-      summary: initiate book upload
-      tags:
-        - admin
+        - admin.upload
   /api/auth/google:
     post:
       operationId: auth-google
@@ -1724,6 +2437,48 @@ paths:
       summary: sign in with phone
       tags:
         - auth
+  /api/auth/reset-password:
+    post:
+      operationId: reset-password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequestBody"
+        required: true
+      responses:
+        "200":
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: reset password
+      tags:
+        - auth
+  /api/auth/reset-password/apply:
+    post:
+      operationId: apply-reset-password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplyPasswordResetRequestBody"
+        required: true
+      responses:
+        "200":
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: apply password reset
+      tags:
+        - auth
   /api/auth/two-factor/otp:
     post:
       operationId: auth-verify-two-factor-otp
@@ -1786,6 +2541,23 @@ paths:
             type:
               - array
               - "null"
+        - explode: false
+          in: query
+          name: language
+          schema:
+            enum:
+              - am
+              - ar
+              - en
+            type: string
+        - explode: false
+          in: query
+          name: type
+          schema:
+            enum:
+              - book_only
+              - audio_only
+            type: string
       responses:
         "200":
           content:
@@ -1905,6 +2677,56 @@ paths:
       summary: get book asset
       tags:
         - book
+  /api/book/{book_id}/purchase:
+    post:
+      operationId: purchase-book
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+        - in: path
+          name: book_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseBookRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseBookResponseBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: purchase book
+      tags:
+        - book
   /api/book/{book_id}/rating:
     get:
       operationId: list-rating
@@ -2008,6 +2830,64 @@ paths:
       security:
         - auth: null
       summary: add rating to book
+      tags:
+        - book
+  /api/book/{book_id}/rating/mine:
+    get:
+      operationId: get-rating
+      parameters:
+        - in: path
+          name: book_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            maximum: 10000000
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: page_size
+          schema:
+            default: 10
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetOwnedRatingResponseBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: get book rating for logged in user
       tags:
         - book
   /api/bookmark:
@@ -2183,6 +3063,41 @@ paths:
       summary: list categories
       tags:
         - category
+  /api/feedback:
+    post:
+      operationId: send-feedback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFeedbackRequestBody"
+        required: true
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: send feedback
+      tags:
+        - feedback
   /api/home/newly-added:
     get:
       operationId: home-newly-added
@@ -2205,6 +3120,23 @@ paths:
             maximum: 100
             minimum: 1
             type: integer
+        - explode: false
+          in: query
+          name: language
+          schema:
+            enum:
+              - am
+              - ar
+              - en
+            type: string
+        - explode: false
+          in: query
+          name: type
+          schema:
+            enum:
+              - book_only
+              - audio_only
+            type: string
       responses:
         "200":
           content:
@@ -2257,6 +3189,23 @@ paths:
             maximum: 100
             minimum: 1
             type: integer
+        - explode: false
+          in: query
+          name: language
+          schema:
+            enum:
+              - am
+              - ar
+              - en
+            type: string
+        - explode: false
+          in: query
+          name: type
+          schema:
+            enum:
+              - book_only
+              - audio_only
+            type: string
       responses:
         "200":
           content:
@@ -2462,6 +3411,119 @@ paths:
       summary: delete note
       tags:
         - note
+  /api/notification:
+    get:
+      operationId: list-notification
+      parameters:
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            maximum: 10000000
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: page_size
+          schema:
+            default: 10
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListNotificationResponseBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: list notifications
+      tags:
+        - notification
+    post:
+      operationId: read-upto-notification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadUptoNotificationRequestBody"
+        required: true
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: read upto notification
+      tags:
+        - notification
+  /api/notification/count:
+    get:
+      operationId: show-notification-count
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowNotificationCountResponseBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: show notification count
+      tags:
+        - notification
   /api/plans:
     post:
       operationId: show-plans
@@ -2584,6 +3646,71 @@ paths:
       summary: delete account
       tags:
         - profile
+  /api/profile/avatar:
+    delete:
+      operationId: delete-avatar
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: delete avatar (profile picture)
+      tags:
+        - profile
+    post:
+      operationId: upload-avatar
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding:
+              avatar:
+                contentType: image/png,image/jpeg
+            schema:
+              properties:
+                avatar:
+                  contentEncoding: binary
+                  contentMediaType: application/octet-stream
+                  format: binary
+                  type: string
+              type: object
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: upload avatar (profile picture)
+      tags:
+        - profile
   /api/profile/password:
     patch:
       operationId: update-password
@@ -2619,6 +3746,41 @@ paths:
       summary: update password
       tags:
         - profile
+  /api/progress:
+    post:
+      operationId: create-progress
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProgressRequestBody"
+        required: true
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: create or update progress
+      tags:
+        - progress
   /api/rating/{rating_id}:
     delete:
       operationId: delete-book-rating
@@ -2985,6 +4147,29 @@ paths:
       summary: init subscription
       tags:
         - subscription
+  /api/subscription/cancel:
+    post:
+      operationId: cancel-subscription
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: cancel subscription
+      tags:
+        - subscription
   /api/subscription/member:
     get:
       operationId: list-subscription-member
@@ -3071,6 +4256,102 @@ paths:
       security:
         - auth: null
       summary: delete subscription member
+      tags:
+        - subscription
+  /api/subscription/member/{member_id}/progress:
+    get:
+      operationId: list-subscription-member-progress
+      parameters:
+        - in: path
+          name: member_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: page
+          schema:
+            default: 1
+            format: int64
+            maximum: 10000000
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: page_size
+          schema:
+            default: 10
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListSubscriptionMemberProgressResponseBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: list subscription member progress
+      tags:
+        - subscription
+  /api/subscription/renew:
+    post:
+      operationId: renew-subscription
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RenewSubscriptionResponseBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      security:
+        - auth: null
+      summary: renew subscription
       tags:
         - subscription
   /healthcheck:

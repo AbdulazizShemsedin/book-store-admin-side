@@ -28,7 +28,7 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: 'admin@tewba.com',
-      pin: '123456',
+      pin: 'Password123',
     },
   });
 

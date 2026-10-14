@@ -2,6 +2,7 @@ import { initialMockAuthors } from './data/authors';
 import { initialMockBooks, StoredMockBook } from './data/books';
 import { initialMockCategories } from './data/categories';
 import { initialMockTags, MockTag } from './data/tags';
+import { initialMockPublishers } from './data/publishers';
 import {
   ListAuthorItem,
   ListAuthorResponseBody,
@@ -11,6 +12,10 @@ import {
   CreateBookResponseBody,
   ListCategoryResponseItem,
   ListCategoryResponseBody,
+  ListCategoryAdminResponseBody,
+  ListCategoryAdminResponseItem,
+  ListPublisherResponseItem,
+  ListPublisherResponseBody,
 } from '@/types/api';
 
 export type ErrorScenario = 'NONE' | 'SERVER_ERROR' | 'UNAUTHORIZED' | 'VALIDATION_ERROR' | 'EMPTY_STATE';
@@ -24,6 +29,7 @@ class MockStore {
   private authors: ListAuthorItem[] = [];
   private books: StoredMockBook[] = [];
   private categories: ListCategoryResponseItem[] = [];
+  private publishers: ListPublisherResponseItem[] = [];
   private tags: MockTag[] = [];
   private activeScenario: ErrorScenario = 'NONE';
 
@@ -40,6 +46,7 @@ class MockStore {
         if (Array.isArray(parsed.authors) && parsed.authors.length > 0) this.authors = parsed.authors;
         if (Array.isArray(parsed.books) && parsed.books.length > 0) this.books = parsed.books;
         if (Array.isArray(parsed.categories) && parsed.categories.length > 0) this.categories = parsed.categories;
+        if (Array.isArray(parsed.publishers) && parsed.publishers.length > 0) this.publishers = parsed.publishers;
         if (Array.isArray(parsed.tags) && parsed.tags.length > 0) this.tags = parsed.tags;
       }
     } catch {
@@ -56,6 +63,7 @@ class MockStore {
           authors: this.authors,
           books: this.books,
           categories: this.categories,
+          publishers: this.publishers,
           tags: this.tags,
         })
       );
@@ -68,6 +76,7 @@ class MockStore {
     this.authors = JSON.parse(JSON.stringify(initialMockAuthors));
     this.books = JSON.parse(JSON.stringify(initialMockBooks));
     this.categories = JSON.parse(JSON.stringify(initialMockCategories));
+    this.publishers = JSON.parse(JSON.stringify(initialMockPublishers));
     this.tags = JSON.parse(JSON.stringify(initialMockTags));
     this.activeScenario = 'NONE';
     this.loadFromStorage();
@@ -203,7 +212,10 @@ class MockStore {
       created_at: b.created_at,
       updated_at: b.updated_at,
       has_audio: b.has_audio,
-      publisher: (b as any).publisher,
+      has_book: b.has_book ?? true,
+      language: b.language || 'en',
+      thumbnail: b.thumbnail || null,
+      publisher: (b as any).publisher || null,
     }));
 
     return {
@@ -256,6 +268,9 @@ class MockStore {
       author: authorName,
       author_id: payload.author_id || '',
       thumbnail_id: payload.thumbnail_id,
+      thumbnail: null,
+      publisher: null,
+      language: 'en',
       description: payload.description || '',
       status: 'Published',
       has_audio: false,
@@ -271,10 +286,6 @@ class MockStore {
 
     return {
       id,
-      name: trimmedName,
-      description: payload.description || null,
-      author_id: payload.author_id,
-      thumbnail_id: payload.thumbnail_id,
     };
   }
 
@@ -356,7 +367,7 @@ class MockStore {
     };
   }
 
-  createCategory(name: string, parentId?: string): { id: string } {
+  createCategory(name: string, parentId?: string, color?: string): { id: string } {
     const trimmed = name.trim();
     if (!trimmed || trimmed.length > 128) {
       throw new Error('Category name must be between 1 and 128 characters.');
@@ -367,6 +378,7 @@ class MockStore {
       id,
       name: trimmed,
       parent_id: parentId || null,
+      color: color || null,
     };
 
     this.categories.push(newCategory);
@@ -423,6 +435,115 @@ class MockStore {
     this.tags.push(newTag);
     this.saveToStorage();
     return newTag;
+  }
+
+  // ==========================================
+  // PUBLISHERS
+  // ==========================================
+
+  getPublishers(params: { page?: number; pageSize?: number; search?: string }): ListPublisherResponseBody {
+    if (this.activeScenario === 'EMPTY_STATE') {
+      return {
+        publishers: [],
+        total: 0,
+        page: params.page || 1,
+        page_size: params.pageSize || 10,
+      };
+    }
+
+    let list = [...this.publishers];
+    if (params.search?.trim()) {
+      const q = params.search.trim().toLowerCase();
+      list = list.filter((p) => p.string.toLowerCase().includes(q));
+    }
+
+    const total = list.length;
+    const page = Math.max(1, params.page || 1);
+    const pageSize = Math.max(1, params.pageSize || 10);
+    const start = (page - 1) * pageSize;
+    const slice = list.slice(start, start + pageSize);
+
+    return {
+      publishers: slice,
+      total,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  createPublisher(name: string): { id: string } {
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.length > 128) {
+      throw new Error('Publisher name must be between 1 and 128 characters.');
+    }
+
+    const id = `p1000000-0000-4000-8000-${Date.now().toString(16).padStart(12, '0').slice(-12)}`;
+    const newPublisher: ListPublisherResponseItem = {
+      id,
+      string: trimmed,
+    };
+
+    this.publishers.unshift(newPublisher);
+    this.saveToStorage();
+    return { id };
+  }
+
+  // ==========================================
+  // ADMIN CATEGORIES
+  // ==========================================
+
+  getCategoriesAdmin(params: { page?: number; pageSize?: number; parentId?: string }): ListCategoryAdminResponseBody {
+    if (this.activeScenario === 'EMPTY_STATE') {
+      return {
+        categories: [],
+        total: 0,
+        page: params.page || 1,
+        page_size: params.pageSize || 10,
+      };
+    }
+
+    let list = [...this.categories];
+    if (params.parentId) {
+      list = list.filter((c) => c.parent_id === params.parentId);
+    }
+
+    const total = list.length;
+    const page = Math.max(1, params.page || 1);
+    const pageSize = Math.max(1, params.pageSize || 10);
+    const start = (page - 1) * pageSize;
+    const slice: ListCategoryAdminResponseItem[] = list.slice(start, start + pageSize).map((c) => ({
+      id: c.id,
+      name: c.name,
+      parent_id: c.parent_id || '',
+    }));
+
+    return {
+      categories: slice,
+      total,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  // ==========================================
+  // AVATARS & THUMBNAILS
+  // ==========================================
+
+  setAuthorAvatar(authorId: string, avatarUrl: string): boolean {
+    const author = this.authors.find((a) => a.id === authorId);
+    if (!author) return false;
+    author.avatar = avatarUrl;
+    author.photo_url = avatarUrl;
+    this.saveToStorage();
+    return true;
+  }
+
+  setBookThumbnail(bookId: string, thumbnailUrl: string): boolean {
+    const book = this.books.find((b) => b.id === bookId);
+    if (!book) return false;
+    book.thumbnail = thumbnailUrl;
+    this.saveToStorage();
+    return true;
   }
 }
 

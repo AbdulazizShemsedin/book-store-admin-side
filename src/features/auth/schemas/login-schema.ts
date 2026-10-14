@@ -7,8 +7,8 @@ export const loginSchema = z.object({
     .email('Please enter a valid email address'),
   pin: z
     .string()
-    .min(4, 'Security PIN / Password must be at least 4 digits')
-    .max(32, 'Security PIN / Password is too long'),
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password is too long'),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

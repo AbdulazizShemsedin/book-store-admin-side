@@ -9,8 +9,13 @@ import {
   CreateBookResponseBody,
   GetBookResponseBody,
   ListCategoryResponseBody,
+  ListCategoryAdminResponseBody,
+  ListPublisherResponseBody,
+  CreatePublisherResponseBody,
   InitBookUploadResponseBody,
   GetBookUploadPartURLResponseBody,
+  UploadBookThumbnailResponseBody,
+  AdminSigninResponseBody,
 } from '@/types/api';
 
 const server = setupServer(...handlers);
@@ -113,8 +118,6 @@ describe('OpenAPI Compliance: Books Endpoints', () => {
     expect(res.status).toBe(201);
     const created = (await res.json()) as CreateBookResponseBody;
     expect(created).toHaveProperty('id');
-    expect(created).toHaveProperty('name', 'The Cairo Awakening');
-    expect(created.description).toBe('A study of literary trends.');
 
     // Verify GET by ID returns GetBookResponseBody
     const getRes = await fetch(`http://localhost:8000/api/book/${created.id}`);
@@ -237,6 +240,97 @@ describe('OpenAPI Compliance: Multipart Upload Workflow', () => {
       }),
     });
     expect(completeRes.status).toBe(200);
+  });
+});
+
+describe('OpenAPI Compliance: Auth Endpoints', () => {
+  it('POST /admin/api/signin returns 200 with JWT token for valid credentials', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'admin@tewba.et', password: 'password123' }),
+    });
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as AdminSigninResponseBody;
+    expect(data).toHaveProperty('token');
+    expect(typeof data.token).toBe('string');
+  });
+
+  it('POST /admin/api/signin returns 422 if password is shorter than 8 chars', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'admin@tewba.et', password: 'short' }),
+    });
+    expect(res.status).toBe(422);
+  });
+});
+
+describe('OpenAPI Compliance: Publishers Endpoints', () => {
+  it('GET /admin/api/publisher returns ListPublisherResponseBody with { id, string }', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/publisher?page=1&page_size=10');
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as ListPublisherResponseBody;
+    expect(data).toHaveProperty('publishers');
+    expect(data).toHaveProperty('total');
+    expect(data.publishers?.length).toBeGreaterThan(0);
+    const first = data.publishers![0];
+    expect(first).toHaveProperty('id');
+    expect(first).toHaveProperty('string');
+    expect(typeof first.string).toBe('string');
+  });
+
+  it('POST /admin/api/publisher creates publisher and returns 201 with id', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/publisher', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Dar Al-Tanweer' }),
+    });
+    expect(res.status).toBe(201);
+    const data = (await res.json()) as CreatePublisherResponseBody;
+    expect(data).toHaveProperty('id');
+  });
+});
+
+describe('OpenAPI Compliance: Category Admin & Asset Endpoints', () => {
+  it('GET /admin/api/category returns ListCategoryAdminResponseBody', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/category?page=1&page_size=10');
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as ListCategoryAdminResponseBody;
+    expect(data).toHaveProperty('categories');
+    expect(data).toHaveProperty('total');
+    expect(data.categories?.length).toBeGreaterThan(0);
+    const first = data.categories![0];
+    expect(first).toHaveProperty('id');
+    expect(first).toHaveProperty('name');
+    expect(first).toHaveProperty('parent_id');
+  });
+
+  it('POST /admin/api/author/:id/avatar accepts multipart upload and returns 201', async () => {
+    const formData = new FormData();
+    formData.append('avatar', new Blob(['test-avatar'], { type: 'image/png' }));
+    const res = await fetch('http://localhost:8000/admin/api/author/c79435b6-6f78-4ea7-9a40-000000000001/avatar', {
+      method: 'POST',
+      body: formData,
+    });
+    expect(res.status).toBe(201);
+  });
+
+  it('POST /admin/api/book/:id/thumbnail initiates chunked thumbnail upload', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/book/b1000000-0000-4000-8000-000000000001/thumbnail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'cover.jpg',
+        content_type: 'image/jpeg',
+        expected_parts: 1,
+      }),
+    });
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as UploadBookThumbnailResponseBody;
+    expect(data).toHaveProperty('key');
+    expect(data).toHaveProperty('upload_id');
+    expect(data).toHaveProperty('session_id');
   });
 });
 

@@ -1,13 +1,22 @@
 import { ListBookItem, GetBookResponseBody } from '@/types/api';
 
-export interface StoredMockBook extends ListBookItem {
-  description: string;
+export interface StoredMockBook {
+  id: string;
+  name: string;
+  author?: string | null;
   author_id: string;
   thumbnail_id?: string;
+  thumbnail?: string | null;
+  publisher?: string | null;
+  language?: string;
+  status: string;
+  description: string;
   has_audio: boolean;
   has_book: boolean;
   rating?: string | null;
   tags?: string[];
+  created_at: string;
+  updated_at: string;
 }
 
 export const initialMockBooks: StoredMockBook[] = [

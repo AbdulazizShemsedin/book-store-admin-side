@@ -16,6 +16,18 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@phosphor-icons/react', 'recharts'],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/admin/api/:path*',
+        destination: 'https://tewba.et/admin/api/:path*',
+      },
+      {
+        source: '/api/:path*',
+        destination: 'https://tewba.et/api/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

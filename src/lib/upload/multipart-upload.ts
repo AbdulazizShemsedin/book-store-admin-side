@@ -53,34 +53,20 @@ export function getValidContentType(file: File): InitBookUploadRequestBody['cont
 }
 
 /**
- * Orchestrates direct browser-to-storage multipart uploads using the TEWBA upload contract:
- * 1. POST /admin/api/upload/init
- * 2. POST /admin/api/upload/get-part (per 5MB chunk)
- * 3. Direct browser PUT to presigned URL
- * 4. POST /admin/api/upload/complete
+ * Shared chunk execution logic for all multipart uploads.
  */
-export async function uploadFileDirectMultipart(
+async function executeUploadSession(
   file: File,
+  contentType: string,
+  totalParts: number,
+  initResponse: { key: string; upload_id: string; session_id?: string },
   options: UploadOptions = {}
 ): Promise<UploadResult> {
-  const contentType = getValidContentType(file);
-  const totalParts = Math.max(1, Math.ceil(file.size / PART_SIZE_BYTES));
-
-  // 1. Initialize upload session
-  const initResponse = await apiClient.post<InitBookUploadResponseBody>(
-    '/admin/api/upload/init',
-    {
-      content_type: contentType,
-      expected_parts: totalParts,
-    } as InitBookUploadRequestBody,
-    { signal: options.signal }
-  );
-
   const { key, upload_id, session_id } = initResponse;
   const activeSessionId = session_id || upload_id;
   const completedParts: Part[] = [];
 
-  // 2. Upload parts sequentially with progress tracking
+  // Upload parts sequentially with progress tracking
   for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
     if (options.signal?.aborted) {
       throw new Error('Upload aborted by user');
@@ -90,7 +76,7 @@ export async function uploadFileDirectMultipart(
     const end = Math.min(start + PART_SIZE_BYTES, file.size);
     const chunk = file.slice(start, end);
 
-    // Get presigned URL for this part
+    // Get presigned URL for this part via POST /admin/api/upload/get-part
     const partUrlResponse = await apiClient.post<GetBookUploadPartURLResponseBody>(
       '/admin/api/upload/get-part',
       {
@@ -133,7 +119,7 @@ export async function uploadFileDirectMultipart(
     }
   }
 
-  // 3. Complete multipart upload
+  // Complete multipart upload via POST /admin/api/upload/complete
   await apiClient.post(
     '/admin/api/upload/complete',
     {
@@ -143,7 +129,6 @@ export async function uploadFileDirectMultipart(
     { signal: options.signal }
   );
 
-  // 4. Resolve file_id (Centralized isolation boundary for backend gap)
   const fileId = resolveFileIdFromUpload(activeSessionId, key);
 
   return {
@@ -157,13 +142,97 @@ export async function uploadFileDirectMultipart(
 }
 
 /**
+ * Uploads a book thumbnail using the documented OpenAPI sequence:
+ * 1. POST /admin/api/book/{book_id}/thumbnail
+ * 2. POST /admin/api/upload/get-part (per part)
+ * 3. PUT chunks to storage URLs
+ * 4. POST /admin/api/upload/complete
+ */
+export async function uploadBookThumbnail(
+  bookId: string,
+  file: File,
+  options: UploadOptions = {}
+): Promise<UploadResult> {
+  const contentType = getValidContentType(file);
+  const totalParts = Math.max(1, Math.ceil(file.size / PART_SIZE_BYTES));
+
+  const initResponse = await apiClient.post<{ key: string; upload_id: string; session_id?: string }>(
+    `/admin/api/book/${bookId}/thumbnail`,
+    {
+      name: file.name,
+      content_type: contentType,
+      expected_parts: totalParts,
+    },
+    { signal: options.signal }
+  );
+
+  return executeUploadSession(file, contentType, totalParts, initResponse, options);
+}
+
+/**
+ * Uploads a book asset (manuscript EPUB or audiobook MP3) using the documented OpenAPI sequence:
+ * 1. POST /admin/api/book/{book_id}/asset
+ * 2. POST /admin/api/upload/get-part (per part)
+ * 3. PUT chunks to storage URLs
+ * 4. POST /admin/api/upload/complete
+ */
+export async function uploadBookAsset(
+  bookId: string,
+  assetType: 'book' | 'audio',
+  file: File,
+  options: UploadOptions = {}
+): Promise<UploadResult> {
+  const contentType = getValidContentType(file);
+  const totalParts = Math.max(1, Math.ceil(file.size / PART_SIZE_BYTES));
+
+  const initResponse = await apiClient.post<{ key: string; upload_id: string; session_id?: string }>(
+    `/admin/api/book/${bookId}/asset`,
+    {
+      asset_type: assetType,
+      name: file.name,
+      content_type: contentType,
+      expected_parts: totalParts,
+    },
+    { signal: options.signal }
+  );
+
+  return executeUploadSession(file, contentType, totalParts, initResponse, options);
+}
+
+/**
+ * Orchestrates direct browser-to-storage multipart uploads.
+ */
+export async function uploadFileDirectMultipart(
+  file: File,
+  options: UploadOptions = {}
+): Promise<UploadResult> {
+  const contentType = getValidContentType(file);
+  const totalParts = Math.max(1, Math.ceil(file.size / PART_SIZE_BYTES));
+
+  try {
+    const initResponse = await apiClient.post<{ key: string; upload_id: string; session_id?: string }>(
+      '/admin/api/upload/init',
+      {
+        content_type: contentType,
+        expected_parts: totalParts,
+      },
+      { signal: options.signal }
+    );
+
+    return executeUploadSession(file, contentType, totalParts, initResponse, options);
+  } catch (err) {
+    throw new Error(
+      `Direct upload failed: Standalone /admin/api/upload/init is not provided by backend. ` +
+      `Uploads must be attached to an existing book via /admin/api/book/{book_id}/thumbnail or /admin/api/book/{book_id}/asset.`
+    );
+  }
+}
+
+/**
  * Backend gap isolation boundary:
- * The current OpenAPI does not specify where file_id is generated after upload completion.
- * When the backend adds an explicit file_id response in complete upload,
- * map it here without changing UI or calling components.
+ * Resolves file_id from session and key.
  */
 export function resolveFileIdFromUpload(sessionId: string, _key: string): string {
-  // If sessionId is already a valid UUID, return it directly;
-  // otherwise format or use backend session reference.
   return sessionId;
 }
+

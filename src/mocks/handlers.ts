@@ -1,11 +1,14 @@
 import { http, HttpResponse } from 'msw';
 import { mockStore } from './store';
 import {
+  AdminSigninRequestBody,
   CreateAuthorRequestBody,
   CreateBookRequestBody,
   AddBookAssetRequestBody,
   AddBookTagRequestBody,
+  UploadBookThumbnailRequestBody,
   CreateCategoryRequestBody,
+  CreatePublisherRequestBody,
   InitBookUploadRequestBody,
   GetBookUploadPartURLRequestBody,
   CompleteBookUploadRequestBody,
@@ -24,6 +27,33 @@ export const handlers = [
       access_token: 'mock_jwt_token_for_local_development_only',
       token_type: 'Bearer',
       refresh_token: null,
+    });
+  }),
+
+  http.post('*/admin/api/signin', async ({ request }) => {
+    const scenario = mockStore.getScenario();
+    if (scenario === 'SERVER_ERROR') {
+      return HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 });
+    }
+
+    try {
+      const body = (await request.json()) as AdminSigninRequestBody;
+      if (!body?.email || !body?.password || body.password.length < 8) {
+        return HttpResponse.json(
+          {
+            title: 'Unprocessable Entity',
+            status: 422,
+            errors: [{ location: 'body.password', message: 'Password must be at least 8 characters' }],
+          },
+          { status: 422 }
+        );
+      }
+    } catch {
+      return HttpResponse.json({ title: 'Bad Request', status: 400 }, { status: 400 });
+    }
+
+    return HttpResponse.json({
+      token: 'mock_admin_jwt_token_for_local_development_only',
     });
   }),
 
@@ -102,6 +132,15 @@ export const handlers = [
       body.photo_url
     );
     return HttpResponse.json(created, { status: 201 });
+  }),
+
+  http.post('*/admin/api/author/:id/avatar', async ({ params }) => {
+    const authorId = params.id as string;
+    mockStore.setAuthorAvatar(
+      authorId,
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
+    );
+    return new HttpResponse(null, { status: 201 });
   }),
 
   // ==========================================
@@ -198,23 +237,16 @@ export const handlers = [
       );
     }
 
-    if (!body.file_id) {
-      return HttpResponse.json(
-        {
-          title: 'Unprocessable Entity',
-          status: 422,
-          errors: [{ location: 'body.file_id', message: 'file_id UUID is required' }],
-        },
-        { status: 422 }
-      );
-    }
-
     const success = mockStore.attachAsset(bookId, body.asset_type);
     if (!success) {
       return HttpResponse.json({ title: 'Book Not Found', status: 404 }, { status: 404 });
     }
 
-    return new HttpResponse(null, { status: 200 });
+    return HttpResponse.json({
+      key: `assets/${bookId}/${body.name || 'asset'}`,
+      upload_id: `upload_${Date.now()}`,
+      session_id: `sess_${Date.now()}`,
+    });
   }),
 
   http.post('*/admin/api/book/:id/tag', async ({ params, request }) => {
@@ -238,6 +270,33 @@ export const handlers = [
     }
 
     return new HttpResponse(null, { status: 200 });
+  }),
+
+  http.post('*/admin/api/book/:id/thumbnail', async ({ params, request }) => {
+    const bookId = params.id as string;
+    const body = (await request.json()) as UploadBookThumbnailRequestBody;
+
+    if (!body?.content_type || !['image/jpeg', 'image/png', 'image/webp'].includes(body.content_type)) {
+      return HttpResponse.json(
+        {
+          title: 'Unprocessable Entity',
+          status: 422,
+          errors: [{ location: 'body.content_type', message: 'Content type must be image/jpeg, image/png, or image/webp' }],
+        },
+        { status: 422 }
+      );
+    }
+
+    mockStore.setBookThumbnail(
+      bookId,
+      'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=300&q=80'
+    );
+
+    return HttpResponse.json({
+      key: `thumbnails/${bookId}/${body.name || 'cover'}`,
+      upload_id: `thumb_upload_${Date.now()}`,
+      session_id: `thumb_sess_${Date.now()}`,
+    });
   }),
 
   // ==========================================
@@ -270,7 +329,7 @@ export const handlers = [
       );
     }
 
-    const created = mockStore.createCategory(body.name, body.parent_id);
+    const created = mockStore.createCategory(body.name, body.parent_id, body.color);
     return HttpResponse.json(created, { status: 201 });
   }),
 
@@ -302,6 +361,65 @@ export const handlers = [
 
     const data = mockStore.getCategories({ page, pageSize, parentId });
     return HttpResponse.json(data);
+  }),
+
+  http.get('*/admin/api/category', ({ request }) => {
+    const scenario = mockStore.getScenario();
+    if (scenario === 'SERVER_ERROR') {
+      return HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 });
+    }
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(url.searchParams.get('page_size') || '10', 10);
+    const parentId = url.searchParams.get('parent_id') || undefined;
+
+    const data = mockStore.getCategoriesAdmin({ page, pageSize, parentId });
+    return HttpResponse.json(data);
+  }),
+
+  // ==========================================
+  // PUBLISHERS
+  // ==========================================
+  http.get('*/admin/api/publisher', ({ request }) => {
+    const scenario = mockStore.getScenario();
+    if (scenario === 'SERVER_ERROR') {
+      return HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 });
+    }
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(url.searchParams.get('page_size') || '10', 10);
+    const search = url.searchParams.get('search') || undefined;
+
+    const data = mockStore.getPublishers({ page, pageSize, search });
+    return HttpResponse.json(data);
+  }),
+
+  http.post('*/admin/api/publisher', async ({ request }) => {
+    const scenario = mockStore.getScenario();
+    if (scenario === 'SERVER_ERROR') {
+      return HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 });
+    }
+
+    let body: CreatePublisherRequestBody;
+    try {
+      body = (await request.json()) as CreatePublisherRequestBody;
+    } catch {
+      return HttpResponse.json({ title: 'Bad Request', status: 400 }, { status: 400 });
+    }
+
+    if (!body?.name || body.name.trim().length === 0) {
+      return HttpResponse.json(
+        {
+          title: 'Unprocessable Entity',
+          status: 422,
+          errors: [{ location: 'body.name', message: 'Publisher name is required' }],
+        },
+        { status: 422 }
+      );
+    }
+
+    const created = mockStore.createPublisher(body.name);
+    return HttpResponse.json(created, { status: 201 });
   }),
 
   http.put('*/admin/api/category/:id', async ({ params, request }) => {
@@ -369,7 +487,7 @@ export const handlers = [
       );
     }
 
-    const sessionId = body.session_id || `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const sessionId = (body as any).session_id || `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const uploadId = `upload_${Date.now()}`;
     const key = `uploads/${sessionId}/asset`;
 

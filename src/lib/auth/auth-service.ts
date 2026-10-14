@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api/client';
-import { TokenResponseBody, SigninRequestBody } from '@/types/api';
+import { AdminSigninRequestBody, AdminSigninResponseBody } from '@/types/api';
 import { UserProfile } from '@/types/domain';
 
 const TOKEN_KEY = 'tewba_access_token';
@@ -11,34 +11,18 @@ const USER_KEY = 'tewba_user_profile';
  */
 class AuthService {
   /**
-   * Performs sign in using phone and PIN according to OpenAPI /api/auth/phone/signin.
-   * If real backend is reachable, uses returned JWT access token.
+   * Performs admin sign in using email and password via POST /admin/api/signin.
+   * Stores returned JWT token upon successful authentication.
    */
   async signin(email: string, pin: string): Promise<UserProfile> {
-    try {
-      const response = await apiClient.post<TokenResponseBody>(
-        '/api/auth/phone/signin',
-        { phone: email, email, pin } as unknown as SigninRequestBody,
-        { skipAuth: true }
-      );
+    const response = await apiClient.post<AdminSigninResponseBody>(
+      '/admin/api/signin',
+      { email, password: pin } as AdminSigninRequestBody,
+      { skipAuth: true }
+    );
 
-      if (response && response.access_token) {
-        this.saveSession(response.access_token, response.refresh_token || null);
-      }
-    } catch (error) {
-      // In environments where the backend auth microservice is offline,
-      // allow testing the admin portal with valid formatted email and PIN.
-      if (
-        process.env.NODE_ENV === 'development' ||
-        !process.env.NEXT_PUBLIC_API_BASE_URL ||
-        process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-        process.env.NEXT_PUBLIC_USE_MOCK_API !== 'false'
-      ) {
-        console.warn('Backend signin failed, using admin session fallback:', error);
-        this.saveSession('dev-mock-admin-token-xyz', null);
-      } else {
-        throw error;
-      }
+    if (response && response.token) {
+      this.saveSession(response.token, null);
     }
 
     const profile: UserProfile = {

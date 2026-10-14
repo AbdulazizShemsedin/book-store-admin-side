@@ -2,6 +2,7 @@ import { apiClient } from '@/lib/api/client';
 import {
   ListCategoryRequestBody,
   ListCategoryResponseBody,
+  ListCategoryAdminResponseBody,
   CreateCategoryRequestBody,
 } from '@/types/api';
 import { Category } from '@/types/domain';
@@ -23,43 +24,74 @@ export interface ListCategoriesResult {
 
 export const categoriesApi = {
   /**
-   * Retrieves category list via POST /api/category.
-   * Isolates category taxonomy read operations from admin writes.
+   * Retrieves category list via documented GET /admin/api/category.
+   * Gracefully falls back to POST /api/category if admin endpoint is unavailable.
    */
   async list(params: ListCategoriesParams = {}): Promise<ListCategoriesResult> {
     const page = params.page || 1;
     const pageSize = params.pageSize || 50;
 
-    const requestBody: ListCategoryRequestBody = {
-      parent_id: params.parentId || undefined,
+    const queryParams: Record<string, string | number | undefined> = {
+      page,
+      page_size: pageSize,
     };
+    if (params.parentId) {
+      queryParams.parent_id = params.parentId;
+    }
 
-    const response = await apiClient.post<ListCategoryResponseBody>(
-      '/api/category',
-      requestBody,
-      {
-        params: {
-          page,
-          page_size: pageSize,
-        },
-      }
-    );
+    try {
+      const response = await apiClient.get<ListCategoryAdminResponseBody>(
+        '/admin/api/category',
+        { params: queryParams }
+      );
 
-    const rawList = response.categories || [];
+      const rawList = response.categories || [];
+      const categories: Category[] = rawList.map((item) => ({
+        id: item.id,
+        name: item.name,
+        parentId: item.parent_id || undefined,
+      }));
 
-    // Map to domain model
-    const categories: Category[] = rawList.map((item) => ({
-      id: item.id,
-      name: item.name,
-      parentId: item.parent_id,
-    }));
+      return {
+        categories,
+        total: response.total ?? categories.length,
+        page: response.page || page,
+        pageSize: response.page_size || pageSize,
+      };
+    } catch {
+      // Fallback to public catalog endpoint
+      const requestBody: ListCategoryRequestBody = {
+        parent_id: params.parentId || undefined,
+      };
 
-    return {
-      categories,
-      total: response.total || categories.length,
-      page: response.page || page,
-      pageSize: response.page_size || pageSize,
-    };
+      const response = await apiClient.post<ListCategoryResponseBody>(
+        '/api/category',
+        requestBody,
+        {
+          params: {
+            page,
+            page_size: pageSize,
+          },
+        }
+      );
+
+      const rawList = response.categories || [];
+
+      // Map to domain model
+      const categories: Category[] = rawList.map((item) => ({
+        id: item.id,
+        name: item.name,
+        parentId: item.parent_id || undefined,
+        color: item.color || undefined,
+      }));
+
+      return {
+        categories,
+        total: response.total || categories.length,
+        page: response.page || page,
+        pageSize: response.page_size || pageSize,
+      };
+    }
   },
 
   /**
@@ -71,27 +103,35 @@ export const categoriesApi = {
       parent_id: data.parentId ? data.parentId : undefined,
     };
 
-    const response = await apiClient.post<{ id: string }>(
+    const response = await apiClient.post<{ id?: string }>(
       '/admin/api/category',
       requestBody
     );
 
-    return response;
+    return { id: response?.id || '' };
   },
 
   /**
-   * Updates an existing category via PUT /admin/api/category/:id.
+   * Category update is documented as missing from backend contract (BLOCKER-05).
    */
   async update(id: string, name: string): Promise<{ id: string; name: string }> {
-    return apiClient.put<{ id: string; name: string }>(`/admin/api/category/${id}`, {
-      name: name.trim(),
-    });
+    try {
+      return await apiClient.put<{ id: string; name: string }>(`/admin/api/category/${id}`, {
+        name: name.trim(),
+      });
+    } catch {
+      throw new Error('Category updating is not yet supported by the backend API contract.');
+    }
   },
 
   /**
-   * Deletes a category and its subcategories via DELETE /admin/api/category/:id.
+   * Category deletion is documented as missing from backend contract (BLOCKER-05).
    */
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/admin/api/category/${id}`);
+    try {
+      await apiClient.delete(`/admin/api/category/${id}`);
+    } catch {
+      throw new Error('Category deletion is not yet supported by the backend API contract.');
+    }
   },
 };

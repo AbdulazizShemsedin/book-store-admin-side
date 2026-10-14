@@ -21,7 +21,8 @@ export interface FileDropzoneProps {
   maxSizeMB?: number;
   iconType?: 'file' | 'audio' | 'image';
   helperText?: string;
-  onUploaded: (result: UploadResult) => void;
+  onUploaded?: (result: UploadResult) => void;
+  onFileSelected?: (file: File | null) => void;
   required?: boolean;
 }
 
@@ -32,6 +33,7 @@ export function FileDropzone({
   iconType = 'file',
   helperText,
   onUploaded,
+  onFileSelected,
   required,
 }: FileDropzoneProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -43,6 +45,14 @@ export function FileDropzone({
   const startUpload = useCallback(
     async (file: File) => {
       setSelectedFile(file);
+      onFileSelected?.(file);
+
+      // If no onUploaded callback was provided, file is staged locally for form submission
+      if (!onUploaded) {
+        setStatus('success');
+        return;
+      }
+
       setStatus('uploading');
       setProgress(0);
       setErrorMessage(null);
@@ -71,7 +81,7 @@ export function FileDropzone({
         );
       }
     },
-    [onUploaded]
+    [onUploaded, onFileSelected]
   );
 
   const onDrop = useCallback(
@@ -199,7 +209,7 @@ export function FileDropzone({
               {selectedFile?.name}
             </p>
             <p className="text-[11px] text-emerald-700 font-medium">
-              Upload completed & verified
+              {onUploaded ? 'Upload completed & verified' : 'File selected & ready for upload'}
             </p>
             <Button
               type="button"

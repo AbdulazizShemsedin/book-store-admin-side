@@ -7,10 +7,9 @@ describe('bookFormSchema', () => {
       name: 'The Midnight Library',
       authorId: 'auth-123',
       publisherId: 'pub-456',
-      pageCount: 304,
+      categoryIds: ['cat-789', 'cat-456'],
       tags: ['Bestseller', 'Fiction'],
-      categoryId: 'cat-789',
-      subcategoryId: 'sub-01',
+      bookFormat: 'both' as const,
       description: 'A novel about infinite choices and second chances.',
       language: 'English',
       audiobookOption: 'has_audiobook' as const,
@@ -24,12 +23,26 @@ describe('bookFormSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('validates an audiobook-only book without requiring a bookFileId', () => {
+    const audiobookOnlyData = {
+      name: 'Atomic Habits Audio Edition',
+      authorId: 'auth-123',
+      bookFormat: 'audiobook_only' as const,
+      categoryIds: ['cat-self-help'],
+      language: 'English',
+      hasAudiobook: true,
+      audioFileId: 'asset-mp3-audio',
+      narrator: 'James Clear',
+    };
+
+    const result = bookFormSchema.safeParse(audiobookOnlyData);
+    expect(result.success).toBe(true);
+  });
+
   it('fails if book title is missing or empty', () => {
     const invalidData = {
       name: '',
       authorId: 'auth-123',
-      tags: ['Fiction'],
-      categoryId: 'cat-789',
       language: 'English',
       audiobookOption: 'none' as const,
       hasAudiobook: false,
@@ -46,8 +59,6 @@ describe('bookFormSchema', () => {
     const invalidData = {
       name: 'Clean Code',
       authorId: '',
-      tags: ['Tech'],
-      categoryId: 'cat-789',
       language: 'English',
       audiobookOption: 'none' as const,
       hasAudiobook: false,
@@ -57,21 +68,30 @@ describe('bookFormSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('fails if tags array is empty (PM requirement: tags field is required)', () => {
-    const invalidData = {
-      name: 'Clean Architecture',
+  it('allows registering a book with optional categories (empty or up to 5)', () => {
+    const dataWithoutCategories = {
+      name: 'Uncategorized Book',
       authorId: 'auth-123',
-      tags: [],
-      categoryId: 'cat-789',
       language: 'English',
-      audiobookOption: 'none' as const,
-      hasAudiobook: false,
+      categoryIds: [],
+    };
+
+    const result = bookFormSchema.safeParse(dataWithoutCategories);
+    expect(result.success).toBe(true);
+  });
+
+  it('fails if more than 5 categories are assigned', () => {
+    const invalidData = {
+      name: 'Category Overloaded Book',
+      authorId: 'auth-123',
+      language: 'English',
+      categoryIds: ['cat-1', 'cat-2', 'cat-3', 'cat-4', 'cat-5', 'cat-6'],
     };
 
     const result = bookFormSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.flatten().fieldErrors.tags).toBeDefined();
+      expect(result.error.flatten().fieldErrors.categoryIds).toBeDefined();
     }
   });
 });
