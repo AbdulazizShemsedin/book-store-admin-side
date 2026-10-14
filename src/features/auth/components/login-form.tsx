@@ -27,8 +27,8 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'admin@tewba.com',
-      pin: 'Password123',
+      email: '',
+      pin: '',
     },
   });
 

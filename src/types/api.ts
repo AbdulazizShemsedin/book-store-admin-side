@@ -25,7 +25,7 @@ export interface AdminSigninRequestBody {
 }
 
 export interface AdminSigninResponseBody {
-  token: string;
+  token?: string;
 }
 
 // LEGACY / MOBILE CLIENT AUTH (for shared support)

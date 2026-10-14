@@ -10,7 +10,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   signin: (email: string, pin: string) => Promise<void>;
-  signout: () => void;
+  signout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,33 +22,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Check initial session
     const isDemoMode =
       process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true' ||
-      process.env.NEXT_PUBLIC_USE_MOCK_API !== 'false';
+      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
 
-    const hasToken = authService.isAuthenticated();
+    const hasAuth = authService.isAuthenticated();
 
-    if (hasToken) {
+    if (hasAuth) {
+      const token = authService.getToken();
+      // If we are in live mode and the stored token is a fake demo token, purge it
+      if (!isDemoMode && (token?.includes('demo') || token?.includes('mock'))) {
+        authService.clearLocalSession();
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
+
       const storedUser = authService.getUser();
-      setUser(
-        storedUser || {
-          id: 'admin-01',
-          name: 'Ahmad Hassan',
-          role: 'Content Manager',
-          email: 'ahmad.hassan@tewba.com',
-        }
-      );
+      setUser(storedUser);
       setIsAuthenticated(true);
     } else if (isDemoMode) {
       // In demo mode, automatically seed the default demo admin session
       // so stakeholders immediately land on the working admin portal
       const demoUser = {
-        id: 'admin-01',
-        name: 'Ahmad Hassan',
-        role: 'Content Manager',
-        email: 'ahmad.hassan@tewba.com',
+        id: 'admin',
+        name: 'Admin',
+        role: 'Administrator',
+        email: 'admin@tewba.com',
       };
       authService.saveSession('demo-mock-jwt-token-active', null);
       if (typeof window !== 'undefined') {
@@ -74,11 +75,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signout = () => {
-    authService.signout();
-    setUser(null);
-    setIsAuthenticated(false);
-    router.push('/login');
+  const signout = async () => {
+    setIsLoading(true);
+    try {
+      await authService.signout();
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      router.push('/login');
+    }
   };
 
   return (

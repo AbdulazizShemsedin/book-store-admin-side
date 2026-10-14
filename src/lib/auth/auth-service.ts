@@ -5,14 +5,16 @@ import { UserProfile } from '@/types/domain';
 const TOKEN_KEY = 'tewba_access_token';
 const REFRESH_TOKEN_KEY = 'tewba_refresh_token';
 const USER_KEY = 'tewba_user_profile';
+const SESSION_ACTIVE_KEY = 'tewba_session_active';
 
 /**
  * Authentication service handling login, session persistence, and logout.
+ * Supports cookie-based sessions (production backend) and bearer tokens (demo/mock).
  */
 class AuthService {
   /**
    * Performs admin sign in using email and password via POST /admin/api/signin.
-   * Stores returned JWT token upon successful authentication.
+   * Backend sets HttpOnly session cookie on success.
    */
   async signin(email: string, pin: string): Promise<UserProfile> {
     const response = await apiClient.post<AdminSigninResponseBody>(
@@ -26,14 +28,15 @@ class AuthService {
     }
 
     const profile: UserProfile = {
-      id: 'admin-01',
-      name: 'Ahmad Hassan',
-      role: 'Content Manager',
+      id: email,
+      name: email.split('@')[0] || 'Admin',
+      role: 'Administrator',
       email,
     };
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(USER_KEY, JSON.stringify(profile));
+      localStorage.setItem(SESSION_ACTIVE_KEY, 'true');
     }
 
     return profile;
@@ -64,14 +67,30 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return Boolean(this.getToken());
+    if (typeof window === 'undefined') return false;
+    return Boolean(this.getUser() || this.getToken());
   }
 
-  signout(): void {
+  /**
+   * Performs sign out by invalidating backend session cookie via POST /admin/api/signout
+   * and purging local storage.
+   */
+  async signout(): Promise<void> {
+    try {
+      await apiClient.post('/admin/api/signout', {});
+    } catch {
+      // In case of network error, proceed with local cleanup
+    } finally {
+      this.clearLocalSession();
+    }
+  }
+
+  clearLocalSession(): void {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(SESSION_ACTIVE_KEY);
   }
 }
 

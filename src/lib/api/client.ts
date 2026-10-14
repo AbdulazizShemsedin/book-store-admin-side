@@ -80,6 +80,7 @@ class ApiClient {
 
     try {
       const response = await fetch(url.toString(), {
+        credentials: 'include',
         ...fetchInit,
         headers,
         body: processedBody,
@@ -87,7 +88,15 @@ class ApiClient {
 
       if (!response.ok) {
         if (response.status === 401 && typeof window !== 'undefined') {
-          localStorage.removeItem('tewba_access_token');
+          // Do not kick out if it's the signin attempt itself failing (to show invalid credentials message)
+          if (!endpoint.includes('/signin')) {
+            localStorage.removeItem('tewba_access_token');
+            localStorage.removeItem('tewba_user_profile');
+            localStorage.removeItem('tewba_session_active');
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login?returnUrl=' + encodeURIComponent(window.location.pathname);
+            }
+          }
         }
         throw await normalizeApiError(response);
       }
@@ -97,12 +106,21 @@ class ApiClient {
         return {} as T;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        return (await response.json()) as T;
+      const text = await response.text();
+      if (!text || !text.trim()) {
+        return {} as T;
       }
 
-      return (await response.text()) as unknown as T;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          return JSON.parse(text) as T;
+        } catch {
+          return {} as T;
+        }
+      }
+
+      return text as unknown as T;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
