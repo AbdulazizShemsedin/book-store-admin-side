@@ -130,7 +130,7 @@ export function BookForm() {
         {/* Left Column (2 spans): Book Info & Asset Uploads */}
         <div className="lg:col-span-2 space-y-8">
           {/* Section 1: Book Information */}
-          <Card>
+          <Card className="relative z-20">
             <CardHeader
               title={
                 <div className="flex items-center gap-2 text-slate-900">
@@ -151,21 +151,35 @@ export function BookForm() {
 
               {/* Author & Publisher */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                  label="Author"
-                  required
-                  placeholder="Select registered author..."
-                  options={authors.map((a) => ({ label: a.name, value: a.id }))}
-                  error={errors.authorId?.message}
-                  {...register('authorId')}
+                <Controller
+                  name="authorId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      label="Author"
+                      required
+                      placeholder="Select registered author..."
+                      options={authors.map((a) => ({ label: a.name, value: a.id }))}
+                      error={errors.authorId?.message}
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
+                  )}
                 />
 
-                <Select
-                  label="Publisher"
-                  placeholder="Select publisher..."
-                  options={publishers.map((p) => ({ label: p.name, value: p.id }))}
-                  error={errors.publisherId?.message}
-                  {...register('publisherId')}
+                <Controller
+                  name="publisherId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      label="Publisher"
+                      placeholder="Select publisher..."
+                      options={publishers.map((p) => ({ label: p.name, value: p.id }))}
+                      error={errors.publisherId?.message}
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
+                  )}
                 />
               </div>
 
@@ -212,23 +226,30 @@ export function BookForm() {
               />
 
               {/* Master Language */}
-              <Select
-                label="Book & Audiobook Master Language"
-                required
-                helperText="Master Language applies to both the written book file and the audiobook edition."
-                options={[
-                  { label: 'English (en)', value: 'en' },
-                  { label: 'Amharic (am)', value: 'am' },
-                  { label: 'Arabic (ar)', value: 'ar' },
-                ]}
-                error={errors.language?.message}
-                {...register('language')}
+              <Controller
+                name="language"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label="Book & Audiobook Master Language"
+                    required
+                    helperText="Master Language applies to both the written book file and the audiobook edition."
+                    options={[
+                      { label: 'English (en)', value: 'en' },
+                      { label: 'Amharic (am)', value: 'am' },
+                      { label: 'Arabic (ar)', value: 'ar' },
+                    ]}
+                    error={errors.language?.message}
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
               />
             </CardContent>
           </Card>
 
           {/* Section 2: Product Format & Assets Upload */}
-          <Card>
+          <Card className="relative z-10">
             <CardHeader
               title={
                 <div className="flex items-center gap-2 text-slate-900">
