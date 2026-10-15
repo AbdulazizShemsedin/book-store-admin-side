@@ -96,3 +96,32 @@ export function getCategoryDepth(categoryId: string, categories: Category[]): nu
 
   return depth;
 }
+
+/**
+ * Given a list of selected category IDs and the full list of categories,
+ * returns all selected IDs plus all their ancestor (Master/Parent) category IDs.
+ * This guarantees that tagging a subcategory also tags all ancestor categories,
+ * ensuring visibility across all taxonomy levels in the mobile app.
+ */
+export function resolveCategoryLineage(selectedIds: string[], categories: Category[]): string[] {
+  const byId = new Map<string, Category>();
+  categories.forEach((c) => byId.set(c.id, c));
+
+  const result = new Set<string>();
+
+  for (const id of selectedIds) {
+    if (!id) continue;
+    result.add(id);
+
+    let curr = byId.get(id);
+    const visited = new Set<string>([id]);
+
+    while (curr && curr.parentId && byId.has(curr.parentId) && !visited.has(curr.parentId)) {
+      result.add(curr.parentId);
+      visited.add(curr.parentId);
+      curr = byId.get(curr.parentId);
+    }
+  }
+
+  return Array.from(result);
+}

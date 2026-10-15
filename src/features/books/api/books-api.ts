@@ -83,6 +83,8 @@ export const booksApi = {
       category: (response.tags && response.tags[0]) || 'General',
       tags: response.tags || [],
       hasAudiobook: Boolean(response.has_audio),
+      thumbnail: response.thumbnail,
+      coverUrl: response.thumbnail || undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -126,7 +128,7 @@ export const booksApi = {
       try {
         await uploadBookThumbnail(bookId, data.coverFile);
       } catch (thumbErr) {
-        console.warn('Failed to upload book thumbnail:', thumbErr);
+        console.error('Failed to upload book thumbnail:', thumbErr);
       }
     }
 
@@ -135,7 +137,7 @@ export const booksApi = {
       try {
         await uploadBookAsset(bookId, 'book', data.bookFile);
       } catch (assetErr) {
-        console.warn('Failed to upload manuscript asset:', assetErr);
+        console.error('Failed to upload manuscript asset:', assetErr);
       }
     }
 
@@ -144,17 +146,18 @@ export const booksApi = {
       try {
         await uploadBookAsset(bookId, 'audio', data.audioFile);
       } catch (audioErr) {
-        console.warn('Failed to upload audiobook asset:', audioErr);
+        console.error('Failed to upload audiobook asset:', audioErr);
       }
     }
 
-    // Attach categories/tags via documented POST /admin/api/book/{book_id}/tag
-    const tagsToAttach =
+    // Attach all unique categories/tags via documented POST /admin/api/book/{book_id}/tag
+    const rawTags =
       data.categoryIds && data.categoryIds.length > 0
         ? data.categoryIds
         : data.tags || [];
+    const uniqueTags = Array.from(new Set(rawTags.filter(Boolean)));
 
-    for (const tagId of tagsToAttach) {
+    for (const tagId of uniqueTags) {
       try {
         await apiClient.post(`/admin/api/book/${bookId}/tag`, {
           tag_id: tagId,

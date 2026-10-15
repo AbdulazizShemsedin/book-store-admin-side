@@ -35,6 +35,7 @@ export interface Book {
   hasAudiobook?: boolean;
   narrator?: string;
   coverUrl?: string;
+  thumbnail?: string | null;
   epubFileId?: string;
   audioFileId?: string;
   createdAt: string;

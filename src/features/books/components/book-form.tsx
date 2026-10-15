@@ -10,6 +10,7 @@ import { useAuthors } from '@/features/authors/hooks/use-authors';
 import { usePublishers } from '@/features/publishers/hooks/use-publishers';
 import { useCategories } from '@/features/categories/hooks/use-categories';
 import { CategoryTreeSelect } from '@/features/categories/components/category-tree-select';
+import { resolveCategoryLineage } from '@/features/categories/utils/category-tree';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -93,8 +94,12 @@ export function BookForm() {
   const onSubmit = async (data: BookFormData) => {
     setFormError(null);
     try {
+      // Automatically include all Master / Ancestor categories for complete mobile visibility
+      const lineageCategoryIds = resolveCategoryLineage(data.categoryIds || [], categories);
+
       await createBookMutation.mutateAsync({
         ...data,
+        categoryIds: lineageCategoryIds,
         coverFile: coverFile || undefined,
         bookFile: bookFile || undefined,
         audioFile: audioFile || undefined,

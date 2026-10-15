@@ -20,7 +20,6 @@ import {
   X,
   Check,
   TreeStructure,
-  CaretLeft,
   ArrowsOutLineVertical,
   ArrowsInLineVertical,
 } from '@phosphor-icons/react';
@@ -69,8 +68,6 @@ export function CategoryTreeSelect({
 
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // Root categories per page for pagination
 
   // Creation panel state
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -166,16 +163,8 @@ export function CategoryTreeSelect({
       }
       collect(filteredTree);
       setExpandedIds(allParentIds);
-      setCurrentPage(1);
     }
   }, [search, filteredTree]);
-
-  // Paginate root categories
-  const totalRootPages = Math.max(1, Math.ceil(filteredTree.length / pageSize));
-  const paginatedRoots = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredTree.slice(start, start + pageSize);
-  }, [filteredTree, currentPage, pageSize]);
 
   // Toggle expansion of a node
   const toggleExpand = (id: string, e: React.MouseEvent) => {
@@ -414,7 +403,7 @@ export function CategoryTreeSelect({
 
       {helperText && <p className="text-[11px] text-slate-500 -mt-1">{helperText}</p>}
 
-      {/* Selected Categories as Colored Tags / Chips */}
+      {/* Selected Categories as Full Lineage Badges / Chips */}
       <div className="min-h-[38px] p-2 bg-slate-50/70 border border-slate-200 rounded-lg flex flex-wrap items-center gap-1.5">
         {selectedCategoryIds.length === 0 ? (
           <span className="text-xs text-slate-400 italic">
@@ -425,30 +414,25 @@ export function CategoryTreeSelect({
             const catNode = categoryMap.get(id);
             const catName = catNode ? catNode.name : id;
             const fullPath = catNode ? catNode.fullPath : catName;
-            const catColor = getCategoryColor(catNode, id);
+            const isNested = catNode && catNode.depth > 1;
 
             return (
               <span
                 key={id}
-                style={{ backgroundColor: catColor }}
                 title={fullPath}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-white shadow-xs animate-in fade-in duration-150"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-950 border border-emerald-300 shadow-2xs animate-in fade-in duration-150"
               >
-                <span className="truncate max-w-[160px]">{catName}</span>
-
-                {/* Color picker for this selected tag */}
-                <label
-                  title={`Change color for "${catName}"`}
-                  className="w-3.5 h-3.5 rounded-full border border-white/70 cursor-pointer overflow-hidden flex items-center justify-center flex-shrink-0 hover:scale-110 transition-transform"
-                >
-                  <input
-                    type="color"
-                    value={catColor}
-                    onChange={(e) => handleUpdateColor(id, e.target.value)}
-                    className="opacity-0 w-0 h-0"
-                  />
-                  <div className="w-full h-full" style={{ backgroundColor: catColor }} />
-                </label>
+                {isNested ? (
+                  <span className="flex items-center gap-1">
+                    <span className="text-emerald-700/80 font-normal">
+                      {catNode.path.slice(0, -1).join(' › ')}
+                    </span>
+                    <span className="text-emerald-500 font-bold">›</span>
+                    <span className="font-bold text-emerald-950">{catNode.name}</span>
+                  </span>
+                ) : (
+                  <span className="font-bold text-emerald-950">{catName}</span>
+                )}
 
                 {/* Remove button */}
                 <button
@@ -456,9 +440,9 @@ export function CategoryTreeSelect({
                   onClick={(e) => handleRemoveCategory(id, e)}
                   aria-label={`Remove category ${catName}`}
                   title={`Remove category ${catName}`}
-                  className="text-white/80 hover:text-white transition-opacity ml-0.5"
+                  className="text-emerald-700 hover:text-emerald-950 rounded p-0.5 hover:bg-emerald-100 transition-colors ml-0.5"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </span>
             );
@@ -522,44 +506,34 @@ export function CategoryTreeSelect({
             </div>
           </div>
 
-          {/* Color Selector */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
-              Tag / Category Color
-            </label>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {PRESET_CATEGORY_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setNewCategoryColor(c.value)}
-                  title={c.name}
-                  className={cn(
-                    'w-6 h-6 rounded-full transition-transform flex items-center justify-center border border-white shadow-xs',
-                    newCategoryColor === c.value
-                      ? 'scale-110 ring-2 ring-emerald-700 ring-offset-1'
-                      : 'hover:scale-105'
-                  )}
-                  style={{ backgroundColor: c.value }}
-                >
-                  {newCategoryColor === c.value && (
-                    <Check className="w-3 h-3 text-white" weight="bold" />
-                  )}
-                </button>
-              ))}
-              {/* Custom Color Input */}
-              <label
-                title="Custom color"
-                className="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center cursor-pointer overflow-hidden bg-white hover:border-slate-400"
-              >
-                <input
-                  type="color"
-                  value={newCategoryColor}
-                  onChange={(e) => setNewCategoryColor(e.target.value)}
-                  className="opacity-0 w-0 h-0"
-                />
-                <div className="w-full h-full" style={{ backgroundColor: newCategoryColor }} />
-              </label>
+          {/* Live Breadcrumb Preview */}
+          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+              Placement Preview
+            </span>
+            <div className="flex items-center gap-1.5 font-medium text-emerald-900">
+              {newParentId ? (
+                <>
+                  <Folder className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" weight="fill" />
+                  <span className="text-slate-600">
+                    {eligibleParents.find((n) => n.id === newParentId)?.fullPath}
+                  </span>
+                  <span className="text-emerald-500 font-bold">›</span>
+                  <span className="font-bold text-emerald-950">
+                    {newCategoryName.trim() || '(Type category name...)'}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Folder className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" weight="fill" />
+                  <span className="font-bold text-emerald-950">
+                    {newCategoryName.trim() || '(Type category name...)'}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-normal ml-1">
+                    (Top-Level)
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -670,17 +644,17 @@ export function CategoryTreeSelect({
             </div>
 
             {/* Tree Nodes List */}
-            <div className="max-h-64 overflow-y-auto p-2 space-y-1">
-              {paginatedRoots.length === 0 ? (
+            <div className="max-h-72 overflow-y-auto p-2 space-y-1">
+              {filteredTree.length === 0 ? (
                 <div className="py-8 text-center text-xs text-slate-400">
                   No matching categories found in catalog.
                 </div>
               ) : (
-                paginatedRoots.map((rootNode) => renderTreeNode(rootNode))
+                filteredTree.map((rootNode) => renderTreeNode(rootNode))
               )}
             </div>
 
-            {/* Footer with Tree Pagination & Selection Counter */}
+            {/* Footer with Selection Counter */}
             <div className="p-2.5 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between text-xs">
               <span className="text-[11px] text-slate-500 font-medium">
                 {selectedCategoryIds.length >= maxSelections ? (
@@ -693,33 +667,6 @@ export function CategoryTreeSelect({
                   </span>
                 )}
               </span>
-
-              {/* Pagination controls for large category sets */}
-              {totalRootPages > 1 && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="p-1 rounded text-slate-600 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-transparent"
-                    title="Previous page"
-                  >
-                    <CaretLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <span className="text-[11px] font-semibold text-slate-700">
-                    {currentPage} / {totalRootPages}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={currentPage >= totalRootPages}
-                    onClick={() => setCurrentPage((p) => Math.min(totalRootPages, p + 1))}
-                    className="p-1 rounded text-slate-600 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-transparent"
-                    title="Next page"
-                  >
-                    <CaretRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
 
               <Button
                 type="button"
