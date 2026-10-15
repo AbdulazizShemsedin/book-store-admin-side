@@ -125,3 +125,59 @@ export function resolveCategoryLineage(selectedIds: string[], categories: Catego
 
   return Array.from(result);
 }
+
+/**
+ * Filters a list of categories by search query while preserving tree hierarchy.
+ * Keeps nodes that match, or whose ancestors or descendants match.
+ */
+export function filterCategoryList(categories: Category[], query: string): Category[] {
+  if (!query || !query.trim()) return categories;
+  const q = query.toLowerCase().trim();
+
+  const byId = new Map<string, Category>();
+  categories.forEach((c) => byId.set(c.id, c));
+
+  const directMatches = new Set<string>();
+  categories.forEach((c) => {
+    if (c.name.toLowerCase().includes(q)) {
+      directMatches.add(c.id);
+    }
+  });
+
+  const keepIds = new Set<string>(directMatches);
+
+  // Preserve ancestors so hierarchy stays intact
+  directMatches.forEach((id) => {
+    let curr = byId.get(id);
+    const visited = new Set<string>([id]);
+    while (curr && curr.parentId && byId.has(curr.parentId) && !visited.has(curr.parentId)) {
+      keepIds.add(curr.parentId);
+      visited.add(curr.parentId);
+      curr = byId.get(curr.parentId);
+    }
+  });
+
+  // Preserve descendants of matched parent categories
+  const childrenMap = new Map<string, string[]>();
+  categories.forEach((c) => {
+    if (c.parentId) {
+      const list = childrenMap.get(c.parentId) || [];
+      list.push(c.id);
+      childrenMap.set(c.parentId, list);
+    }
+  });
+
+  function addDescendants(id: string) {
+    const children = childrenMap.get(id) || [];
+    for (const childId of children) {
+      keepIds.add(childId);
+      addDescendants(childId);
+    }
+  }
+
+  directMatches.forEach((id) => {
+    addDescendants(id);
+  });
+
+  return categories.filter((c) => keepIds.has(c.id));
+}
