@@ -455,10 +455,10 @@ export function CategoryTable({
             type="button"
             onClick={() => onLevelFilterChange?.('all')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150',
+              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
               levelFilter === 'all'
-                ? 'bg-[#1b4332] text-white shadow-xs ring-1 ring-emerald-700'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80 shadow-2xs'
+                ? 'bg-[#1e4634] text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             )}
           >
             All Categories ({flatNodes.length})
@@ -467,10 +467,10 @@ export function CategoryTable({
             type="button"
             onClick={() => onLevelFilterChange?.('roots')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150',
+              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
               levelFilter === 'roots'
-                ? 'bg-[#1b4332] text-white shadow-xs ring-1 ring-emerald-700'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80 shadow-2xs'
+                ? 'bg-[#1e4634] text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             )}
           >
             Root Categories ({flatNodes.filter((n) => n.depth === 1).length})
@@ -479,10 +479,10 @@ export function CategoryTable({
             type="button"
             onClick={() => onLevelFilterChange?.('subs')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150',
+              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
               levelFilter === 'subs'
-                ? 'bg-[#1b4332] text-white shadow-xs ring-1 ring-emerald-700'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80 shadow-2xs'
+                ? 'bg-[#1e4634] text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             )}
           >
             Subcategories ({flatNodes.filter((n) => n.depth > 1).length})
@@ -492,57 +492,57 @@ export function CategoryTable({
         {/* Right: Expand/Collapse & View Mode toggles */}
         <div className="flex items-center gap-3">
           {!isFlatRender && (
-            <div className="flex items-center gap-1.5 text-[11px] bg-white px-2 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+            <div className="flex items-center gap-1.5 text-[11px] bg-white px-2 py-1 rounded-lg border border-slate-200">
               <button
                 type="button"
                 onClick={handleExpandAll}
-                className="inline-flex items-center gap-1 text-slate-600 hover:text-emerald-800 font-semibold px-1.5 py-0.5 rounded hover:bg-slate-100 transition-colors"
+                className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium px-1.5 py-0.5 rounded hover:bg-slate-100 transition-colors"
                 title="Expand all hierarchy levels"
               >
-                <ArrowsOutLineVertical className="w-3.5 h-3.5" weight="bold" />
+                <ArrowsOutLineVertical className="w-3.5 h-3.5" />
                 Expand all
               </button>
               <span className="text-slate-200">|</span>
               <button
                 type="button"
                 onClick={handleCollapseAll}
-                className="inline-flex items-center gap-1 text-slate-600 hover:text-emerald-800 font-semibold px-1.5 py-0.5 rounded hover:bg-slate-100 transition-colors"
+                className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium px-1.5 py-0.5 rounded hover:bg-slate-100 transition-colors"
                 title="Collapse all subcategory branches"
               >
-                <ArrowsInLineVertical className="w-3.5 h-3.5" weight="bold" />
+                <ArrowsInLineVertical className="w-3.5 h-3.5" />
                 Collapse all
               </button>
             </div>
           )}
 
           {levelFilter !== 'subs' && (
-            <div className="flex items-center rounded-lg border border-slate-200/80 bg-white p-0.5 shadow-2xs">
+            <div className="flex items-center rounded-lg border border-slate-200 bg-white p-0.5">
               <button
                 type="button"
                 onClick={() => setViewMode('tree')}
                 className={cn(
-                  'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all',
+                  'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors',
                   viewMode === 'tree'
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60 shadow-2xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-[#1e4634] text-white'
+                    : 'text-slate-600 hover:text-slate-900'
                 )}
                 title="Tree hierarchy view"
               >
-                <TreeStructure className="w-3.5 h-3.5" weight="bold" />
+                <TreeStructure className="w-3.5 h-3.5" />
                 Tree
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('flat')}
                 className={cn(
-                  'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all',
+                  'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors',
                   viewMode === 'flat'
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60 shadow-2xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-[#1e4634] text-white'
+                    : 'text-slate-600 hover:text-slate-900'
                 )}
                 title="Flat list view"
               >
-                <ListDashes className="w-3.5 h-3.5" weight="bold" />
+                <ListDashes className="w-3.5 h-3.5" />
                 List
               </button>
             </div>
