@@ -140,6 +140,7 @@ export interface GetBookResponseBody {
   author?: string | null;
   rating?: string | null;
   tags?: string[] | null;
+  thumbnail?: string | null;
 }
 
 // BOOK ASSETS & THUMBNAILS & TAGS

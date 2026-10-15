@@ -15,6 +15,7 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
   options: SelectOption[];
   placeholder?: string;
   size?: 'sm' | 'md';
+  searchable?: boolean;
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
@@ -30,12 +31,14 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       required,
       disabled,
       size = 'md',
+      searchable,
       ...props
     },
     ref
   ) => {
     const selectId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
     const [isOpen, setIsOpen] = useState(false);
+    const [openUpward, setOpenUpward] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedValue, setSelectedValue] = useState<string>(
       props.value !== undefined
@@ -93,15 +96,31 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       };
     }, [isOpen]);
 
-    // Auto-focus search input when opened
+    const showSearch = searchable !== undefined ? searchable : options.length > 5;
+
+    // Detect collision with viewport bottom and open upward if needed
     useEffect(() => {
-      if (isOpen) {
+      if (isOpen && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        if (spaceBelow < 250 && spaceAbove > spaceBelow) {
+          setOpenUpward(true);
+        } else {
+          setOpenUpward(false);
+        }
+      }
+    }, [isOpen]);
+
+    // Auto-focus search input when opened (only if search is enabled)
+    useEffect(() => {
+      if (isOpen && showSearch) {
         const timeout = setTimeout(() => {
           searchInputRef.current?.focus();
         }, 50);
         return () => clearTimeout(timeout);
       }
-    }, [isOpen]);
+    }, [isOpen, showSearch]);
 
     const handleSelect = (val: string) => {
       setSelectedValue(val);
@@ -195,36 +214,41 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           {isOpen && (
             <div
               role="listbox"
-              className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100 min-w-[200px]"
+              className={cn(
+                'absolute left-0 right-0 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100 min-w-[200px]',
+                openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+              )}
             >
-              {/* Search Bar Input */}
-              <div className="p-2 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2">
-                <MagnifyingGlass className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 ml-1" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Type to search..."
-                  className="w-full text-xs bg-white px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSearchQuery('');
-                      searchInputRef.current?.focus();
-                    }}
-                    className="p-1 text-slate-400 hover:text-slate-600 rounded"
-                    aria-label="Clear search"
-                    title="Clear search"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
+              {/* Optional Search Bar Input */}
+              {showSearch && (
+                <div className="p-2 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2">
+                  <MagnifyingGlass className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 ml-1" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Type to search..."
+                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchQuery('');
+                        searchInputRef.current?.focus();
+                      }}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded"
+                      aria-label="Clear search"
+                      title="Clear search"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Options List */}
               <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5">
