@@ -57,6 +57,24 @@ export function CategoryTable({
   // Flattened list for flat view
   const flatNodes = useMemo(() => flattenCategoryTree(categoryTree), [categoryTree]);
 
+  // Filter nodes according to levelFilter (must be declared before any early returns)
+  const visibleTreeRoots = useMemo(() => {
+    if (levelFilter === 'roots') {
+      return categoryTree.map((root) => ({ ...root, children: [] }));
+    }
+    return categoryTree;
+  }, [categoryTree, levelFilter]);
+
+  const visibleFlatNodes = useMemo(() => {
+    if (levelFilter === 'roots') {
+      return flatNodes.filter((n) => n.depth === 1);
+    }
+    if (levelFilter === 'subs') {
+      return flatNodes.filter((n) => n.depth > 1);
+    }
+    return flatNodes;
+  }, [flatNodes, levelFilter]);
+
   // Track expanded parent rows (default: ALL parent rows expanded so all subcategories are immediately visible)
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [hasInitializedExpansion, setHasInitializedExpansion] = useState(false);
@@ -411,24 +429,6 @@ export function CategoryTable({
       </tr>
     );
   };
-
-  // Filter nodes according to levelFilter
-  const visibleTreeRoots = useMemo(() => {
-    if (levelFilter === 'roots') {
-      return categoryTree.map((root) => ({ ...root, children: [] }));
-    }
-    return categoryTree;
-  }, [categoryTree, levelFilter]);
-
-  const visibleFlatNodes = useMemo(() => {
-    if (levelFilter === 'roots') {
-      return flatNodes.filter((n) => n.depth === 1);
-    }
-    if (levelFilter === 'subs') {
-      return flatNodes.filter((n) => n.depth > 1);
-    }
-    return flatNodes;
-  }, [flatNodes, levelFilter]);
 
   const isFlatRender = viewMode === 'flat' || levelFilter === 'subs';
 
