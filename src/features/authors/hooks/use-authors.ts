@@ -31,3 +31,30 @@ export function useCreateAuthor(onSuccessCallback?: () => void) {
     },
   });
 }
+
+export function useUpdateAuthor(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      authorId,
+      data,
+      avatarFile,
+    }: {
+      authorId: string;
+      data: Partial<AuthorFormData>;
+      avatarFile?: File;
+    }) => {
+      await authorsApi.update(authorId, data);
+      if (avatarFile) {
+        await authorsApi.uploadAvatar(authorId, avatarFile);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [AUTHORS_QUERY_KEY] });
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+    },
+  });
+}

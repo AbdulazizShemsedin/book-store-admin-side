@@ -3,9 +3,12 @@ import {
   ListAuthorResponseBody,
   CreateAuthorRequestBody,
   CreateAuthorResponseBody,
+  UpdateAuthorRequestBody,
+  GetAuthorResponseBody,
 } from '@/types/api';
 import { Author } from '@/types/domain';
 import { AuthorFormData } from '../schemas/author-schema';
+import { prepareAvatarFile } from '@/lib/upload/image-utils';
 
 export interface ListAuthorsParams {
   page?: number;
@@ -61,10 +64,24 @@ export const authorsApi = {
   },
 
   /**
-   * Registers a new author via POST /admin/api/author.
-   * If an avatar file is provided, automatically uploads it via POST /admin/api/author/{author_id}/avatar.
+   * Retrieves single author details via GET /admin/api/author/{author_id}.
    */
-  async create(data: AuthorFormData, avatarFile?: File): Promise<{ id: string }> {
+  async getById(id: string): Promise<Author> {
+    const raw = await apiClient.get<GetAuthorResponseBody>(`/admin/api/author/${id}`);
+    return {
+      id: raw.id || id,
+      name: raw.string || 'Unknown Author',
+      nationality: raw.nationality || undefined,
+      bio: raw.description || undefined,
+      photoUrl: raw.avatar || undefined,
+      status: 'active',
+    };
+  },
+
+  /**
+   * Step 1: Submits author metadata to POST /admin/api/author and returns the assigned authorId.
+   */
+  async createRecord(data: AuthorFormData): Promise<{ id: string }> {
     const body: CreateAuthorRequestBody = {
       name: data.name.trim(),
       nationality: data.nationality?.trim() || undefined,
@@ -76,25 +93,46 @@ export const authorsApi = {
       body
     );
 
-    const authorId = response.id;
+    return { id: response.id };
+  },
 
-    if (avatarFile && authorId) {
+  /**
+   * Registers a new author via POST /admin/api/author.
+   * If an avatar file is provided, automatically uploads it via POST /admin/api/author/{author_id}/avatar.
+   */
+  async create(data: AuthorFormData, avatarFile?: File): Promise<{ id: string }> {
+    const { id } = await this.createRecord(data);
+
+    if (avatarFile && id) {
       try {
-        await this.uploadAvatar(authorId, avatarFile);
+        await this.uploadAvatar(id, avatarFile);
       } catch (uploadErr) {
         console.warn('Failed to upload author avatar:', uploadErr);
       }
     }
 
-    return { id: authorId };
+    return { id };
+  },
+
+  /**
+   * Updates existing author metadata via PATCH /admin/api/author/{author_id}.
+   */
+  async update(id: string, data: Partial<AuthorFormData>): Promise<void> {
+    const body: UpdateAuthorRequestBody = {
+      name: data.name?.trim(),
+      nationality: data.nationality?.trim(),
+      description: data.bio?.trim(),
+    };
+    await apiClient.patch(`/admin/api/author/${id}`, body);
   },
 
   /**
    * Uploads author avatar image via POST /admin/api/author/{author_id}/avatar (multipart/form-data).
    */
   async uploadAvatar(authorId: string, file: File): Promise<void> {
+    const preparedFile = await prepareAvatarFile(file);
     const formData = new FormData();
-    formData.append('avatar', file);
+    formData.append('avatar', preparedFile, preparedFile.name);
     await apiClient.post(`/admin/api/author/${authorId}/avatar`, formData);
   },
 };

@@ -154,6 +154,32 @@ class MockStore {
     };
   }
 
+  getAuthorById(id: string): ListAuthorItem | null {
+    return this.authors.find((a) => a.id === id) || null;
+  }
+
+  updateAuthor(
+    id: string,
+    updates: { name?: string; bio?: string; nationality?: string; photo_url?: string }
+  ): ListAuthorItem | null {
+    const author = this.authors.find((a) => a.id === id);
+    if (!author) return null;
+
+    if (updates.name !== undefined) {
+      const trimmed = updates.name.trim();
+      if (!trimmed || trimmed.length > 128) {
+        throw new Error('Author name must be between 1 and 128 characters.');
+      }
+      author.string = trimmed;
+    }
+    if (updates.bio !== undefined) author.bio = updates.bio.trim();
+    if (updates.nationality !== undefined) author.nationality = updates.nationality.trim();
+    if (updates.photo_url !== undefined) author.photo_url = updates.photo_url;
+
+    this.saveToStorage();
+    return author;
+  }
+
   deleteAuthor(id: string): boolean {
     const idx = this.authors.findIndex((a) => a.id === id);
     if (idx !== -1) {
@@ -505,6 +531,8 @@ class MockStore {
     let list = [...this.categories];
     if (params.parentId) {
       list = list.filter((c) => c.parent_id === params.parentId);
+    } else {
+      list = list.filter((c) => !c.parent_id);
     }
 
     const total = list.length;
