@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import https from 'https';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const dynamic = 'force-dynamic';
 
 /**
  * Server-side proxy for multipart upload chunks.
