@@ -23,6 +23,10 @@ const nextConfig = {
         destination: 'https://tewba.et/admin/api/:path*',
       },
       {
+        source: '/api/upload/chunk',
+        destination: '/internal/upload/chunk',
+      },
+      {
         source: '/api/:path*',
         destination: 'https://tewba.et/api/:path*',
       },
