@@ -31,6 +31,7 @@ import {
   resolveCategoryLineage,
 } from '@/features/categories/utils/category-tree';
 import { uploadBookThumbnail } from '@/lib/upload/multipart-upload';
+import { cn } from '@/lib/utils/cn';
 
 export default function BookDetailsPage() {
   const params = useParams();
@@ -155,17 +156,71 @@ export default function BookDetailsPage() {
           <Card>
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-6">
-                {/* Cover graphic */}
-                <div className="w-36 h-48 flex-shrink-0 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden shadow-inner relative">
-                  {book.thumbnail ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={book.thumbnail}
-                      alt={book.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <BookOpen className="w-12 h-12" weight="duotone" />
+                {/* Cover graphic & direct upload */}
+                <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                  <div
+                    onClick={() => coverInputRef.current?.click()}
+                    className={cn(
+                      'w-36 h-48 rounded-xl border flex flex-col items-center justify-center overflow-hidden shadow-inner relative group cursor-pointer transition-all',
+                      book.thumbnail
+                        ? 'bg-slate-100 border-slate-200'
+                        : 'bg-slate-50 border-dashed border-slate-300 hover:border-[#1e4634] hover:bg-emerald-50/40'
+                    )}
+                    title={book.thumbnail ? 'Click to replace cover image' : 'Click to upload cover image'}
+                  >
+                    {book.thumbnail ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={book.thumbnail}
+                          alt={book.name}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-2 text-center">
+                          <UploadSimple className="w-5 h-5 mb-1" />
+                          <span className="text-[11px] font-semibold">Replace Cover</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-slate-400 group-hover:text-[#1e4634] p-3 text-center transition-colors">
+                        <ImageIcon className="w-10 h-10 mb-2 stroke-1" />
+                        <span className="text-xs font-semibold">Upload Cover</span>
+                        <span className="text-[10px] text-slate-400 group-hover:text-slate-500 mt-0.5">PNG, JPG, WEBP</span>
+                      </div>
+                    )}
+
+                    {isUploadingCover && (
+                      <div className="absolute inset-0 bg-white/90 backdrop-blur-xs flex flex-col items-center justify-center p-3 text-center z-20">
+                        <Spinner size="md" />
+                        <span className="text-xs font-semibold text-[#1e4634] mt-2">Uploading...</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleUploadCover}
+                  />
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    isLoading={isUploadingCover}
+                    onClick={() => coverInputRef.current?.click()}
+                    leftIcon={<UploadSimple className="w-3.5 h-3.5" />}
+                    className="text-xs h-7 px-2 text-slate-600 hover:text-slate-900 font-medium"
+                  >
+                    {book.thumbnail ? 'Replace Cover' : 'Upload Cover'}
+                  </Button>
+
+                  {uploadCoverError && (
+                    <p className="text-[11px] text-red-600 font-medium text-center max-w-[144px]">
+                      {uploadCoverError}
+                    </p>
                   )}
                 </div>
 

@@ -80,6 +80,10 @@ export function BookForm() {
   const [categorySuccess, setCategorySuccess] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState<string | null>(null);
 
+  // Step 2 Finish handler state
+  const [isFinishing, setIsFinishing] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
+
   const { data: authorsData } = useAuthors({ pageSize: 100 });
   const { data: publishersData } = usePublishers({ pageSize: 100 });
   const { data: categoriesData } = useCategories({ pageSize: 100 });
@@ -157,13 +161,14 @@ export function BookForm() {
   };
 
   // STEP 2: Upload Cover Handler
-  const handleUploadCover = async () => {
-    if (!createdBook || !coverFile) return;
+  const handleUploadCover = async (fileToUpload?: File) => {
+    const file = fileToUpload || coverFile;
+    if (!createdBook || !file) return;
     setIsUploadingCover(true);
     setCoverError(null);
     setCoverProgress(0);
     try {
-      await uploadBookThumbnail(createdBook.id, coverFile, {
+      await uploadBookThumbnail(createdBook.id, file, {
         onProgress: (pct) => setCoverProgress(pct),
       });
       setIsCoverUploaded(true);
@@ -175,13 +180,14 @@ export function BookForm() {
   };
 
   // STEP 2: Upload Manuscript Handler
-  const handleUploadManuscript = async () => {
-    if (!createdBook || !manuscriptFile) return;
+  const handleUploadManuscript = async (fileToUpload?: File) => {
+    const file = fileToUpload || manuscriptFile;
+    if (!createdBook || !file) return;
     setIsUploadingManuscript(true);
     setManuscriptError(null);
     setManuscriptProgress(0);
     try {
-      await uploadBookAsset(createdBook.id, 'book', manuscriptFile, {
+      await uploadBookAsset(createdBook.id, 'book', file, {
         onProgress: (pct) => setManuscriptProgress(pct),
       });
       setIsManuscriptUploaded(true);
@@ -193,13 +199,14 @@ export function BookForm() {
   };
 
   // STEP 2: Upload Audio Handler
-  const handleUploadAudio = async () => {
-    if (!createdBook || !audioFile) return;
+  const handleUploadAudio = async (fileToUpload?: File) => {
+    const file = fileToUpload || audioFile;
+    if (!createdBook || !file) return;
     setIsUploadingAudio(true);
     setAudioError(null);
     setAudioProgress(0);
     try {
-      await uploadBookAsset(createdBook.id, 'audio', audioFile, {
+      await uploadBookAsset(createdBook.id, 'audio', file, {
         onProgress: (pct) => setAudioProgress(pct),
       });
       setIsAudioUploaded(true);
@@ -211,14 +218,15 @@ export function BookForm() {
   };
 
   // STEP 2: Attach Categories Handler
-  const handleAttachCategories = async () => {
-    if (!createdBook || selectedCategoryIds.length === 0) return;
+  const handleAttachCategories = async (categoryIdsToAttach?: string[]) => {
+    const ids = categoryIdsToAttach || selectedCategoryIds;
+    if (!createdBook || ids.length === 0) return;
     setIsAttachingCategories(true);
     setCategoryError(null);
     setCategorySuccess(null);
     try {
       // Resolve full ancestor lineage so mobile apps discover the book on root and sub levels
-      const lineageIds = resolveCategoryLineage(selectedCategoryIds, categories);
+      const lineageIds = resolveCategoryLineage(ids, categories);
       for (const id of lineageIds) {
         await booksApi.attachTag(createdBook.id, id);
       }
@@ -231,6 +239,40 @@ export function BookForm() {
       setCategoryError(err.message || 'Failed to attach categories.');
     } finally {
       setIsAttachingCategories(false);
+    }
+  };
+
+  // STEP 2: Complete and verify all selected assets before navigating
+  const handleFinishStep2 = async () => {
+    if (!createdBook) return;
+    setIsFinishing(true);
+    setFinishError(null);
+    try {
+      // 1. If categories were selected in the tree but not yet attached, attach them now
+      if (selectedCategoryIds.length > 0 && attachedCategoryNames.length === 0) {
+        await handleAttachCategories(selectedCategoryIds);
+      }
+
+      // 2. If cover file was chosen but not uploaded yet, upload it
+      if (coverFile && !isCoverUploaded) {
+        await handleUploadCover(coverFile);
+      }
+
+      // 3. If manuscript file was chosen but not uploaded yet, upload it
+      if (manuscriptFile && !isManuscriptUploaded) {
+        await handleUploadManuscript(manuscriptFile);
+      }
+
+      // 4. If audio file was chosen but not uploaded yet, upload it
+      if (audioFile && !isAudioUploaded) {
+        await handleUploadAudio(audioFile);
+      }
+
+      router.push(`/books/${createdBook.id}`);
+    } catch (err: any) {
+      setFinishError(err.message || 'Error occurred while saving assets.');
+    } finally {
+      setIsFinishing(false);
     }
   };
 
@@ -637,7 +679,10 @@ export function BookForm() {
                       maxSizeMB={100}
                       iconType="file"
                       helperText="EPUB or PDF file (Max 100MB)"
-                      onFileSelected={(file) => setManuscriptFile(file)}
+                      onFileSelected={(file) => {
+                        setManuscriptFile(file);
+                        if (file) handleUploadManuscript(file);
+                      }}
                     />
 
                     {manuscriptFile && !isManuscriptUploaded && (
@@ -648,7 +693,7 @@ export function BookForm() {
                         <Button
                           size="sm"
                           isLoading={isUploadingManuscript}
-                          onClick={handleUploadManuscript}
+                          onClick={() => handleUploadManuscript(manuscriptFile)}
                           leftIcon={<UploadSimple className="w-3.5 h-3.5" />}
                           className="bg-[#1e4634] hover:bg-[#153426] text-white text-xs h-8 px-3"
                         >
@@ -702,7 +747,10 @@ export function BookForm() {
                       maxSizeMB={500}
                       iconType="audio"
                       helperText="MP3 or M4B narration file (Max 500MB)"
-                      onFileSelected={(file) => setAudioFile(file)}
+                      onFileSelected={(file) => {
+                        setAudioFile(file);
+                        if (file) handleUploadAudio(file);
+                      }}
                     />
 
                     {audioFile && !isAudioUploaded && (
@@ -713,7 +761,7 @@ export function BookForm() {
                         <Button
                           size="sm"
                           isLoading={isUploadingAudio}
-                          onClick={handleUploadAudio}
+                          onClick={() => handleUploadAudio(audioFile)}
                           leftIcon={<UploadSimple className="w-3.5 h-3.5" />}
                           className="bg-[#1e4634] hover:bg-[#153426] text-white text-xs h-8 px-3"
                         >
@@ -778,7 +826,7 @@ export function BookForm() {
                       <Button
                         size="sm"
                         isLoading={isAttachingCategories}
-                        onClick={handleAttachCategories}
+                        onClick={() => handleAttachCategories()}
                         className="bg-[#1e4634] hover:bg-[#153426] text-white text-xs h-8 px-3"
                       >
                         Attach Categories to Book
@@ -865,6 +913,7 @@ export function BookForm() {
                       setCoverFile(file);
                       if (file) {
                         setCoverPreviewUrl(URL.createObjectURL(file));
+                        handleUploadCover(file);
                       } else {
                         setCoverPreviewUrl(null);
                       }
@@ -875,7 +924,7 @@ export function BookForm() {
                     <Button
                       size="sm"
                       isLoading={isUploadingCover}
-                      onClick={handleUploadCover}
+                      onClick={() => handleUploadCover(coverFile)}
                       leftIcon={<UploadSimple className="w-3.5 h-3.5" />}
                       className="w-full bg-[#1e4634] hover:bg-[#153426] text-white text-xs h-9 font-semibold"
                     >
@@ -896,10 +945,16 @@ export function BookForm() {
 
               {/* Completion Actions */}
               <div className="space-y-3">
+                {finishError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
+                    {finishError}
+                  </div>
+                )}
                 <Button
                   type="button"
                   size="lg"
-                  onClick={() => router.push(`/books/${createdBook.id}`)}
+                  isLoading={isFinishing}
+                  onClick={handleFinishStep2}
                   className="w-full bg-[#1e4634] hover:bg-[#153426] text-white shadow-md font-semibold text-xs h-11"
                   leftIcon={<CheckCircle className="w-4 h-4" weight="bold" />}
                 >
@@ -909,6 +964,7 @@ export function BookForm() {
                   type="button"
                   variant="secondary"
                   size="lg"
+                  disabled={isFinishing}
                   onClick={() => router.push('/books')}
                   className="w-full text-xs h-10"
                 >
