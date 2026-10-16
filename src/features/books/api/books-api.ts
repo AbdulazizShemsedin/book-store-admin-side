@@ -54,6 +54,9 @@ export const booksApi = {
       publisher: item.publisher || '—',
       status: item.status || 'Published',
       hasAudiobook: Boolean(item.has_audio),
+      language: item.language || 'English',
+      thumbnail: item.thumbnail || null,
+      coverUrl: item.thumbnail || undefined,
       createdAt: item.created_at,
       updatedAt: item.updated_at,
     }));
