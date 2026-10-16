@@ -11,14 +11,12 @@ export async function GET(request: NextRequest) {
   const cookie = request.headers.get('cookie') || '';
   const searchParams = request.nextUrl.searchParams.toString();
   const backendUrl = `https://tewba.et/admin/api/category${searchParams ? `?${searchParams}` : ''}`;
-  const body = JSON.stringify({});
 
   try {
     const data = await new Promise<{ status: number; text: string }>((resolve, reject) => {
       const headers: Record<string, string | number> = {
-        'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Content-Length': Buffer.byteLength(body),
+        'User-Agent': 'TewbaAdmin/1.0',
       };
       if (cookie) headers['Cookie'] = cookie;
       if (token) headers['Authorization'] = token;
@@ -36,7 +34,6 @@ export async function GET(request: NextRequest) {
         }
       );
       req.on('error', reject);
-      req.write(body);
       req.end();
     });
 

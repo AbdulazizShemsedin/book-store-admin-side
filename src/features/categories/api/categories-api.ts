@@ -31,65 +31,133 @@ export const categoriesApi = {
     const page = params.page || 1;
     const pageSize = params.pageSize || 50;
 
-    const queryParams: Record<string, string | number | undefined> = {
-      page,
-      page_size: pageSize,
-    };
+    // If a specific parent branch is requested, fetch just that branch
     if (params.parentId) {
-      queryParams.parent_id = params.parentId;
+      try {
+        const response = await apiClient.get<ListCategoryAdminResponseBody>(
+          '/admin/api/category',
+          { params: { parent_id: params.parentId } }
+        );
+        const rawList = response.categories || [];
+        const categories: Category[] = rawList.map((item) => ({
+          id: item.id,
+          name: item.name,
+          parentId: item.parent_id || undefined,
+        }));
+        return {
+          categories,
+          total: response.total ?? categories.length,
+          page,
+          pageSize,
+        };
+      } catch {
+        const response = await apiClient.post<ListCategoryResponseBody>(
+          '/api/category',
+          { parent_id: params.parentId },
+          { params: { page, page_size: pageSize } }
+        );
+        const rawList = response.categories || [];
+        const categories: Category[] = rawList.map((item) => ({
+          id: item.id,
+          name: item.name,
+          parentId: item.parent_id || undefined,
+        }));
+        return {
+          categories,
+          total: response.total || categories.length,
+          page,
+          pageSize,
+        };
+      }
     }
 
+    // When fetching the full catalog taxonomy, recursively load all levels
+    // (Roots -> Level 2 Subcategories -> Level 3 Sub-subcategories)
     try {
-      const response = await apiClient.get<ListCategoryAdminResponseBody>(
-        '/admin/api/category',
-        { params: queryParams }
-      );
+      // 1. Load Root Categories (Level 1)
+      const rootsRes = await apiClient.get<ListCategoryAdminResponseBody>('/admin/api/category');
+      const rootItems = rootsRes.categories || [];
 
-      const rawList = response.categories || [];
-      const categories: Category[] = rawList.map((item) => ({
-        id: item.id,
-        name: item.name,
-        parentId: item.parent_id || undefined,
-      }));
+      // 2. Load Level 2 Subcategories for each root in parallel
+      const l2Promises = rootItems.map((r) =>
+        apiClient
+          .get<ListCategoryAdminResponseBody>('/admin/api/category', {
+            params: { parent_id: r.id },
+          })
+          .catch(() => ({ categories: [] }))
+      );
+      const l2Responses = await Promise.all(l2Promises);
+      const l2Items = l2Responses.flatMap((res) => res.categories || []);
+
+      // 3. Load Level 3 Subcategories for each Level 2 item in parallel
+      const l3Promises = l2Items.map((c) =>
+        apiClient
+          .get<ListCategoryAdminResponseBody>('/admin/api/category', {
+            params: { parent_id: c.id },
+          })
+          .catch(() => ({ categories: [] }))
+      );
+      const l3Responses = await Promise.all(l3Promises);
+      const l3Items = l3Responses.flatMap((res) => res.categories || []);
+
+      // Combine and deduplicate
+      const categoryMap = new Map<string, Category>();
+      for (const item of [...rootItems, ...l2Items, ...l3Items]) {
+        categoryMap.set(item.id, {
+          id: item.id,
+          name: item.name,
+          parentId: item.parent_id || undefined,
+        });
+      }
+
+      const allCategories = Array.from(categoryMap.values());
 
       return {
-        categories,
-        total: response.total ?? categories.length,
-        page: response.page || page,
-        pageSize: response.page_size || pageSize,
+        categories: allCategories,
+        total: allCategories.length,
+        page: 1,
+        pageSize: allCategories.length,
       };
     } catch {
-      // Fallback to public catalog endpoint
-      const requestBody: ListCategoryRequestBody = {
-        parent_id: params.parentId || undefined,
-      };
+      // Fallback via consumer endpoints:
+      // 1. Root categories via POST /api/category with {}
+      const rootsRes = await apiClient.post<ListCategoryResponseBody>('/api/category', {});
+      const rootItems = rootsRes.categories || [];
 
-      const response = await apiClient.post<ListCategoryResponseBody>(
-        '/api/category',
-        requestBody,
-        {
-          params: {
-            page,
-            page_size: pageSize,
-          },
-        }
+      // 2. Level 2 subcategories
+      const l2Promises = rootItems.map((r) =>
+        apiClient
+          .post<ListCategoryResponseBody>('/api/category', { parent_id: r.id })
+          .catch(() => ({ categories: [] }))
       );
+      const l2Responses = await Promise.all(l2Promises);
+      const l2Items = l2Responses.flatMap((res) => res.categories || []);
 
-      const rawList = response.categories || [];
+      // 3. Level 3 subcategories
+      const l3Promises = l2Items.map((c) =>
+        apiClient
+          .post<ListCategoryResponseBody>('/api/category', { parent_id: c.id })
+          .catch(() => ({ categories: [] }))
+      );
+      const l3Responses = await Promise.all(l3Promises);
+      const l3Items = l3Responses.flatMap((res) => res.categories || []);
 
-      // Map to domain model
-      const categories: Category[] = rawList.map((item) => ({
-        id: item.id,
-        name: item.name,
-        parentId: item.parent_id || undefined,
-        color: item.color || undefined,
-      }));
+      const categoryMap = new Map<string, Category>();
+      for (const item of [...rootItems, ...l2Items, ...l3Items]) {
+        categoryMap.set(item.id, {
+          id: item.id,
+          name: item.name,
+          parentId: item.parent_id || undefined,
+        });
+      }
+
+      const allCategories = Array.from(categoryMap.values());
 
       return {
-        categories,
-        total: response.total || categories.length,
-        page: response.page || page,
-        pageSize: response.page_size || pageSize,
+        categories: allCategories,
+        total: allCategories.length,
+        page: 1,
+        pageSize: allCategories.length,
       };
     }
   },

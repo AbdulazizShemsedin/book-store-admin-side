@@ -87,15 +87,30 @@ async function executeUploadSession(
       { signal: options.signal }
     );
 
-    // Browser directly PUTs chunk to presigned storage URL
-    const uploadChunkResponse = await fetch(partUrlResponse.url, {
-      method: 'PUT',
-      body: chunk,
-      headers: {
-        'Content-Type': contentType,
-      },
-      signal: options.signal,
-    });
+    // Upload chunk via Next.js proxy in browser to eliminate Cloudflare R2 CORS 403 Forbidden errors
+    let uploadChunkResponse: Response;
+    let cleanEtag = `part-${partNumber}`;
+
+    if (typeof window !== 'undefined') {
+      uploadChunkResponse = await fetch('/api/upload/chunk', {
+        method: 'PUT',
+        body: chunk,
+        headers: {
+          'Content-Type': contentType,
+          'x-upload-url': partUrlResponse.url,
+        },
+        signal: options.signal,
+      });
+    } else {
+      uploadChunkResponse = await fetch(partUrlResponse.url, {
+        method: 'PUT',
+        body: chunk,
+        headers: {
+          'Content-Type': contentType,
+        },
+        signal: options.signal,
+      });
+    }
 
     if (!uploadChunkResponse.ok) {
       throw new Error(
@@ -104,8 +119,17 @@ async function executeUploadSession(
     }
 
     // Extract ETag header (strip surrounding quotes if present)
-    const rawEtag = uploadChunkResponse.headers.get('ETag') || `part-${partNumber}`;
-    const cleanEtag = rawEtag.replace(/^["']|["']$/g, '');
+    const rawEtag = uploadChunkResponse.headers.get('ETag');
+    if (rawEtag) {
+      cleanEtag = rawEtag.replace(/^["']|["']$/g, '');
+    } else {
+      try {
+        const bodyJson = await uploadChunkResponse.clone().json();
+        if (bodyJson.etag) cleanEtag = bodyJson.etag;
+      } catch {
+        cleanEtag = `part-${partNumber}`;
+      }
+    }
 
     completedParts.push({
       part_number: partNumber,

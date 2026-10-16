@@ -43,3 +43,24 @@ export const bookFormSchema = z.object({
 });
 
 export type BookFormData = z.infer<typeof bookFormSchema>;
+
+export const updateBookSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Book title is required')
+    .max(128, 'Book title must be at most 128 characters')
+    .optional(),
+  language: z.enum(['en', 'am', 'ar']),
+  authorId: z.string().optional(),
+  publisherId: z.string().optional(),
+  description: z
+    .string()
+    .max(1024, 'Description must be at most 1024 characters')
+    .optional(),
+  status: z.enum(['public', 'private']).default('public'),
+  bookPrice: z.string().optional(),
+  audioPrice: z.string().optional(),
+  totalPrice: z.string().optional(),
+});
+
+export type UpdateBookFormData = z.infer<typeof updateBookSchema>;

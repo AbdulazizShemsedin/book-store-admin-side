@@ -72,6 +72,20 @@ export interface CreateAuthorResponseBody {
   name?: string;
 }
 
+export interface UpdateAuthorRequestBody {
+  name?: string;
+  nationality?: string;
+  description?: string;
+}
+
+export interface GetAuthorResponseBody {
+  id: string;
+  string: string;
+  nationality?: string | null;
+  description: string;
+  avatar?: string | null;
+}
+
 // PUBLISHERS (/admin/api/publisher)
 export interface ListPublisherResponseItem {
   id: string;
@@ -91,6 +105,15 @@ export interface CreatePublisherRequestBody {
 
 export interface CreatePublisherResponseBody {
   id: string;
+}
+
+export interface UpdatePublisherRequestBody {
+  name: string;
+}
+
+export interface GetPublisherResponseBody {
+  id: string;
+  string: string;
 }
 
 // BOOKS (/admin/api/book)
@@ -129,6 +152,44 @@ export interface CreateBookRequestBody {
 
 export interface CreateBookResponseBody {
   id: string;
+}
+
+export interface AssetsStruct {
+  audio?: string | null;
+  book?: string | null;
+}
+
+export interface PriceStruct {
+  audio_only?: string | null;
+  book_only?: string | null;
+  total?: string | null;
+}
+
+export interface GetBookAdminResponseBody {
+  id: string;
+  name: string;
+  author?: string | null;
+  description: string;
+  has_book: boolean;
+  has_audio: boolean;
+  assets: AssetsStruct;
+  price: PriceStruct;
+  rating?: string | null;
+  status: string;
+  tags?: string[] | null;
+  thumbnail?: string | null;
+}
+
+export interface UpdateBookRequestBody {
+  name?: string;
+  description?: string;
+  language: 'am' | 'ar' | 'en';
+  author_id?: string;
+  publisher_id?: string;
+  status?: 'private' | 'public';
+  book_price?: string;
+  audio_price?: string;
+  total_price?: string;
 }
 
 export interface GetBookResponseBody {

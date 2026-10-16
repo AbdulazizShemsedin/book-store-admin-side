@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { Publisher } from '@/types/domain';
-import { PencilSimple, Trash } from '@phosphor-icons/react';
+import { Buildings, BookOpen } from '@phosphor-icons/react';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
+import { cn } from '@/lib/utils/cn';
 
 interface PublisherTableProps {
   publishers: Publisher[];
@@ -23,14 +24,15 @@ export function PublisherTable({
   isError,
   error,
   onRetry,
-  onEdit,
-  onDelete,
 }: PublisherTableProps) {
   if (isLoading) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center bg-white rounded-xl border border-slate-200">
-        <Spinner size="lg" />
-        <p className="mt-3 text-xs text-slate-500 font-medium">Loading publishers...</p>
+      <div className="py-24 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200/90 shadow-sm">
+        <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center mb-3">
+          <Spinner size="md" />
+        </div>
+        <p className="text-sm font-semibold text-slate-800">Loading publishers...</p>
+        <p className="mt-1 text-xs text-slate-400">Fetching distribution imprints from directory</p>
       </div>
     );
   }
@@ -48,72 +50,74 @@ export function PublisherTable({
 
   if (publishers.length === 0) {
     return (
-      <EmptyState
-        title="No publishers found"
-        description="Register a publisher imprint or distribution house."
-      />
+      <div className="py-16 bg-white rounded-2xl border border-slate-200/90 shadow-sm text-center px-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 border border-slate-200/60 text-slate-400 flex items-center justify-center mb-3">
+          <Buildings className="w-7 h-7" />
+        </div>
+        <h3 className="text-base font-bold text-slate-800">No publishers found</h3>
+        <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+          Register a publisher imprint or distribution house using the form.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto bg-white rounded-xl border border-slate-200/80 shadow-sm">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            <th className="py-3.5 px-6">Publisher</th>
-            <th className="py-3.5 px-6 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 text-xs">
-          {publishers.map((pub) => {
-            return (
-              <tr
-                key={pub.id}
-                className="hover:bg-slate-50/60 transition-colors group"
-              >
-                {/* Publisher name with Monogram Avatar */}
-                <td className="py-4 px-6 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-800 font-bold text-xs flex items-center justify-center border border-blue-200/60 uppercase">
-                    {pub.monogram}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-slate-900 block">{pub.name}</span>
-                    {pub.booksCount !== undefined && (
-                      <span className="text-[11px] text-slate-400">
-                        {pub.booksCount} published titles
-                      </span>
-                    )}
-                  </div>
-                </td>
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <th className="py-3 px-5">Publisher Imprint</th>
+              <th className="py-3 px-4">Status</th>
+              <th className="py-3 px-5 text-right">Cataloged Titles</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {publishers.map((pub) => {
+              return (
+                <tr
+                  key={pub.id}
+                  className="hover:bg-emerald-50/20 transition-colors group"
+                >
+                  {/* Publisher Name with Monogram Avatar */}
+                  <td className="py-3.5 px-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-50 to-indigo-100/80 text-blue-800 font-bold text-xs flex items-center justify-center border border-blue-200/60 uppercase shadow-2xs flex-shrink-0">
+                        {pub.monogram}
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-900 block text-xs group-hover:text-emerald-800 transition-colors">
+                          {pub.name}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">
+                          Registered Publisher
+                        </span>
+                      </div>
+                    </div>
+                  </td>
 
-                {/* Actions */}
-                <td className="py-4 px-6 text-right">
-                  <div className="flex items-center justify-end gap-2 text-slate-400 group-hover:text-slate-600">
-                    <button
-                      type="button"
-                      onClick={() => onEdit?.(pub)}
-                      className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
-                      aria-label="Edit publisher"
-                      title="Edit publisher"
-                    >
-                      <PencilSimple className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete?.(pub)}
-                      className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                      aria-label="Delete publisher"
-                      title="Delete publisher"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  {/* Status Badge */}
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/70">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      <span>Active</span>
+                    </span>
+                  </td>
+
+                  {/* Cataloged Titles */}
+                  <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
+                      <BookOpen className="w-3 h-3 text-slate-500" />
+                      <span>{pub.booksCount ?? 0} Titles</span>
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

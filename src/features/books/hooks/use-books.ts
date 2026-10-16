@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { booksApi, ListBooksParams } from '../api/books-api';
 import { BookFormData } from '../schemas/book-schema';
+import { UpdateBookRequestBody } from '@/types/api';
 
 export const BOOKS_QUERY_KEY = 'books';
 
@@ -36,6 +37,21 @@ export function useCreateBook(onSuccessCallback?: (bookId: string) => void) {
       queryClient.invalidateQueries({ queryKey: [BOOKS_QUERY_KEY] });
       if (onSuccessCallback) {
         onSuccessCallback(result.id);
+      }
+    },
+  });
+}
+
+export function useUpdateBook(bookId: string, onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateBookRequestBody) => booksApi.update(bookId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [BOOKS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [BOOKS_QUERY_KEY, bookId] });
+      if (onSuccessCallback) {
+        onSuccessCallback();
       }
     },
   });

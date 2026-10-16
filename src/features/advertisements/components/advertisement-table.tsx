@@ -111,19 +111,20 @@ export function AdvertisementTable({
   }
 
   return (
-    <div className="overflow-x-auto bg-white rounded-xl border border-slate-200/80 shadow-sm">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              <th className="py-3.5 px-3 w-10 text-center"></th>
-              <th className="py-3.5 px-4 w-20">Order No</th>
-              <th className="py-3.5 px-4 w-44">Preview</th>
-              <th className="py-3.5 px-6">Ad Message</th>
-              <th className="py-3.5 px-4 w-28">Status</th>
-              <th className="py-3.5 px-6 text-right">Actions</th>
-            </tr>
-          </thead>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-3 w-10 text-center"></th>
+                <th className="py-3 px-4 w-24">Order</th>
+                <th className="py-3 px-4 w-44">Banner Preview</th>
+                <th className="py-3 px-6">Campaign Message</th>
+                <th className="py-3 px-4 w-28">Status</th>
+                <th className="py-3 px-6 text-right">Actions</th>
+              </tr>
+            </thead>
           <tbody className="divide-y divide-slate-100 text-xs">
             <SortableContext items={ads.map((a) => a.id)} strategy={verticalListSortingStrategy}>
               {ads.map((ad, index) => (
@@ -142,6 +143,7 @@ export function AdvertisementTable({
             </SortableContext>
           </tbody>
         </table>
+        </div>
       </DndContext>
     </div>
   );

@@ -3,23 +3,27 @@
 import React, { useState, useMemo } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { CategoryTable } from '@/features/categories/components/category-table';
+import {
+  CategoryTable,
+  CategoryLevelFilter,
+} from '@/features/categories/components/category-table';
 import { CreateCategoryModal } from '@/features/categories/components/create-category-modal';
 import { useCategories } from '@/features/categories/hooks/use-categories';
 import { Pagination } from '@/components/tables/pagination';
-import { Button } from '@/components/ui/button';
 import {
   MagnifyingGlass,
   Plus,
-  Folder,
-  TreeStructure,
+  X,
 } from '@phosphor-icons/react';
 import { Category } from '@/types/domain';
+import { filterCategoryList } from '@/features/categories/utils/category-tree';
+import { cn } from '@/lib/utils/cn';
 
 export default function CategoriesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [search, setSearch] = useState('');
+  const [levelFilter, setLevelFilter] = useState<CategoryLevelFilter>('all');
 
   // Modal creation state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,25 +32,16 @@ export default function CategoriesPage() {
   const { data, isLoading, isError, error, refetch } = useCategories({
     page,
     pageSize,
-    search,
   });
 
   const categories = useMemo(() => data?.categories || [], [data?.categories]);
   const total = data?.total || categories.length;
 
-  // Taxonomy Metrics
-  const rootCount = useMemo(
-    () => categories.filter((c) => !c.parentId).length,
-    [categories]
+  // Smart search: preserves hierarchy and connects parent to matched children
+  const filteredCategories = useMemo(
+    () => filterCategoryList(categories, search),
+    [categories, search]
   );
-  const subCount = useMemo(
-    () => categories.filter((c) => Boolean(c.parentId)).length,
-    [categories]
-  );
-
-  const filteredCategories = search
-    ? categories.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
-    : categories;
 
   const handleOpenCreateModal = (parentId: string | null = null) => {
     setModalParentId(parentId);
@@ -65,60 +60,23 @@ export default function CategoriesPage() {
   return (
     <AdminShell>
       <PageHeader
-        breadcrumbs={[{ label: 'Catalog' }, { label: 'Taxonomy' }]}
+        breadcrumbs={[{ label: 'Catalog' }, { label: 'Categories' }]}
         title="Categories"
         actions={
-          <Button
+          <button
+            type="button"
             onClick={() => handleOpenCreateModal(null)}
-            leftIcon={<Plus className="w-4 h-4" weight="bold" />}
-            className="bg-[#1e4634] hover:bg-[#153426] text-white"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-[#1e4634] hover:bg-[#153426] transition-colors shadow-xs active:scale-[0.99]"
           >
-            New Category
-          </Button>
+            <Plus className="w-4 h-4" weight="bold" />
+            <span>New Category</span>
+          </button>
         }
       />
 
       <div className="space-y-6">
-        {/* Top Stats & Search Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center">
-              <TreeStructure className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">
-                Total Categories
-              </span>
-              <span className="text-xl font-bold text-slate-900">{categories.length}</span>
-            </div>
-          </div>
 
-          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
-              <Folder className="w-5 h-5" weight="fill" />
-            </div>
-            <div>
-              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">
-                Main Categories (L1)
-              </span>
-              <span className="text-xl font-bold text-slate-900">{rootCount}</span>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
-              <TreeStructure className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">
-                Subcategories (L2+)
-              </span>
-              <span className="text-xl font-bold text-slate-900">{subCount}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Search & Actions Strip */}
+        {/* Search Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="w-full sm:w-80 relative">
             <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -126,10 +84,26 @@ export default function CategoriesPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search category hierarchy..."
-              className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
+              placeholder="Search category or subcategory..."
+              className="w-full h-9 pl-9 pr-8 text-xs bg-white border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 focus:border-[#1e4634] transition-colors"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="w-4 h-4 text-slate-400 hover:text-slate-700 flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
+
+          {search && (
+            <span className="text-xs text-slate-500">
+              {filteredCategories.length} matching categories
+            </span>
+          )}
         </div>
 
         {/* Tree Table */}
@@ -141,16 +115,20 @@ export default function CategoriesPage() {
             error={error}
             onRetry={() => refetch()}
             onAddSubcategory={handleAddSubcategoryFromTable}
+            levelFilter={levelFilter}
+            onLevelFilterChange={setLevelFilter}
           />
 
-          <Pagination
-            currentPage={page}
-            pageSize={pageSize}
-            totalItems={total}
-            onPageChange={setPage}
-            onPageSizeChange={setPageSize}
-            itemLabel="categories"
-          />
+          {total > pageSize && (
+            <Pagination
+              currentPage={page}
+              pageSize={pageSize}
+              totalItems={total}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="categories"
+            />
+          )}
         </div>
       </div>
 
