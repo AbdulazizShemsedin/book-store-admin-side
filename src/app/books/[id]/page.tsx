@@ -21,7 +21,16 @@ import {
   Folder,
   Plus,
   TreeStructure,
+  Tag,
+  CheckCircle,
+  UploadSimple,
 } from '@phosphor-icons/react';
+import {
+  buildCategoryTree,
+  flattenCategoryTree,
+  resolveCategoryLineage,
+} from '@/features/categories/utils/category-tree';
+import { uploadBookThumbnail } from '@/lib/upload/multipart-upload';
 
 export default function BookDetailsPage() {
   const params = useParams();
@@ -35,6 +44,37 @@ export default function BookDetailsPage() {
   const [selectedTagId, setSelectedTagId] = useState('');
   const [isAttachingTag, setIsAttachingTag] = useState(false);
   const [tagError, setTagError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Cover image upload state
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [uploadCoverError, setUploadCoverError] = useState<string | null>(null);
+  const coverInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleUploadCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingCover(true);
+    setUploadCoverError(null);
+    try {
+      await uploadBookThumbnail(bookId, file);
+      await refetch();
+    } catch (err: any) {
+      setUploadCoverError(err.message || 'Failed to upload cover image.');
+    } finally {
+      setIsUploadingCover(false);
+      if (coverInputRef.current) coverInputRef.current.value = '';
+    }
+  };
+
+  // Build hierarchical category nodes
+  const categoryTree = React.useMemo(() => buildCategoryTree(allCategories), [allCategories]);
+  const flatCategoryNodes = React.useMemo(() => flattenCategoryTree(categoryTree), [categoryTree]);
+
+  const selectedNode = React.useMemo(
+    () => flatCategoryNodes.find((n) => n.id === selectedTagId),
+    [flatCategoryNodes, selectedTagId]
+  );
 
   if (isLoading) {
     return (
@@ -65,9 +105,17 @@ export default function BookDetailsPage() {
     if (!selectedTagId) return;
     setIsAttachingTag(true);
     setTagError(null);
+    setSuccessMessage(null);
     try {
-      await booksApi.attachTag(bookId, selectedTagId);
+      // Resolve lineage so that all ancestor categories (e.g. Master Category -> Subcategory)
+      // are attached to the book for complete mobile app catalog discovery
+      const lineageIds = resolveCategoryLineage([selectedTagId], allCategories);
+      for (const id of lineageIds) {
+        await booksApi.attachTag(bookId, id);
+      }
       setSelectedTagId('');
+      setSuccessMessage('Category attached successfully!');
+      setTimeout(() => setSuccessMessage(null), 4000);
       await refetch();
     } catch (err) {
       setTagError('Failed to attach category. Please try again.');
@@ -85,7 +133,7 @@ export default function BookDetailsPage() {
           { label: 'Books', href: '/books' },
           { label: book.name || bookId },
         ]}
-        title={`Book Details - ${book.name}`}
+        title={book.name}
         actions={
           <div className="flex items-center gap-3">
             <Button
@@ -224,9 +272,9 @@ export default function BookDetailsPage() {
               </div>
 
               {/* Asset 3: Storefront Thumbnail */}
-              <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200/80 bg-slate-50/50">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-100/80 text-blue-800 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-blue-100/80 text-blue-800 flex items-center justify-center flex-shrink-0">
                     <ImageIcon className="w-5 h-5" weight="fill" />
                   </div>
                   <div>
@@ -236,9 +284,12 @@ export default function BookDetailsPage() {
                     <p className="text-[11px] text-slate-500">
                       Catalog thumbnail for mobile discovery feeds
                     </p>
+                    {uploadCoverError && (
+                      <p className="text-[11px] text-red-600 font-medium mt-1">{uploadCoverError}</p>
+                    )}
                   </div>
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
                   <Badge
                     variant={book.thumbnail ? 'success' : 'default'}
                     size="sm"
@@ -246,6 +297,26 @@ export default function BookDetailsPage() {
                   >
                     {book.thumbnail ? 'Uploaded' : 'No Cover'}
                   </Badge>
+
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleUploadCover}
+                  />
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    isLoading={isUploadingCover}
+                    onClick={() => coverInputRef.current?.click()}
+                    leftIcon={<UploadSimple className="w-3.5 h-3.5" />}
+                    className="text-xs h-8 px-2.5 font-medium"
+                  >
+                    {book.thumbnail ? 'Replace Cover' : 'Upload Cover'}
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -259,33 +330,38 @@ export default function BookDetailsPage() {
             <CardHeader
               title={
                 <div className="flex items-center gap-1.5">
-                  <TreeStructure className="w-4 h-4 text-emerald-800" />
+                  <TreeStructure className="w-4 h-4 text-[#1e4634]" />
                   <span>Attached Categories</span>
                 </div>
               }
               action={
-                <span className="text-[11px] text-slate-500 font-medium">
+                <span className="text-[11px] font-semibold text-[#1e4634] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   {attachedTags.length} attached
                 </span>
               }
             />
             <CardContent className="space-y-4">
+              {/* Attached Category Badges */}
               <div>
                 <p className="text-[11px] text-slate-500 mb-2">
                   Categories linked to this book on the backend:
                 </p>
                 {attachedTags.length === 0 ? (
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-400 italic text-center">
-                    No categories attached yet.
+                  <div className="p-4 bg-slate-50/80 border border-dashed border-slate-200 rounded-xl text-center space-y-1">
+                    <Folder className="w-6 h-6 text-slate-300 mx-auto" />
+                    <p className="text-xs text-slate-600 font-medium">No categories attached yet</p>
+                    <p className="text-[11px] text-slate-400">
+                      Attach this book to catalog categories to make it discoverable on mobile feeds.
+                    </p>
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {attachedTags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-2xs"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-950 border border-emerald-200 shadow-2xs"
                       >
-                        <Folder className="w-3.5 h-3.5 text-emerald-700" weight="fill" />
+                        <Folder className="w-3.5 h-3.5 text-[#1e4634]" weight="fill" />
                         <span>{tag}</span>
                       </span>
                     ))}
@@ -294,36 +370,76 @@ export default function BookDetailsPage() {
               </div>
 
               {/* Attach Existing Category */}
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 block">
-                  Attach Taxonomy Category
-                </label>
+              <div className="pt-3 border-t border-slate-100 space-y-3">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 block">
+                    Attach Taxonomy Category
+                  </label>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Select a section or subcategory from the catalog hierarchy.
+                  </p>
+                </div>
+
                 {tagError && (
-                  <p className="text-xs text-red-600 font-medium">{tagError}</p>
+                  <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
+                    {tagError}
+                  </div>
                 )}
-                <div className="flex gap-2">
-                  <select
-                    value={selectedTagId}
-                    onChange={(e) => setSelectedTagId(e.target.value)}
-                    className="flex-1 h-9 px-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
-                  >
-                    <option value="">Select category...</option>
-                    {allCategories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} {c.parentId ? '(Subcategory)' : '(Main Category)'}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    size="sm"
-                    onClick={handleAttachCategory}
-                    isLoading={isAttachingTag}
-                    disabled={!selectedTagId}
-                    leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
-                    className="bg-[#1e4634] hover:bg-[#153426] text-white h-9 px-3 text-xs"
-                  >
-                    Attach
-                  </Button>
+
+                {successMessage && (
+                  <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-center gap-1.5">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" weight="fill" />
+                    <span>{successMessage}</span>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedTagId}
+                      onChange={(e) => setSelectedTagId(e.target.value)}
+                      className="flex-1 h-9 px-3 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 focus:border-[#1e4634] transition-colors"
+                    >
+                      <option value="">Select category to attach...</option>
+                      {flatCategoryNodes.map((node) => {
+                        const isAlreadyAttached = attachedTags.some(
+                          (t) => t.toLowerCase() === node.name.toLowerCase()
+                        );
+                        const indent = node.depth > 1 ? `${'— '.repeat(node.depth - 1)}` : '';
+                        const levelLabel = node.depth === 1 ? '(Master)' : `(L${node.depth})`;
+                        return (
+                          <option
+                            key={node.id}
+                            value={node.id}
+                            disabled={isAlreadyAttached}
+                          >
+                            {indent}{node.name} {isAlreadyAttached ? '✓ Already Attached' : levelLabel}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    <Button
+                      size="sm"
+                      onClick={handleAttachCategory}
+                      isLoading={isAttachingTag}
+                      disabled={!selectedTagId}
+                      leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
+                      className="bg-[#1e4634] hover:bg-[#153426] text-white h-9 px-3 text-xs font-semibold shadow-xs"
+                    >
+                      Attach
+                    </Button>
+                  </div>
+
+                  {/* Lineage Info Pill */}
+                  {selectedNode && selectedNode.depth > 1 && (
+                    <div className="p-2 bg-emerald-50/60 border border-emerald-100 rounded-lg text-[11px] text-emerald-900 flex items-center gap-1.5">
+                      <TreeStructure className="w-3.5 h-3.5 text-[#1e4634] flex-shrink-0" />
+                      <span>
+                        Path: <strong>{selectedNode.fullPath}</strong> (will automatically link parent levels)
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
