@@ -94,6 +94,38 @@ export const booksApi = {
   },
 
   /**
+   * Step 1: Submits initial book metadata to POST /admin/api/book and returns the assigned bookId.
+   */
+  async createRecord(data: BookFormData): Promise<{ id: string }> {
+    const langCode =
+      data.language === 'Amharic'
+        ? 'am'
+        : data.language === 'Arabic'
+        ? 'ar'
+        : ['en', 'am', 'ar'].includes(data.language)
+        ? data.language
+        : 'en';
+
+    const requestBody: CreateBookRequestBody = {
+      name: data.name.trim(),
+      language: langCode,
+      description: data.description?.trim() || undefined,
+      author_id: data.authorId || undefined,
+      publisher_id: data.publisherId || undefined,
+      book_price: data.bookPrice?.trim() || undefined,
+      audio_price: data.audioPrice?.trim() || undefined,
+      total_price: data.totalPrice?.trim() || undefined,
+    };
+
+    const response = await apiClient.post<CreateBookResponseBody>(
+      '/admin/api/book',
+      requestBody
+    );
+
+    return { id: response.id };
+  },
+
+  /**
    * Submits a new book to POST /admin/api/book, attaches assets & tags.
    */
   async create(
