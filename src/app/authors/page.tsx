@@ -9,7 +9,7 @@ import { useAuthors } from '@/features/authors/hooks/use-authors';
 import { Pagination } from '@/components/tables/pagination';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, DownloadSimple, MagnifyingGlass, Funnel, ArrowsDownUp, Sparkle } from '@phosphor-icons/react';
+import { Plus, DownloadSimple, MagnifyingGlass, Funnel, ArrowsDownUp } from '@phosphor-icons/react';
 
 export default function AuthorsPage() {
   const [page, setPage] = useState(1);
@@ -68,15 +68,6 @@ export default function AuthorsPage() {
         }
       />
 
-      {/* Relink Assistant Banner */}
-      <div className="mb-5 p-3.5 bg-emerald-50/80 border border-emerald-200/90 rounded-xl flex items-center justify-between gap-3 text-xs shadow-2xs">
-        <div className="flex items-center gap-2.5">
-          <Sparkle className="w-4 h-4 text-[#1e4634] flex-shrink-0" weight="fill" />
-          <span className="text-emerald-950 font-medium">
-            <strong>Catalog Link Active:</strong> Each author row now displays its linked book. Click <strong>Edit</strong> on any author to automatically pre-fill and restore their original verified name and nationality.
-          </span>
-        </div>
-      </div>
 
       {/* Filter and Search Bar */}
       <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
