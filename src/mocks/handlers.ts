@@ -208,6 +208,58 @@ export const handlers = [
     return HttpResponse.json(created, { status: 201 });
   }),
 
+  http.get('*/admin/api/book/:id', ({ params }) => {
+    const id = params.id as string;
+    const book = mockStore.getBookById(id);
+
+    if (!book) {
+      return HttpResponse.json(
+        { title: 'Not Found', detail: `Book with id ${id} not found`, status: 404 },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      id: book.id,
+      name: book.name,
+      description: book.description,
+      author: book.author || null,
+      rating: book.rating || null,
+      has_book: book.has_book,
+      has_audio: book.has_audio,
+      status: 'public',
+      tags: book.tags || [],
+      thumbnail: book.thumbnail || null,
+      assets: {
+        book: book.has_book ? `assets/${book.id}/manuscript.epub` : null,
+        audio: book.has_audio ? `assets/${book.id}/audio.mp3` : null,
+      },
+      price: {
+        book_only: '150.00',
+        audio_only: '200.00',
+        total: '300.00',
+      },
+    });
+  }),
+
+  http.patch('*/admin/api/book/:id', async ({ params, request }) => {
+    const id = params.id as string;
+    const body = (await request.json()) as any;
+    const book = mockStore.getBookById(id);
+
+    if (!book) {
+      return HttpResponse.json(
+        { title: 'Not Found', detail: `Book with id ${id} not found`, status: 404 },
+        { status: 404 }
+      );
+    }
+
+    if (body.name) book.name = body.name;
+    if (body.description) book.description = body.description;
+
+    return new HttpResponse(null, { status: 200 });
+  }),
+
   http.get('*/api/book/:id', ({ params }) => {
     const id = params.id as string;
     const book = mockStore.getBookById(id);

@@ -38,6 +38,15 @@ export interface Book {
   thumbnail?: string | null;
   epubFileId?: string;
   audioFileId?: string;
+  assets?: {
+    book?: string | null;
+    audio?: string | null;
+  };
+  price?: {
+    bookOnly?: string | null;
+    audioOnly?: string | null;
+    total?: string | null;
+  };
   createdAt: string;
   updatedAt: string;
 }

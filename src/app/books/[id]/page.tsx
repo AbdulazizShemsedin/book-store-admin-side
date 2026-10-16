@@ -24,6 +24,7 @@ import {
   Tag,
   CheckCircle,
   UploadSimple,
+  PencilSimple,
 } from '@phosphor-icons/react';
 import {
   buildCategoryTree,
@@ -145,6 +146,14 @@ export default function BookDetailsPage() {
             >
               Back to Books
             </Button>
+            <Button
+              size="sm"
+              leftIcon={<PencilSimple className="w-3.5 h-3.5" weight="bold" />}
+              onClick={() => router.push(`/books/${bookId}/edit`)}
+              className="bg-[#1e4634] hover:bg-[#153426] text-white shadow-xs"
+            >
+              Edit Book
+            </Button>
           </div>
         }
       />
@@ -244,7 +253,14 @@ export default function BookDetailsPage() {
                     </div>
                     <div>
                       <span className="text-slate-400 block text-[11px]">Status</span>
-                      <span className="font-semibold text-slate-800 capitalize">
+                      <span
+                        className={cn(
+                          'inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold capitalize mt-0.5',
+                          book.status?.toLowerCase() === 'public' || book.status?.toLowerCase() === 'published'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                            : 'bg-amber-50 text-amber-800 border border-amber-200'
+                        )}
+                      >
                         {book.status || 'Active'}
                       </span>
                     </div>
@@ -258,6 +274,29 @@ export default function BookDetailsPage() {
                         {book.hasAudiobook ? 'Has Audio Track' : 'Standard'}
                       </span>
                     </div>
+
+                    {book.price && (book.price.bookOnly || book.price.audioOnly || book.price.total) && (
+                      <div className="col-span-2 sm:col-span-3 pt-3 border-t border-slate-100 flex flex-wrap gap-5 text-xs">
+                        {book.price.bookOnly && (
+                          <div>
+                            <span className="text-slate-400 block text-[11px]">Book Price</span>
+                            <span className="font-semibold text-slate-800">{book.price.bookOnly} ETB</span>
+                          </div>
+                        )}
+                        {book.price.audioOnly && (
+                          <div>
+                            <span className="text-slate-400 block text-[11px]">Audio Price</span>
+                            <span className="font-semibold text-slate-800">{book.price.audioOnly} ETB</span>
+                          </div>
+                        )}
+                        {book.price.total && (
+                          <div>
+                            <span className="text-slate-400 block text-[11px]">Bundle Total</span>
+                            <span className="font-semibold text-emerald-800">{book.price.total} ETB</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -294,8 +333,16 @@ export default function BookDetailsPage() {
                   </div>
                 </div>
                 <div>
-                  <Badge variant="default" size="sm" className="bg-slate-100 text-slate-700 border-slate-200">
-                    Active
+                  <Badge
+                    variant={book.assets?.book ? 'success' : 'default'}
+                    size="sm"
+                    className={
+                      book.assets?.book
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }
+                  >
+                    {book.assets?.book ? 'Active File' : 'Not Attached'}
                   </Badge>
                 </div>
               </div>
@@ -317,11 +364,15 @@ export default function BookDetailsPage() {
                 </div>
                 <div>
                   <Badge
-                    variant={book.hasAudiobook ? 'success' : 'default'}
+                    variant={book.assets?.audio || book.hasAudiobook ? 'success' : 'default'}
                     size="sm"
-                    className={book.hasAudiobook ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-600'}
+                    className={
+                      book.assets?.audio
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }
                   >
-                    {book.hasAudiobook ? 'Attached' : 'Not Configured'}
+                    {book.assets?.audio ? 'Active Stream' : book.hasAudiobook ? 'Configured' : 'Not Configured'}
                   </Badge>
                 </div>
               </div>
