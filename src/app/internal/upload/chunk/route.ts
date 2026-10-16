@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Server-side proxy for multipart upload chunks.
- * Eliminates browser CORS 403 Forbidden errors when uploading directly
- * to Cloudflare R2 presigned URLs.
+ * Running under /internal/upload/chunk so it is NOT intercepted by next.config.mjs /api/:path* rewrites.
+ * Eliminates browser CORS 403 Forbidden errors when uploading directly to Cloudflare R2 storage URLs.
  */
 export async function PUT(request: NextRequest) {
   const targetUrl = request.headers.get('x-upload-url') || request.nextUrl.searchParams.get('url');

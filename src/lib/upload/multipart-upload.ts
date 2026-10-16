@@ -92,7 +92,7 @@ async function executeUploadSession(
     let cleanEtag = `part-${partNumber}`;
 
     if (typeof window !== 'undefined') {
-      uploadChunkResponse = await fetch('/api/upload/chunk', {
+      uploadChunkResponse = await fetch('/internal/upload/chunk', {
         method: 'PUT',
         body: chunk,
         headers: {
