@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { authorSchema, AuthorFormData } from '../schemas/author-schema';
@@ -10,6 +10,7 @@ import { authorsApi } from '../api/authors-api';
 import { useUpdateAuthor, AUTHORS_QUERY_KEY } from '../hooks/use-authors';
 import { useBooks } from '@/features/books/hooks/use-books';
 import { getAuthorSuggestionByBookNames, AuthorSuggestion } from '../utils/author-recovery-map';
+import { NationalityCombobox } from './nationality-combobox';
 import { Modal } from '@/components/ui/modal';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -63,6 +64,7 @@ export function AuthorEditModal({ author, isOpen, onClose }: AuthorEditModalProp
     handleSubmit,
     reset,
     setValue,
+    control,
     setError,
     formState: { errors },
   } = useForm<AuthorFormData>({
@@ -263,11 +265,17 @@ export function AuthorEditModal({ author, isOpen, onClose }: AuthorEditModalProp
           {...register('name')}
         />
 
-        <Input
-          label="Nationality"
-          placeholder="e.g. Yemeni"
-          error={errors.nationality?.message}
-          {...register('nationality')}
+        <Controller
+          name="nationality"
+          control={control}
+          render={({ field }) => (
+            <NationalityCombobox
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.nationality?.message}
+              helperText="Select or search country of origin or literary heritage"
+            />
+          )}
         />
 
         <Textarea
