@@ -72,11 +72,20 @@ export async function normalizeApiError(response: Response): Promise<ApiError> {
     // Non-JSON response (e.g. gateway timeout or proxy error)
   }
 
-  const message =
-    rawJson?.detail ||
-    rawJson?.title ||
-    textFallback ||
-    `HTTP Error ${status}: ${response.statusText}`;
+  let message = rawJson?.detail;
+
+  if (!message && rawJson?.errors && Array.isArray(rawJson.errors) && rawJson.errors.length > 0) {
+    const errorMessages = rawJson.errors
+      .map((e) => e.message || `${e.location}: validation error`)
+      .filter(Boolean);
+    if (errorMessages.length > 0) {
+      message = errorMessages.join('; ');
+    }
+  }
+
+  if (!message) {
+    message = rawJson?.title || textFallback || `HTTP Error ${status}: ${response.statusText}`;
+  }
 
   return new ApiError(status, message, rawJson || undefined);
 }

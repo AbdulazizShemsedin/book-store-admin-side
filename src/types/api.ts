@@ -129,6 +129,7 @@ export interface ListBookItem {
   created_at: string; // ISO date-time
   updated_at: string; // ISO date-time
   author?: string | null;
+  author_id?: string | null;
 }
 
 export interface ListBookResponseBody {
@@ -169,6 +170,7 @@ export interface GetBookAdminResponseBody {
   id: string;
   name: string;
   author?: string | null;
+  author_id?: string | null;
   description: string;
   has_book: boolean;
   has_audio: boolean;

@@ -30,3 +30,12 @@ export function useCreateCategory(onSuccessCallback?: () => void) {
     },
   });
 }
+
+export function useSubcategories(parentId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: [CATEGORIES_QUERY_KEY, 'subcategories', parentId],
+    queryFn: () => categoriesApi.getSubcategories(parentId),
+    enabled: Boolean(parentId && enabled),
+    staleTime: 5 * 60 * 1000,
+  });
+}

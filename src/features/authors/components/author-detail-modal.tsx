@@ -16,6 +16,7 @@ import {
   Books,
   Sparkle,
   GlobeHemisphereWest,
+  PencilSimple,
 } from '@phosphor-icons/react';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -23,6 +24,7 @@ interface AuthorDetailModalProps {
   author: Author | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: (author: Author) => void;
 }
 
 function getInitials(name: string): string {
@@ -32,7 +34,7 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function AuthorDetailModal({ author, isOpen, onClose }: AuthorDetailModalProps) {
+export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDetailModalProps) {
   // Query books catalog to find books authored by this specific author
   const { data: booksData, isLoading: isLoadingBooks } = useBooks({
     pageSize: 100,
@@ -201,7 +203,18 @@ export function AuthorDetailModal({ author, isOpen, onClose }: AuthorDetailModal
         </div>
 
         {/* Modal Footer */}
-        <div className="flex justify-end pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+          {onEdit ? (
+            <button
+              type="button"
+              onClick={() => onEdit(author)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors"
+              title="Edit author profile details and avatar"
+            >
+              <PencilSimple className="w-3.5 h-3.5" />
+              <span>Edit Author</span>
+            </button>
+          ) : <div />}
           <button
             type="button"
             onClick={onClose}

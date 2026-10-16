@@ -143,6 +143,30 @@ export const handlers = [
     return new HttpResponse(null, { status: 201 });
   }),
 
+  http.get('*/admin/api/author/:id', ({ params }) => {
+    const author = mockStore.getAuthorById(params.id as string);
+    if (!author) {
+      return HttpResponse.json({ title: 'Not Found', status: 404 }, { status: 404 });
+    }
+    return HttpResponse.json(author);
+  }),
+
+  http.patch('*/admin/api/author/:id', async ({ params, request }) => {
+    try {
+      const body = (await request.json()) as any;
+      const updated = mockStore.updateAuthor(params.id as string, body);
+      if (!updated) {
+        return HttpResponse.json({ title: 'Not Found', status: 404 }, { status: 404 });
+      }
+      return HttpResponse.json(updated);
+    } catch (err: any) {
+      return HttpResponse.json(
+        { title: 'Bad Request', detail: err.message, status: 400 },
+        { status: 400 }
+      );
+    }
+  }),
+
   // ==========================================
   // BOOKS
   // ==========================================
