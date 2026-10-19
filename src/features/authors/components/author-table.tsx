@@ -2,15 +2,15 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Author } from '@/types/domain';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, User, Eye, GlobeHemisphereWest, PencilSimple } from '@phosphor-icons/react';
+import { BookOpen, User, Eye, GlobeHemisphereWest, PencilSimple, ArrowRight } from '@phosphor-icons/react';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { AuthorDetailModal } from './author-detail-modal';
 import { AuthorEditModal } from './author-edit-modal';
-import { useBooks } from '@/features/books/hooks/use-books';
 import { cn } from '@/lib/utils/cn';
 
 interface AuthorTableProps {
@@ -38,9 +38,6 @@ export function AuthorTable({
 }: AuthorTableProps) {
   const [viewingAuthor, setViewingAuthor] = useState<Author | null>(null);
   const [editingAuthor, setEditingAuthor] = useState<Author | null>(null);
-
-  // Load books catalog to map book titles to their corresponding authorId
-  const { data: booksData } = useBooks({ pageSize: 100 });
 
   if (isLoading) {
     return (
@@ -93,8 +90,6 @@ export function AuthorTable({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {authors.map((author) => {
-                const linkedBooks = (booksData?.books || []).filter((b) => b.authorId === author.id);
-
                 return (
                   <tr
                     key={author.id}
@@ -110,10 +105,10 @@ export function AuthorTable({
                             width={40}
                             height={40}
                             unoptimized
-                            className="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0 shadow-2xs"
+                            className="w-10 h-10 rounded-full object-cover border border-slate-200 flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200 ease-out"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-50 to-emerald-100/90 text-emerald-800 border border-emerald-200/70 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-50 to-emerald-100/90 text-emerald-800 border border-emerald-200/70 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200 ease-out">
                             {getInitials(author.name)}
                           </div>
                         )}
@@ -153,29 +148,21 @@ export function AuthorTable({
                       )}
                     </td>
 
-                    {/* Catalog Works & Linked Books */}
-                    <td className="py-3.5 px-4">
-                      {linkedBooks.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5 items-center">
-                          {linkedBooks.map((b) => (
-                            <span
-                              key={b.id}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-[#1e4634] border border-emerald-200/80 shadow-2xs max-w-[220px]"
-                              title={`Linked book in catalog: ${b.name}`}
-                            >
-                              <BookOpen className="w-3 h-3 text-[#1e4634] flex-shrink-0" />
-                              <span className="truncate">{b.name}</span>
-                            </span>
-                          ))}
-                        </div>
-                      ) : author.worksCount !== undefined ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                          <BookOpen className="w-3 h-3 text-emerald-700" />
-                          <span>{author.worksCount} Titles</span>
+                    {/* Catalog Works & Direct Link to Books */}
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <Link
+                        href={`/books?author_id=${encodeURIComponent(author.id)}&author_name=${encodeURIComponent(author.name)}`}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200/60 transition-colors shadow-2xs group/link"
+                        title={`View catalog books by ${author.name}`}
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>
+                          {author.worksCount !== undefined && author.worksCount > 0
+                            ? `${author.worksCount} Works`
+                            : 'View Books'}
                         </span>
-                      ) : (
-                        <span className="text-slate-400 text-[11px] italic">No books linked</span>
-                      )}
+                        <ArrowRight className="w-3 h-3 text-emerald-600 group-hover/link:translate-x-0.5 transition-transform" />
+                      </Link>
                     </td>
 
                     {/* Actions */}

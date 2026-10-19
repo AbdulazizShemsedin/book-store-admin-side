@@ -14,6 +14,7 @@ export function useCategories(params: ListCategoriesParams = {}) {
     queryKey: [CATEGORIES_QUERY_KEY, { page, pageSize, parentId, search }],
     queryFn: () => categoriesApi.list({ page, pageSize, parentId, search }),
     placeholderData: (prev) => prev,
+    staleTime: 5 * 60 * 1000, // 5 minutes fresh cache for static taxonomy
   });
 }
 

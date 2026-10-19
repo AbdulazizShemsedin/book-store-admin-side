@@ -88,33 +88,75 @@ async function executeUploadSession(
     );
 
     // Upload chunk via Next.js proxy in browser to eliminate Cloudflare R2 CORS 403 Forbidden errors
-    let uploadChunkResponse: Response;
+    // Wrapped in an automatic 3-attempt retry loop with exponential backoff for network resilience
+    const MAX_CHUNK_RETRIES = 3;
+    let attempt = 0;
+    let uploadChunkResponse: Response | null = null;
+    let lastError: Error | null = null;
     let cleanEtag = `part-${partNumber}`;
 
-    if (typeof window !== 'undefined') {
-      uploadChunkResponse = await fetch('/internal/upload/chunk', {
-        method: 'PUT',
-        body: chunk,
-        headers: {
-          'Content-Type': contentType,
-          'x-upload-url': partUrlResponse.url,
-        },
-        signal: options.signal,
-      });
-    } else {
-      uploadChunkResponse = await fetch(partUrlResponse.url, {
-        method: 'PUT',
-        body: chunk,
-        headers: {
-          'Content-Type': contentType,
-        },
-        signal: options.signal,
-      });
+    while (attempt < MAX_CHUNK_RETRIES) {
+      if (options.signal?.aborted) {
+        throw new Error('Upload aborted by user');
+      }
+
+      try {
+        if (typeof window !== 'undefined') {
+          uploadChunkResponse = await fetch('/internal/upload/chunk', {
+            method: 'PUT',
+            body: chunk,
+            headers: {
+              'Content-Type': contentType,
+              'x-upload-url': partUrlResponse.url,
+            },
+            signal: options.signal,
+          });
+        } else {
+          uploadChunkResponse = await fetch(partUrlResponse.url, {
+            method: 'PUT',
+            body: chunk,
+            headers: {
+              'Content-Type': contentType,
+            },
+            signal: options.signal,
+          });
+        }
+
+        if (uploadChunkResponse.ok) {
+          break; // Chunk upload succeeded!
+        }
+
+        // If client error (4xx other than 429), fail immediately without retrying
+        if (uploadChunkResponse.status < 500 && uploadChunkResponse.status !== 429) {
+          throw new Error(
+            `Failed to upload part ${partNumber} of ${totalParts}: HTTP ${uploadChunkResponse.status}`
+          );
+        }
+
+        lastError = new Error(
+          `Chunk ${partNumber} received HTTP ${uploadChunkResponse.status}`
+        );
+      } catch (err: unknown) {
+        if (options.signal?.aborted) {
+          throw new Error('Upload aborted by user');
+        }
+        lastError = err instanceof Error ? err : new Error(String(err));
+      }
+
+      attempt++;
+      if (attempt < MAX_CHUNK_RETRIES) {
+        // Exponential backoff: ~800ms, ~1600ms + random jitter
+        const delay = Math.pow(2, attempt) * 400 + Math.random() * 200;
+        await new Promise((res) => setTimeout(res, delay));
+      }
     }
 
-    if (!uploadChunkResponse.ok) {
-      throw new Error(
-        `Failed to upload part ${partNumber} of ${totalParts}: HTTP ${uploadChunkResponse.status}`
+    if (!uploadChunkResponse || !uploadChunkResponse.ok) {
+      throw (
+        lastError ||
+        new Error(
+          `Failed to upload part ${partNumber} of ${totalParts} after ${MAX_CHUNK_RETRIES} attempts`
+        )
       );
     }
 

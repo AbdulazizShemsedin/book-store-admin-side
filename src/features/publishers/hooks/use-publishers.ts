@@ -13,6 +13,7 @@ export function usePublishers(params: ListPublishersParams = {}) {
     queryKey: [PUBLISHERS_QUERY_KEY, { page, pageSize, search }],
     queryFn: () => publishersApi.list({ page, pageSize, search }),
     placeholderData: (prev) => prev,
+    staleTime: 5 * 60 * 1000, // 5 minutes fresh cache for static publishers
   });
 }
 

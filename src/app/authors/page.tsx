@@ -10,12 +10,16 @@ import { Pagination } from '@/components/tables/pagination';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, DownloadSimple, MagnifyingGlass, Funnel, ArrowsDownUp } from '@phosphor-icons/react';
+import { useDebounce } from '@/lib/hooks/use-debounce';
 
 export default function AuthorsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Debounce search input to avoid spamming network on every keystroke
+  const debouncedSearch = useDebounce(search, 350);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -29,7 +33,7 @@ export default function AuthorsPage() {
   const { data, isLoading, isError, error, refetch } = useAuthors({
     page,
     pageSize,
-    search,
+    search: debouncedSearch,
   });
 
   const authors = data?.authors || [];

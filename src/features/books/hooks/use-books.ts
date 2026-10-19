@@ -5,17 +5,23 @@ import { UpdateBookRequestBody } from '@/types/api';
 
 export const BOOKS_QUERY_KEY = 'books';
 
-export function useBooks(params: ListBooksParams = {}) {
+export function useBooks(
+  params: ListBooksParams = {},
+  options?: { enabled?: boolean }
+) {
   const page = params.page || 1;
   const pageSize = params.pageSize || 10;
   const search = params.search || '';
   const category = params.category || '';
   const status = params.status || '';
+  const authorId = params.authorId || '';
 
   return useQuery({
-    queryKey: [BOOKS_QUERY_KEY, { page, pageSize, search, category, status }],
-    queryFn: ({ signal }) => booksApi.list({ page, pageSize, search, category, status }, signal),
+    queryKey: [BOOKS_QUERY_KEY, { page, pageSize, search, category, status, authorId }],
+    queryFn: ({ signal }) =>
+      booksApi.list({ page, pageSize, search, category, status, authorId }, signal),
     placeholderData: (prev) => prev,
+    enabled: options?.enabled ?? true,
   });
 }
 
