@@ -93,7 +93,6 @@ async function executeUploadSession(
     let attempt = 0;
     let uploadChunkResponse: Response | null = null;
     let lastError: Error | null = null;
-    let cleanEtag = `part-${partNumber}`;
 
     while (attempt < MAX_CHUNK_RETRIES) {
       if (options.signal?.aborted) {
@@ -160,17 +159,20 @@ async function executeUploadSession(
       );
     }
 
-    // Extract ETag header (strip surrounding quotes if present)
-    const rawEtag = uploadChunkResponse.headers.get('ETag');
-    if (rawEtag) {
-      cleanEtag = rawEtag.replace(/^["']|["']$/g, '');
-    } else {
-      try {
-        const bodyJson = await uploadChunkResponse.clone().json();
-        if (bodyJson.etag) cleanEtag = bodyJson.etag;
-      } catch {
-        cleanEtag = `part-${partNumber}`;
-      }
+    // Prefer the proxy's JSON body: intermediaries (e.g. Cloudflare compression) rewrite
+    // the ETag header into a weak validator (W/"..."), which S3 rejects as InvalidPart.
+    let rawEtag: string | null = null;
+    try {
+      const bodyJson = await uploadChunkResponse.clone().json();
+      if (typeof bodyJson?.etag === 'string') rawEtag = bodyJson.etag;
+    } catch {
+      // not the proxy (direct S3 PUT), fall back to the header
+    }
+    rawEtag = rawEtag || uploadChunkResponse.headers.get('ETag');
+
+    const cleanEtag = (rawEtag || '').replace(/^W\//, '').replace(/^["']|["']$/g, '');
+    if (!cleanEtag) {
+      throw new Error(`Storage did not return an ETag for part ${partNumber} of ${totalParts}`);
     }
 
     completedParts.push({
