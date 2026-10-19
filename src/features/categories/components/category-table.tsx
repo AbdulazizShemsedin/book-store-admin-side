@@ -34,142 +34,204 @@ interface CategoryTableProps {
 }
 
 /**
- * Child drawer row that lazily fetches and renders subcategories on demand
- * avoiding recursive bulk API crawling.
+ * Recursive child drawer row that lazily fetches and renders nested subcategories
+ * to arbitrary depth (up to 5 levels) on demand.
  */
+interface SubcategoriesDrawerProps {
+  parent: Category;
+  depth?: number;
+  onAddSubcategory?: (parentCategory: Category) => void;
+  asNestedList?: boolean;
+}
+
 function SubcategoriesDrawer({
   parent,
+  depth = 2,
   onAddSubcategory,
-}: {
-  parent: Category;
-  onAddSubcategory?: (parentCategory: Category) => void;
-}) {
+  asNestedList = false,
+}: SubcategoriesDrawerProps) {
   const { data: subcategories, isLoading, isError, error, refetch } = useSubcategories(parent.id, true);
+  const [expandedSubIds, setExpandedSubIds] = useState<Set<string>>(new Set());
 
-  if (isLoading) {
-    return (
-      <tr className="bg-slate-50/70 border-b border-slate-100">
-        <td colSpan={4} className="py-4 px-8">
-          <div className="flex items-center gap-3 text-xs text-slate-500">
-            <Spinner size="sm" />
-            <span>Loading subcategories under &quot;{parent.name}&quot;...</span>
+  const toggleExpandSub = (id: string) => {
+    setExpandedSubIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const content = (() => {
+    if (isLoading) {
+      return (
+        <div className="py-3 px-4 flex items-center gap-2.5 text-xs text-slate-500">
+          <Spinner size="sm" />
+          <span>Loading Level {depth} subcategories under &quot;{parent.name}&quot;...</span>
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="py-2.5 px-4 flex items-center justify-between text-xs text-red-700 bg-red-50/50 rounded-lg">
+          <span>Failed to load Level {depth} categories: {error?.message || 'Network error'}</span>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="inline-flex items-center gap-1 font-semibold underline hover:text-red-900"
+          >
+            <ArrowClockwise className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
+        </div>
+      );
+    }
+
+    if (!subcategories || subcategories.length === 0) {
+      return (
+        <div className="p-3 rounded-xl border border-dashed border-slate-200 bg-white flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <Tag className="w-4 h-4 text-slate-400" />
+            <span>No subcategories registered under <strong className="text-slate-700">{parent.name}</strong>.</span>
           </div>
-        </td>
-      </tr>
-    );
-  }
-
-  if (isError) {
-    return (
-      <tr className="bg-red-50/40 border-b border-red-100">
-        <td colSpan={4} className="py-3 px-8">
-          <div className="flex items-center justify-between text-xs text-red-700">
-            <span>Failed to load subcategories: {error?.message || 'Network error'}</span>
+          {onAddSubcategory && depth < 5 && (
             <button
               type="button"
-              onClick={() => refetch()}
-              className="inline-flex items-center gap-1 font-semibold underline hover:text-red-900"
+              onClick={() => onAddSubcategory(parent)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#1e4634] bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 rounded-lg transition-colors"
             >
-              <ArrowClockwise className="w-3.5 h-3.5" />
-              <span>Retry</span>
+              <Plus className="w-3 h-3" weight="bold" />
+              <span>Add Level {depth} Sub</span>
             </button>
-          </div>
-        </td>
-      </tr>
-    );
-  }
+          )}
+        </div>
+      );
+    }
 
-  if (!subcategories || subcategories.length === 0) {
     return (
-      <tr className="bg-slate-50/60 border-b border-slate-100">
-        <td colSpan={4} className="py-4 px-8">
-          <div className="flex items-center justify-between p-3 rounded-xl border border-dashed border-slate-200 bg-white">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Tag className="w-4 h-4 text-slate-400" />
-              <span>No subcategories currently registered under <strong className="text-slate-700">{parent.name}</strong>.</span>
-            </div>
-            {onAddSubcategory && (
-              <button
-                type="button"
-                onClick={() => onAddSubcategory(parent)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#1e4634] bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 rounded-lg transition-colors"
-              >
-                <Plus className="w-3 h-3" weight="bold" />
-                <span>Add First Subcategory</span>
-              </button>
-            )}
+      <div className="rounded-xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden">
+        <div className="px-4 py-2 bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+            <TreeStructure className="w-3.5 h-3.5 text-emerald-700" />
+            <span>
+              Subcategories of {parent.name} ({subcategories.length})
+            </span>
           </div>
-        </td>
-      </tr>
+          {onAddSubcategory && depth < 5 && (
+            <button
+              type="button"
+              onClick={() => onAddSubcategory(parent)}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1e4634] hover:underline"
+            >
+              <Plus className="w-3 h-3" weight="bold" />
+              <span>Add Level {depth} Sub</span>
+            </button>
+          )}
+        </div>
+
+        <div className="divide-y divide-slate-100">
+          {subcategories.map((sub) => {
+            const isSubExpanded = expandedSubIds.has(sub.id);
+
+            return (
+              <div key={sub.id} className="p-3 transition-colors hover:bg-slate-50/50">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleExpandSub(sub.id)}
+                      className="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 transition-colors flex-shrink-0"
+                      title={isSubExpanded ? 'Hide nested children' : 'View nested children'}
+                    >
+                      {isSubExpanded ? (
+                        <CaretDown className="w-3.5 h-3.5 text-emerald-800" weight="bold" />
+                      ) : (
+                        <CaretRight className="w-3.5 h-3.5 text-slate-400" weight="bold" />
+                      )}
+                    </button>
+
+                    <div
+                      className={cn(
+                        'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs',
+                        depth === 2 && 'bg-indigo-50 border border-indigo-200/60 text-indigo-700',
+                        depth === 3 && 'bg-amber-50 border border-amber-200/60 text-amber-800',
+                        depth === 4 && 'bg-purple-50 border border-purple-200/60 text-purple-800',
+                        depth >= 5 && 'bg-rose-50 border border-rose-200/60 text-rose-800'
+                      )}
+                    >
+                      <Tag className="w-3.5 h-3.5" weight="bold" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-xs text-slate-900 truncate">
+                          {sub.name}
+                        </span>
+                        <span className="font-mono text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                          {sub.id.length > 8 ? `${sub.id.slice(0, 8)}...` : sub.id}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 flex-shrink-0">
+                    <span
+                      className={cn(
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
+                        depth === 2 && 'bg-indigo-50 text-indigo-700 border-indigo-200/70',
+                        depth === 3 && 'bg-amber-50 text-amber-800 border-amber-200/70',
+                        depth === 4 && 'bg-purple-50 text-purple-800 border-purple-200/70',
+                        depth >= 5 && 'bg-rose-50 text-rose-800 border-rose-200/70'
+                      )}
+                    >
+                      Level {depth}
+                    </span>
+
+                    {onAddSubcategory && depth < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => onAddSubcategory(sub)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 transition-colors shadow-2xs"
+                        title={`Add nested child under ${sub.name}`}
+                      >
+                        <Plus className="w-3 h-3" weight="bold" />
+                        <span>Add L{depth + 1} Sub</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Recursive Nested Subcategories Drawer */}
+                {isSubExpanded && (
+                  <div className="pl-4 border-l-2 border-emerald-400/80 ml-3.5 mt-3 pt-1">
+                    <SubcategoriesDrawer
+                      parent={sub}
+                      depth={depth + 1}
+                      onAddSubcategory={onAddSubcategory}
+                      asNestedList={true}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     );
+  })();
+
+  if (asNestedList) {
+    return <div className="w-full">{content}</div>;
   }
 
   return (
     <tr className="bg-slate-50/60 border-b border-slate-100">
       <td colSpan={4} className="py-3 px-6 sm:px-8">
-        <div className="rounded-xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden">
-          <div className="px-4 py-2 bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-              <TreeStructure className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Subcategories of {parent.name} ({subcategories.length})</span>
-            </div>
-            {onAddSubcategory && (
-              <button
-                type="button"
-                onClick={() => onAddSubcategory(parent)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1e4634] hover:underline"
-              >
-                <Plus className="w-3 h-3" weight="bold" />
-                <span>Add Another Sub</span>
-              </button>
-            )}
-          </div>
-
-          <div className="divide-y divide-slate-100">
-            {subcategories.map((sub) => (
-              <div
-                key={sub.id}
-                className="flex items-center justify-between p-3 hover:bg-emerald-50/20 transition-colors group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex items-center text-slate-300 group-hover:text-emerald-700 transition-colors flex-shrink-0">
-                    <ArrowBendDownRight className="w-4 h-4" weight="bold" />
-                  </div>
-                  <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200/60 text-indigo-700 flex items-center justify-center flex-shrink-0 shadow-2xs">
-                    <Tag className="w-3.5 h-3.5" weight="bold" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-xs text-slate-900 truncate">
-                        {sub.name}
-                      </span>
-                      <span className="font-mono text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
-                        {sub.id.length > 8 ? `${sub.id.slice(0, 8)}...` : sub.id}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/70">
-                    Subcategory (L2)
-                  </span>
-                  {onAddSubcategory && (
-                    <button
-                      type="button"
-                      onClick={() => onAddSubcategory(sub)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 transition-colors shadow-2xs"
-                      title={`Add nested sub-subcategory under ${sub.name}`}
-                    >
-                      <Plus className="w-3 h-3" weight="bold" />
-                      <span>Add Nested Sub</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {content}
       </td>
     </tr>
   );

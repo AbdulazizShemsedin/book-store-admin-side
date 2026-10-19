@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { useBook } from '@/features/books/hooks/use-books';
-import { useCategories } from '@/features/categories/hooks/use-categories';
+import { useCategories, useAllCategories } from '@/features/categories/hooks/use-categories';
 import { booksApi } from '@/features/books/api/books-api';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,8 +40,11 @@ export default function BookDetailsPage() {
   const bookId = typeof params?.id === 'string' ? params.id : '';
 
   const { data: book, isLoading, isError, error, refetch } = useBook(bookId);
+  const { data: allCategoriesData } = useAllCategories();
   const { data: categoriesData } = useCategories({ pageSize: 100 });
-  const allCategories = categoriesData?.categories || [];
+  const allCategories = allCategoriesData && allCategoriesData.length > 0
+    ? allCategoriesData
+    : (categoriesData?.categories || []);
 
   const [selectedTagId, setSelectedTagId] = useState('');
   const [isAttachingTag, setIsAttachingTag] = useState(false);

@@ -23,6 +23,7 @@ export default function CategoriesPage() {
   // Modal creation state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalParentId, setModalParentId] = useState<string | null>(null);
+  const [modalParentCategory, setModalParentCategory] = useState<Category | null>(null);
 
   // Single-request paginated categories query
   const { data, isLoading, isError, error, refetch } = useCategories({
@@ -40,18 +41,20 @@ export default function CategoriesPage() {
     return rawCategories.filter((c) => c.name.toLowerCase().includes(q));
   }, [rawCategories, search]);
 
-  const handleOpenCreateModal = (parentId: string | null = null) => {
-    setModalParentId(parentId);
+  const handleOpenCreateModal = (parentCategory: Category | null = null) => {
+    setModalParentCategory(parentCategory);
+    setModalParentId(parentCategory ? parentCategory.id : null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setModalParentId(null);
+    setModalParentCategory(null);
   };
 
   const handleAddSubcategoryFromTable = (parentCategory: Category) => {
-    handleOpenCreateModal(parentCategory.id);
+    handleOpenCreateModal(parentCategory);
   };
 
   return (
@@ -136,6 +139,7 @@ export default function CategoriesPage() {
         onClose={handleCloseModal}
         categories={rawCategories}
         initialParentId={modalParentId}
+        initialParentCategory={modalParentCategory}
       />
     </AdminShell>
   );

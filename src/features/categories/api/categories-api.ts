@@ -92,6 +92,42 @@ export const categoriesApi = {
   },
 
   /**
+   * Recursively fetches all categories and their nested subcategories across all levels
+   * to construct the complete multi-level taxonomy tree.
+   */
+  async getAllCategories(): Promise<Category[]> {
+    const rootsRes = await this.list({ page: 1, pageSize: 100 });
+    const allCategories: Category[] = [...rootsRes.categories];
+    const visited = new Set<string>(rootsRes.categories.map((c) => c.id));
+
+    let currentLevel = rootsRes.categories;
+    let depth = 1;
+
+    while (currentLevel.length > 0 && depth < 5) {
+      const childPromises = currentLevel.map((cat) =>
+        this.getSubcategories(cat.id).catch(() => [] as Category[])
+      );
+      const childResults = await Promise.all(childPromises);
+      const nextLevel: Category[] = [];
+
+      for (const children of childResults) {
+        for (const child of children) {
+          if (!visited.has(child.id)) {
+            visited.add(child.id);
+            allCategories.push(child);
+            nextLevel.push(child);
+          }
+        }
+      }
+
+      currentLevel = nextLevel;
+      depth++;
+    }
+
+    return allCategories;
+  },
+
+  /**
    * Creates a root category or subcategory via POST /admin/api/category.
    */
   async create(data: CategoryFormData): Promise<{ id: string }> {

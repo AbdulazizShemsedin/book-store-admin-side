@@ -8,7 +8,7 @@ import { bookFormSchema, BookFormData } from '../schemas/book-schema';
 import { booksApi } from '../api/books-api';
 import { useAuthors } from '@/features/authors/hooks/use-authors';
 import { usePublishers } from '@/features/publishers/hooks/use-publishers';
-import { useCategories } from '@/features/categories/hooks/use-categories';
+import { useCategories, useAllCategories } from '@/features/categories/hooks/use-categories';
 import { CategoryTreeSelect } from '@/features/categories/components/category-tree-select';
 import { resolveCategoryLineage } from '@/features/categories/utils/category-tree';
 import { uploadBookThumbnail, uploadBookAsset } from '@/lib/upload/multipart-upload';
@@ -86,11 +86,14 @@ export function BookForm() {
 
   const { data: authorsData } = useAuthors({ pageSize: 100 });
   const { data: publishersData } = usePublishers({ pageSize: 100 });
+  const { data: allCategoriesData } = useAllCategories();
   const { data: categoriesData } = useCategories({ pageSize: 100 });
 
   const authors = authorsData?.authors || [];
   const publishers = publishersData?.publishers || [];
-  const categories = categoriesData?.categories || [];
+  const categories = allCategoriesData && allCategoriesData.length > 0
+    ? allCategoriesData
+    : (categoriesData?.categories || []);
 
   const {
     register,

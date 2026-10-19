@@ -40,3 +40,12 @@ export function useSubcategories(parentId: string, enabled: boolean = true) {
     staleTime: 5 * 60 * 1000,
   });
 }
+
+export function useAllCategories() {
+  return useQuery({
+    queryKey: [CATEGORIES_QUERY_KEY, 'all-tree'],
+    queryFn: () => categoriesApi.getAllCategories(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
