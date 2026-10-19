@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/error-handler';
 import {
   ListBookResponseBody,
   CreateBookRequestBody,
@@ -18,6 +19,7 @@ export interface ListBooksParams {
   search?: string;
   category?: string;
   status?: string;
+  authorId?: string;
 }
 
 export interface ListBooksResult {
@@ -41,13 +43,47 @@ export const booksApi = {
     };
     if (params.search?.trim()) queryParams.search = params.search.trim();
     if (params.status?.trim()) queryParams.status = params.status.trim();
+    if (params.authorId?.trim()) queryParams.author_id = params.authorId.trim();
 
-    const response = await apiClient.get<ListBookResponseBody>('/admin/api/book', {
-      params: queryParams,
-      signal,
-    });
+    let rawBooks: NonNullable<ListBookResponseBody['books']> = [];
+    let responseTotal = 0;
+    let responsePage = page;
+    let responsePageSize = pageSize;
 
-    const rawBooks = response.books || [];
+    try {
+      const response = await apiClient.get<ListBookResponseBody>('/admin/api/book', {
+        params: queryParams,
+        signal,
+      });
+
+      rawBooks = response.books || [];
+      responseTotal = response.total ?? rawBooks.length;
+      responsePage = response.page || page;
+      responsePageSize = response.page_size || pageSize;
+    } catch (err: unknown) {
+      // If the live backend returns 422 because the author_id query parameter
+      // has not been deployed yet, gracefully fall back to fetching the catalog
+      // and filtering by authorId client-side so the UI never crashes.
+      if (err instanceof ApiError && err.status === 422 && queryParams.author_id) {
+        const fallbackParams: Record<string, string | number | undefined> = {
+          ...queryParams,
+          page_size: 100,
+        };
+        delete fallbackParams.author_id;
+
+        const fallbackResponse = await apiClient.get<ListBookResponseBody>('/admin/api/book', {
+          params: fallbackParams,
+          signal,
+        });
+
+        const allFetched = fallbackResponse.books || [];
+        const matched = allFetched.filter((b) => b.author_id === params.authorId);
+        rawBooks = matched;
+        responseTotal = matched.length;
+      } else {
+        throw err;
+      }
+    }
 
     const books: Book[] = rawBooks.map((item) => ({
       id: item.id,
@@ -66,9 +102,9 @@ export const booksApi = {
 
     return {
       books,
-      total: response.total ?? books.length,
-      page: response.page || page,
-      pageSize: response.page_size || pageSize,
+      total: responseTotal,
+      page: responsePage,
+      pageSize: responsePageSize,
     };
   },
 

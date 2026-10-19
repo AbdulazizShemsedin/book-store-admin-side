@@ -38,16 +38,21 @@ export function Badge({ className, variant, size, dot, children, ...props }: Bad
   return (
     <div className={cn(badgeVariants({ variant, size, className }))} {...props}>
       {dot && (
-        <span
-          className={cn(
-            'w-1.5 h-1.5 rounded-full',
-            variant === 'success' && 'bg-emerald-500',
-            variant === 'warning' && 'bg-amber-500',
-            variant === 'danger' && 'bg-red-500',
-            variant === 'info' && 'bg-blue-500',
-            (!variant || variant === 'default') && 'bg-slate-400'
+        <span className="relative flex h-2 w-2 mr-0.5 items-center justify-center">
+          {variant === 'success' && (
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
           )}
-        />
+          <span
+            className={cn(
+              'relative inline-flex rounded-full w-1.5 h-1.5',
+              variant === 'success' && 'bg-emerald-600',
+              variant === 'warning' && 'bg-amber-500',
+              variant === 'danger' && 'bg-red-500',
+              variant === 'info' && 'bg-blue-500',
+              (!variant || variant === 'default') && 'bg-slate-400'
+            )}
+          />
+        </span>
       )}
       {children}
     </div>

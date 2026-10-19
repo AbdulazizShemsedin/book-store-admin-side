@@ -124,7 +124,7 @@ export function BookTable({
                         <img
                           src={bookCover}
                           alt={book.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200 ease-out"
                           loading="lazy"
                           onError={(e) => {
                             // Fallback if image fails to load

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { categoriesApi } from '../api/categories-api';
 import { useQueryClient } from '@tanstack/react-query';
-import { CATEGORIES_QUERY_KEY } from '../hooks/use-categories';
+import { CATEGORIES_QUERY_KEY, useAllCategories } from '../hooks/use-categories';
 import { ApiError } from '@/lib/api/error-handler';
 import {
   buildCategoryTree,
@@ -30,20 +30,31 @@ import { cn } from '@/lib/utils/cn';
 interface CreateCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  categories: Category[];
+  categories?: Category[];
   initialParentId?: string | null;
+  initialParentCategory?: Category | null;
 }
 
 export function CreateCategoryModal({
   isOpen,
   onClose,
-  categories,
+  categories = [],
   initialParentId = null,
+  initialParentCategory = null,
 }: CreateCategoryModalProps) {
   const queryClient = useQueryClient();
 
-  // Build tree & flat list
-  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
+  // Load the full multi-level taxonomy tree across all depths
+  const { data: allTaxonomyCategories } = useAllCategories();
+  const effectiveCategories = useMemo(() => {
+    if (allTaxonomyCategories && allTaxonomyCategories.length > 0) {
+      return allTaxonomyCategories;
+    }
+    return categories;
+  }, [allTaxonomyCategories, categories]);
+
+  // Build full multi-level tree & flat list
+  const categoryTree = useMemo(() => buildCategoryTree(effectiveCategories), [effectiveCategories]);
   const flatNodes = useMemo(() => flattenCategoryTree(categoryTree), [categoryTree]);
 
   // Max depth is 5, so parents can only be up to depth 4
@@ -93,10 +104,21 @@ export function CreateCategoryModal({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const selectedParentNode = useMemo(
-    () => (parentId ? flatNodes.find((n) => n.id === parentId) || null : null),
-    [flatNodes, parentId]
-  );
+  const selectedParentNode = useMemo(() => {
+    if (!parentId) return null;
+    const found = flatNodes.find((n) => n.id === parentId);
+    if (found) return found;
+    if (initialParentCategory && initialParentCategory.id === parentId) {
+      return {
+        ...initialParentCategory,
+        depth: 2,
+        path: [initialParentCategory.name],
+        fullPath: initialParentCategory.name,
+        children: [],
+      };
+    }
+    return null;
+  }, [flatNodes, parentId, initialParentCategory]);
 
   const filteredParents = useMemo(() => {
     if (!parentSearch.trim()) return eligibleParents;

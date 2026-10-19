@@ -35,10 +35,16 @@ function getInitials(name: string): string {
 }
 
 export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDetailModalProps) {
-  // Query books catalog to find books authored by this specific author
-  const { data: booksData, isLoading: isLoadingBooks } = useBooks({
-    pageSize: 100,
-  });
+  // Lazily query books catalog only when modal is open, filtering by authorId
+  const { data: booksData, isLoading: isLoadingBooks } = useBooks(
+    {
+      authorId: author?.id,
+      pageSize: 8,
+    },
+    {
+      enabled: isOpen && Boolean(author?.id),
+    }
+  );
 
   const authorBooks = useMemo(() => {
     if (!author || !booksData?.books) return [];
@@ -47,7 +53,6 @@ export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDet
     return booksData.books.filter((b) => {
       if (b.authorId && b.authorId === author.id) return true;
       if (b.author && b.author.trim().toLowerCase() === targetName) return true;
-      if (b.author && b.author.toLowerCase().includes(targetName)) return true;
       return false;
     });
   }, [author, booksData?.books]);
@@ -128,11 +133,14 @@ export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDet
               <BookOpen className="w-4 h-4 text-[#1e4634]" weight="bold" />
               <span>Catalog Books by this Author ({authorBooks.length})</span>
             </div>
-            {authorBooks.length > 0 && (
-              <span className="text-[11px] text-slate-400">
-                Click any book to open its detail page
-              </span>
-            )}
+            <Link
+              href={`/books?author_id=${encodeURIComponent(author.id)}&author_name=${encodeURIComponent(author.name)}`}
+              onClick={onClose}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100/70 px-2.5 py-1 rounded-md border border-emerald-200/60 transition-colors shadow-2xs"
+            >
+              <span>View in catalog</span>
+              <ArrowSquareOut className="w-3 h-3" />
+            </Link>
           </div>
 
           {isLoadingBooks ? (

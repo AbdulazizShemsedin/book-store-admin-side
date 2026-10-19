@@ -20,9 +20,7 @@ import {
   Translate,
 } from '@phosphor-icons/react';
 import { useBooks } from '@/features/books/hooks/use-books';
-import { useAuthors } from '@/features/authors/hooks/use-authors';
-import { useCategories } from '@/features/categories/hooks/use-categories';
-import { usePublishers } from '@/features/publishers/hooks/use-publishers';
+import { useDashboardStats } from '@/features/dashboard/hooks/use-dashboard-stats';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils/cn';
 
@@ -37,17 +35,14 @@ const LANGUAGE_LABELS: Record<string, string> = {
 
 export default function DashboardPage() {
   const { data: booksData, isLoading: booksLoading } = useBooks({ page: 1, pageSize: 6 });
-  const { data: authorsData } = useAuthors({ page: 1, pageSize: 1 });
-  const { data: categoriesData } = useCategories({ page: 1, pageSize: 50 });
-  const { data: publishersData } = usePublishers({ page: 1, pageSize: 1 });
+  const { data: statsData } = useDashboardStats();
 
-  const totalBooks = booksData?.total ?? 0;
-  const totalAuthors = authorsData?.total ?? 0;
-  const categoriesList = categoriesData?.categories || [];
-  const totalCategories = categoriesData?.total ?? categoriesList.length;
-  const rootCategoriesCount = categoriesList.filter((c) => !c.parentId).length;
-  const subCategoriesCount = categoriesList.filter((c) => Boolean(c.parentId)).length;
-  const totalPublishers = publishersData?.total ?? 0;
+  const totalBooks = statsData?.totalBooks ?? booksData?.total ?? 0;
+  const totalAuthors = statsData?.totalAuthors ?? 0;
+  const totalCategories = statsData?.totalCategories ?? 0;
+  const rootCategoriesCount = statsData?.rootCategoriesCount ?? 0;
+  const subCategoriesCount = statsData?.subCategoriesCount ?? 0;
+  const totalPublishers = statsData?.totalPublishers ?? 0;
 
   const recentBooks = booksData?.books || [];
 
@@ -69,11 +64,11 @@ export default function DashboardPage() {
         }
       />
 
-      {/* KPI Cards Grid (Real live database entities) */}
+      {/* KPI Cards Grid (Real live database entities with GPU animations) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {/* TOTAL BOOKS */}
-        <Link href="/books" className="block group">
-          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-emerald-600/60 hover:shadow-md transition-all">
+        <Link href="/books" className="block group animate-fade-in-up [animation-delay:0ms]">
+          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-emerald-600/60 hover:shadow-md hover:-translate-y-1 transition-all duration-200 ease-out">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -84,7 +79,7 @@ export default function DashboardPage() {
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-1">Live titles repository</span>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/60 flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/60 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200 shadow-2xs">
                 <BookOpen className="w-5 h-5" weight="fill" />
               </div>
             </div>
@@ -92,8 +87,8 @@ export default function DashboardPage() {
         </Link>
 
         {/* AUTHORS */}
-        <Link href="/authors" className="block group">
-          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-blue-600/60 hover:shadow-md transition-all">
+        <Link href="/authors" className="block group animate-fade-in-up [animation-delay:60ms]">
+          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-blue-600/60 hover:shadow-md hover:-translate-y-1 transition-all duration-200 ease-out">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -104,7 +99,7 @@ export default function DashboardPage() {
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-1">Registered writers</span>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-700 border border-blue-200/60 flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-700 border border-blue-200/60 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200 shadow-2xs">
                 <Users className="w-5 h-5" weight="fill" />
               </div>
             </div>
@@ -112,8 +107,8 @@ export default function DashboardPage() {
         </Link>
 
         {/* CATEGORIES TAXONOMY */}
-        <Link href="/categories" className="block group">
-          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-indigo-600/60 hover:shadow-md transition-all">
+        <Link href="/categories" className="block group animate-fade-in-up [animation-delay:120ms]">
+          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-indigo-600/60 hover:shadow-md hover:-translate-y-1 transition-all duration-200 ease-out">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -126,7 +121,7 @@ export default function DashboardPage() {
                   {rootCategoriesCount} roots • {subCategoriesCount} subcategories
                 </span>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200/60 flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200/60 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200 shadow-2xs">
                 <TreeStructure className="w-5 h-5" weight="fill" />
               </div>
             </div>
@@ -134,8 +129,8 @@ export default function DashboardPage() {
         </Link>
 
         {/* PUBLISHERS */}
-        <Link href="/publishers" className="block group">
-          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-purple-600/60 hover:shadow-md transition-all">
+        <Link href="/publishers" className="block group animate-fade-in-up [animation-delay:180ms]">
+          <div className="relative overflow-hidden bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:border-purple-600/60 hover:shadow-md hover:-translate-y-1 transition-all duration-200 ease-out">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -146,7 +141,7 @@ export default function DashboardPage() {
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-1">Distribution partners</span>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-700 border border-purple-200/60 flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
+              <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-700 border border-purple-200/60 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-200 shadow-2xs">
                 <Buildings className="w-5 h-5" weight="fill" />
               </div>
             </div>
