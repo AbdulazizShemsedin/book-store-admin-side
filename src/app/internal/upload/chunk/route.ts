@@ -28,6 +28,16 @@ export async function PUT(request: NextRequest) {
     );
   }
 
+  // Defend against Memory Exhaustion / Denial of Service (DoS)
+  const MAX_CHUNK_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB max per chunk
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > MAX_CHUNK_SIZE_BYTES) {
+    return NextResponse.json(
+      { error: 'Payload Too Large: Maximum chunk size is 25MB' },
+      { status: 413 }
+    );
+  }
+
   const contentType = request.headers.get('content-type') || 'application/octet-stream';
 
   try {
