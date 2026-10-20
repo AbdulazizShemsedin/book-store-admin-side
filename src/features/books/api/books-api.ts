@@ -20,6 +20,8 @@ export interface ListBooksParams {
   category?: string;
   status?: string;
   authorId?: string;
+  language?: string;
+  hasAudio?: boolean;
 }
 
 export interface ListBooksResult {
@@ -37,13 +39,19 @@ export const booksApi = {
     const page = params.page || 1;
     const pageSize = params.pageSize || 10;
 
-    const queryParams: Record<string, string | number | undefined> = {
+    const queryParams: Record<string, string | number | boolean | undefined> = {
       page,
       page_size: pageSize,
     };
     if (params.search?.trim()) queryParams.search = params.search.trim();
     if (params.status?.trim()) queryParams.status = params.status.trim();
     if (params.authorId?.trim()) queryParams.author_id = params.authorId.trim();
+    if (params.language?.trim() && params.language !== 'All') {
+      queryParams.language = params.language.trim();
+    }
+    if (params.hasAudio !== undefined) {
+      queryParams.has_audio = params.hasAudio;
+    }
 
     let rawBooks: NonNullable<ListBookResponseBody['books']> = [];
     let responseTotal = 0;
@@ -61,14 +69,20 @@ export const booksApi = {
       responsePage = response.page || page;
       responsePageSize = response.page_size || pageSize;
     } catch (err: unknown) {
-      // If the live backend returns 422 because the author_id query parameter
-      // has not been deployed yet, gracefully fall back to fetching the catalog
-      // and filtering by authorId client-side so the UI never crashes.
-      if (err instanceof ApiError && err.status === 422 && queryParams.author_id) {
-        const fallbackParams: Record<string, string | number | undefined> = {
+      // If the live backend returns 422 because query parameters (language, has_audio, or author_id)
+      // have not been deployed yet to the backend's validator, gracefully fall back to fetching
+      // the catalog and filtering in memory so the catalog NEVER crashes.
+      if (
+        err instanceof ApiError &&
+        err.status === 422 &&
+        (queryParams.language || queryParams.has_audio !== undefined || queryParams.author_id)
+      ) {
+        const fallbackParams: Record<string, string | number | boolean | undefined> = {
           ...queryParams,
-          page_size: 100,
+          page_size: Math.max(pageSize, 50),
         };
+        delete fallbackParams.language;
+        delete fallbackParams.has_audio;
         delete fallbackParams.author_id;
 
         const fallbackResponse = await apiClient.get<ListBookResponseBody>('/admin/api/book', {
@@ -76,8 +90,32 @@ export const booksApi = {
           signal,
         });
 
-        const allFetched = fallbackResponse.books || [];
-        const matched = allFetched.filter((b) => b.author_id === params.authorId);
+        let matched = fallbackResponse.books || [];
+
+        // Client-side fallback filter for authorId
+        if (params.authorId) {
+          matched = matched.filter((b) => b.author_id === params.authorId);
+        }
+
+        // Client-side fallback filter for language
+        if (params.language && params.language !== 'All') {
+          const targetLang = params.language.toLowerCase().trim();
+          matched = matched.filter((b) => {
+            const bLang = (b.language || '').toLowerCase().trim();
+            return (
+              (targetLang === 'en' && (bLang === 'en' || bLang === 'english')) ||
+              (targetLang === 'am' && (bLang === 'am' || bLang === 'amharic')) ||
+              (targetLang === 'ar' && (bLang === 'ar' || bLang === 'arabic')) ||
+              bLang === targetLang
+            );
+          });
+        }
+
+        // Client-side fallback filter for hasAudio
+        if (params.hasAudio !== undefined) {
+          matched = matched.filter((b) => Boolean(b.has_audio) === params.hasAudio);
+        }
+
         rawBooks = matched;
         responseTotal = matched.length;
       } else {

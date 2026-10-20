@@ -41,13 +41,15 @@ function BooksContent() {
   // Debounce search input to avoid firing network requests on every keystroke
   const debouncedSearch = useDebounce(search, 350);
 
-  // Query books catalog with authorId forwarded to the server
+  // Query books catalog with authorId, language, and format forwarded to the server
   const { data, isLoading, isError, error, refetch } = useBooks({
     page,
     pageSize,
     search: debouncedSearch,
     category: category !== 'All' ? category : undefined,
     authorId: authorIdParam || undefined,
+    language: language !== 'All' ? language : undefined,
+    hasAudio: format === 'Audiobook' ? true : format === 'Text' ? false : undefined,
   });
 
   const books = React.useMemo(() => data?.books || [], [data?.books]);

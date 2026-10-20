@@ -15,11 +15,19 @@ export function useBooks(
   const category = params.category || '';
   const status = params.status || '';
   const authorId = params.authorId || '';
+  const language = params.language || '';
+  const hasAudio = params.hasAudio;
 
   return useQuery({
-    queryKey: [BOOKS_QUERY_KEY, { page, pageSize, search, category, status, authorId }],
+    queryKey: [
+      BOOKS_QUERY_KEY,
+      { page, pageSize, search, category, status, authorId, language, hasAudio },
+    ],
     queryFn: ({ signal }) =>
-      booksApi.list({ page, pageSize, search, category, status, authorId }, signal),
+      booksApi.list(
+        { page, pageSize, search, category, status, authorId, language, hasAudio },
+        signal
+      ),
     placeholderData: (prev) => prev,
     enabled: options?.enabled ?? true,
   });
