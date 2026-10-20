@@ -151,24 +151,24 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
       maxWidth="md"
     >
       {/* 2-Step Stepper Header */}
-      <div className="flex items-center justify-between mb-5 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs">
+      <div className="flex items-center justify-between mb-5 p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs">
         <div className="flex items-center gap-2">
           <div
             className={cn(
               'w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs',
               currentStep === 1
                 ? 'bg-[#1e4634] text-white shadow-2xs'
-                : 'bg-emerald-100 text-[#1e4634]'
+                : 'bg-emerald-100 text-[#1e4634] dark:bg-emerald-950/60 dark:text-emerald-400'
             )}
           >
             {currentStep === 2 ? <Check className="w-3.5 h-3.5" weight="bold" /> : '1'}
           </div>
-          <span className={cn('font-semibold', currentStep === 1 ? 'text-slate-900' : 'text-slate-600')}>
+          <span className={cn('font-semibold', currentStep === 1 ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400')}>
             Author Details
           </span>
         </div>
 
-        <ArrowRight className="w-3.5 h-3.5 text-slate-300" />
+        <ArrowRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-700" />
 
         <div className="flex items-center gap-2">
           <div
@@ -176,19 +176,19 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
               'w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs',
               currentStep === 2
                 ? 'bg-[#1e4634] text-white shadow-2xs'
-                : 'bg-slate-200 text-slate-500'
+                : 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
             )}
           >
             2
           </div>
-          <span className={cn('font-semibold', currentStep === 2 ? 'text-slate-900' : 'text-slate-400')}>
+          <span className={cn('font-semibold', currentStep === 2 ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500')}>
             Profile Photo
           </span>
         </div>
       </div>
 
       {formError && (
-        <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-700 text-xs font-medium border border-red-200">
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-xs font-medium border border-red-200 dark:border-red-900/50">
           {formError}
         </div>
       )}
@@ -244,9 +244,9 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
       {/* STEP 2: Profile Picture Upload */}
       {currentStep === 2 && createdAuthor && (
         <div className="space-y-5">
-          <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+          <div className="p-3 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs text-emerald-900 dark:text-emerald-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-emerald-700" weight="fill" />
+              <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" weight="fill" />
               <span>
                 Author record created with ID: <strong>{createdAuthor.id.slice(0, 8)}...</strong>
               </span>
@@ -254,7 +254,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
           </div>
 
           {avatarError && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs font-medium border border-red-200">
+            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-xs font-medium border border-red-200 dark:border-red-900/50">
               {avatarError}
             </div>
           )}
@@ -269,7 +269,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
               onChange={handlePhotoSelect}
             />
 
-            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-2xl hover:border-[#1e4634] transition-colors bg-slate-50/50">
+            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl hover:border-[#1e4634] dark:hover:border-emerald-500 transition-colors bg-slate-50/50 dark:bg-slate-900/30">
               {avatarPreview ? (
                 <div className="relative group">
                   <Image
@@ -278,10 +278,10 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
                     width={96}
                     height={96}
                     unoptimized
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-md"
                   />
                   {isUploadingAvatar && (
-                    <div className="absolute inset-0 bg-white/80 rounded-full flex items-center justify-center">
+                    <div className="absolute inset-0 bg-white/80 dark:bg-black/80 rounded-full flex items-center justify-center">
                       <Spinner size="md" />
                     </div>
                   )}
@@ -289,16 +289,16 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2 cursor-pointer hover:bg-emerald-50 hover:text-[#1e4634] transition-colors border border-slate-200"
+                  className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-2 cursor-pointer hover:bg-emerald-50 dark:hover:bg-slate-700 hover:text-[#1e4634] dark:hover:text-emerald-400 transition-colors border border-slate-200 dark:border-slate-700"
                 >
                   <User className="w-10 h-10 stroke-1" />
                 </div>
               )}
 
-              <p className="text-xs font-semibold text-slate-800 mt-3">
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-3">
                 {isAvatarUploaded ? 'Profile photo uploaded successfully!' : 'Select Author Headshot'}
               </p>
-              <p className="text-[11px] text-slate-400 mt-0.5">PNG, JPG or WEBP (Max 5MB)</p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">PNG, JPG or WEBP (Max 5MB)</p>
 
               <Button
                 type="button"
@@ -314,8 +314,8 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <Button type="button" variant="ghost" onClick={handleFinish} className="text-xs text-slate-500">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+            <Button type="button" variant="ghost" onClick={handleFinish} className="text-xs text-slate-500 dark:text-slate-400">
               Skip for now
             </Button>
             <Button

@@ -20,9 +20,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 space-y-4">
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#070a10] space-y-4">
         <Spinner size="lg" />
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           Initializing TEWBA Admin Portal...
         </p>
       </div>
@@ -34,7 +34,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans antialiased">
+    <div className="flex min-h-screen bg-[#f8fafc] dark:bg-[#070a10] text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-150">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
         <Header />

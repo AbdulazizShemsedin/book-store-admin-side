@@ -12,11 +12,11 @@ interface TransactionsTableProps {
 
 export function TransactionsTable({ transactions, totalRecords }: TransactionsTableProps) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="p-5 border-b border-slate-200/80">
-        <h3 className="text-sm font-bold text-slate-900">Transaction & Sales Records</h3>
-        <p className="text-xs text-slate-400 mt-0.5">
+      <div className="p-5 border-b border-slate-200/80 dark:border-slate-800">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Transaction & Sales Records</h3>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
           Settlement balances and multi-format sales distribution
         </p>
       </div>
@@ -24,7 +24,7 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               <th className="py-3 px-6">Title & Category</th>
               <th className="py-3 px-6">Author & Publisher</th>
               <th className="py-3 px-6">Available Formats</th>
@@ -33,23 +33,23 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
               <th className="py-3 px-6 text-center">Analytics</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {transactions.map((tx) => (
-              <tr key={tx.id} className="hover:bg-emerald-50/20 transition-colors">
+              <tr key={tx.id} className="hover:bg-emerald-50/20 dark:hover:bg-emerald-950/20 transition-colors">
                 {/* Title & Catalog Info */}
                 <td className="py-3.5 px-6">
-                  <span className="font-bold text-slate-900 block text-xs">
+                  <span className="font-bold text-slate-900 dark:text-slate-100 block text-xs">
                     {tx.title}
                   </span>
-                  <span className="text-[11px] text-slate-400 font-medium">{tx.category}</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">{tx.category}</span>
                 </td>
 
                 {/* Author & Publisher */}
                 <td className="py-3.5 px-6">
-                  <span className="font-semibold text-slate-800 block text-xs">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 block text-xs">
                     {tx.author}
                   </span>
-                  <span className="text-[11px] text-slate-400">{tx.publisher}</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">{tx.publisher}</span>
                 </td>
 
                 {/* Format Badges */}
@@ -62,9 +62,9 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
                           return (
                             <span
                               key={fmt}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/70"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/60"
                             >
-                              <Headphones className="w-3 h-3 text-indigo-600" weight="bold" />
+                              <Headphones className="w-3 h-3 text-indigo-600 dark:text-indigo-400" weight="bold" />
                               <span>Audio</span>
                             </span>
                           );
@@ -72,9 +72,9 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
                         return (
                           <span
                             key={fmt}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/70"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/60"
                           >
-                            <BookOpen className="w-3 h-3 text-emerald-700" weight="bold" />
+                            <BookOpen className="w-3 h-3 text-emerald-700 dark:text-emerald-400" weight="bold" />
                             <span>{fmt}</span>
                           </span>
                         );
@@ -83,12 +83,12 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
                 </td>
 
                 {/* Units Sold */}
-                <td className="py-3.5 px-6 text-right font-bold text-slate-800 text-xs">
+                <td className="py-3.5 px-6 text-right font-bold text-slate-800 dark:text-slate-200 text-xs">
                   {tx.unitsSold.toLocaleString()}
                 </td>
 
                 {/* Income */}
-                <td className="py-3.5 px-6 text-right font-bold text-slate-900 text-xs font-mono">
+                <td className="py-3.5 px-6 text-right font-bold text-slate-900 dark:text-slate-100 text-xs font-mono">
                   ${tx.income.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </td>
 
@@ -98,7 +98,7 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
                     type="button"
                     aria-label="View transaction analytics"
                     title="View transaction analytics"
-                    className="p-1.5 text-slate-400 hover:text-emerald-800 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-emerald-800 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >
                     <ChartBar className="w-4 h-4" />
                   </button>
@@ -110,7 +110,7 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-6 py-3.5 border-t border-slate-100 text-xs text-slate-500 bg-slate-50/50">
+      <div className="flex items-center justify-between px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
         <span className="font-medium">
           Showing {transactions.length} of {totalRecords} recorded titles
         </span>

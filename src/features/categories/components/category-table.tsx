@@ -12,10 +12,8 @@ import {
   Plus,
   TreeStructure,
   Tag,
-  ArrowBendDownRight,
   ArrowClockwise,
 } from '@phosphor-icons/react';
-import { Badge } from '@/components/ui/badge';
 import { useSubcategories } from '../hooks/use-categories';
 import { cn } from '@/lib/utils/cn';
 
@@ -68,7 +66,7 @@ function SubcategoriesDrawer({
   const content = (() => {
     if (isLoading) {
       return (
-        <div className="py-3 px-4 flex items-center gap-2.5 text-xs text-slate-500">
+        <div className="py-3 px-4 flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
           <Spinner size="sm" />
           <span>Loading Level {depth} subcategories under &quot;{parent.name}&quot;...</span>
         </div>
@@ -77,12 +75,12 @@ function SubcategoriesDrawer({
 
     if (isError) {
       return (
-        <div className="py-2.5 px-4 flex items-center justify-between text-xs text-red-700 bg-red-50/50 rounded-lg">
+        <div className="py-2.5 px-4 flex items-center justify-between text-xs text-red-700 dark:text-red-300 bg-red-50/50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-900/50 rounded-lg">
           <span>Failed to load Level {depth} categories: {error?.message || 'Network error'}</span>
           <button
             type="button"
             onClick={() => refetch()}
-            className="inline-flex items-center gap-1 font-semibold underline hover:text-red-900"
+            className="inline-flex items-center gap-1 font-semibold underline hover:text-red-900 dark:hover:text-red-200"
           >
             <ArrowClockwise className="w-3.5 h-3.5" />
             <span>Retry</span>
@@ -93,16 +91,16 @@ function SubcategoriesDrawer({
 
     if (!subcategories || subcategories.length === 0) {
       return (
-        <div className="p-3 rounded-xl border border-dashed border-slate-200 bg-white flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Tag className="w-4 h-4 text-slate-400" />
-            <span>No subcategories registered under <strong className="text-slate-700">{parent.name}</strong>.</span>
+        <div className="p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <Tag className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+            <span>No subcategories registered under <strong className="text-slate-700 dark:text-slate-300">{parent.name}</strong>.</span>
           </div>
           {onAddSubcategory && depth < 5 && (
             <button
               type="button"
               onClick={() => onAddSubcategory(parent)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#1e4634] bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#1e4634] dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 rounded-lg transition-colors"
             >
               <Plus className="w-3 h-3" weight="bold" />
               <span>Add Level {depth} Sub</span>
@@ -113,10 +111,10 @@ function SubcategoriesDrawer({
     }
 
     return (
-      <div className="rounded-xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden">
-        <div className="px-4 py-2 bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-            <TreeStructure className="w-3.5 h-3.5 text-emerald-700" />
+      <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#111827] shadow-2xs overflow-hidden">
+        <div className="px-4 py-2 bg-slate-100/60 dark:bg-slate-900/80 border-b border-slate-200/70 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+            <TreeStructure className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
             <span>
               Subcategories of {parent.name} ({subcategories.length})
             </span>
@@ -125,7 +123,7 @@ function SubcategoriesDrawer({
             <button
               type="button"
               onClick={() => onAddSubcategory(parent)}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1e4634] hover:underline"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1e4634] dark:text-emerald-400 hover:underline"
             >
               <Plus className="w-3 h-3" weight="bold" />
               <span>Add Level {depth} Sub</span>
@@ -133,34 +131,34 @@ function SubcategoriesDrawer({
           )}
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
           {subcategories.map((sub) => {
             const isSubExpanded = expandedSubIds.has(sub.id);
 
             return (
-              <div key={sub.id} className="p-3 transition-colors hover:bg-slate-50/50">
+              <div key={sub.id} className="p-3 transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <button
                       type="button"
                       onClick={() => toggleExpandSub(sub.id)}
-                      className="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 transition-colors flex-shrink-0"
+                      className="w-5 h-5 flex items-center justify-center rounded text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
                       title={isSubExpanded ? 'Hide nested children' : 'View nested children'}
                     >
                       {isSubExpanded ? (
-                        <CaretDown className="w-3.5 h-3.5 text-emerald-800" weight="bold" />
+                        <CaretDown className="w-3.5 h-3.5 text-emerald-800 dark:text-emerald-400" weight="bold" />
                       ) : (
-                        <CaretRight className="w-3.5 h-3.5 text-slate-400" weight="bold" />
+                        <CaretRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" weight="bold" />
                       )}
                     </button>
 
                     <div
                       className={cn(
                         'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs',
-                        depth === 2 && 'bg-indigo-50 border border-indigo-200/60 text-indigo-700',
-                        depth === 3 && 'bg-amber-50 border border-amber-200/60 text-amber-800',
-                        depth === 4 && 'bg-purple-50 border border-purple-200/60 text-purple-800',
-                        depth >= 5 && 'bg-rose-50 border border-rose-200/60 text-rose-800'
+                        depth === 2 && 'bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300',
+                        depth === 3 && 'bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 text-amber-800 dark:text-amber-300',
+                        depth === 4 && 'bg-purple-50 dark:bg-purple-950/50 border border-purple-200/60 dark:border-purple-800/60 text-purple-800 dark:text-purple-300',
+                        depth >= 5 && 'bg-rose-50 dark:bg-rose-950/50 border border-rose-200/60 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
                       )}
                     >
                       <Tag className="w-3.5 h-3.5" weight="bold" />
@@ -168,10 +166,10 @@ function SubcategoriesDrawer({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs text-slate-900 truncate">
+                        <span className="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate">
                           {sub.name}
                         </span>
-                        <span className="font-mono text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                        <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                           {sub.id.length > 8 ? `${sub.id.slice(0, 8)}...` : sub.id}
                         </span>
                       </div>
@@ -182,10 +180,10 @@ function SubcategoriesDrawer({
                     <span
                       className={cn(
                         'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
-                        depth === 2 && 'bg-indigo-50 text-indigo-700 border-indigo-200/70',
-                        depth === 3 && 'bg-amber-50 text-amber-800 border-amber-200/70',
-                        depth === 4 && 'bg-purple-50 text-purple-800 border-purple-200/70',
-                        depth >= 5 && 'bg-rose-50 text-rose-800 border-rose-200/70'
+                        depth === 2 && 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200/70 dark:border-indigo-800/60',
+                        depth === 3 && 'bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200/70 dark:border-amber-800/60',
+                        depth === 4 && 'bg-purple-50 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 border-purple-200/70 dark:border-purple-800/60',
+                        depth >= 5 && 'bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border-rose-200/70 dark:border-rose-800/60'
                       )}
                     >
                       Level {depth}
@@ -195,7 +193,7 @@ function SubcategoriesDrawer({
                       <button
                         type="button"
                         onClick={() => onAddSubcategory(sub)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-300 bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors shadow-2xs"
                         title={`Add nested child under ${sub.name}`}
                       >
                         <Plus className="w-3 h-3" weight="bold" />
@@ -207,7 +205,7 @@ function SubcategoriesDrawer({
 
                 {/* Recursive Nested Subcategories Drawer */}
                 {isSubExpanded && (
-                  <div className="pl-4 border-l-2 border-emerald-400/80 ml-3.5 mt-3 pt-1">
+                  <div className="pl-4 border-l-2 border-emerald-400/80 dark:border-emerald-600/80 ml-3.5 mt-3 pt-1">
                     <SubcategoriesDrawer
                       parent={sub}
                       depth={depth + 1}
@@ -229,7 +227,7 @@ function SubcategoriesDrawer({
   }
 
   return (
-    <tr className="bg-slate-50/60 border-b border-slate-100">
+    <tr className="bg-slate-50/60 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800/80">
       <td colSpan={4} className="py-3 px-6 sm:px-8">
         {content}
       </td>
@@ -262,12 +260,12 @@ export function CategoryTable({
 
   if (isLoading) {
     return (
-      <div className="py-24 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="w-12 h-12 rounded-xl bg-emerald-50 text-[#1e4634] flex items-center justify-center mb-3">
+      <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs dark:shadow-none transition-colors duration-150">
+        <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-[#1e4634] dark:text-emerald-400 flex items-center justify-center mb-3">
           <Spinner size="md" />
         </div>
-        <p className="text-sm font-semibold text-slate-800">Loading catalog categories...</p>
-        <p className="mt-1 text-xs text-slate-400">Retrieving paginated category list from catalog service</p>
+        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Loading catalog categories...</p>
+        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Retrieving paginated category list from catalog service</p>
       </div>
     );
   }
@@ -284,12 +282,12 @@ export function CategoryTable({
 
   if (categories.length === 0) {
     return (
-      <div className="py-16 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-center px-4">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 border border-slate-200/60 text-slate-400 flex items-center justify-center mb-3">
+      <div className="py-16 bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs dark:shadow-none text-center px-4 transition-colors duration-150">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
           <TreeStructure className="w-7 h-7" />
         </div>
-        <h3 className="text-base font-bold text-slate-800">No categories found</h3>
-        <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">No categories found</h3>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
           Start organizing books into the catalog by creating your first category.
         </p>
       </div>
@@ -297,19 +295,19 @@ export function CategoryTable({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/90 dark:border-slate-800/80 shadow-xs dark:shadow-none overflow-hidden transition-colors duration-150">
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-slate-50/90 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <th className="py-3.5 px-4 font-bold text-slate-600">Category Name</th>
-              <th className="py-3.5 px-4 font-bold text-slate-600 w-36 text-center">Type</th>
-              <th className="py-3.5 px-4 font-bold text-slate-600 w-44">Subcategories</th>
-              <th className="py-3.5 px-4 font-bold text-slate-600 text-right w-44">Actions</th>
+            <tr className="bg-slate-50/90 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800/80 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300">Category Name</th>
+              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300 w-36 text-center">Type</th>
+              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300 w-44">Subcategories</th>
+              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300 text-right w-44">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {categories.map((category) => {
               const isExpanded = expandedIds.has(category.id);
 
@@ -317,8 +315,10 @@ export function CategoryTable({
                 <React.Fragment key={category.id}>
                   <tr
                     className={cn(
-                      'group transition-colors border-b border-slate-100',
-                      isExpanded ? 'bg-emerald-50/20' : 'bg-white hover:bg-slate-50/70'
+                      'group transition-colors border-b border-slate-100 dark:border-slate-800/60',
+                      isExpanded
+                        ? 'bg-emerald-50/20 dark:bg-emerald-950/20'
+                        : 'bg-white dark:bg-[#0d121d] hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
                     )}
                   >
                     {/* Category Name & Expand Caret */}
@@ -327,14 +327,14 @@ export function CategoryTable({
                         <button
                           type="button"
                           onClick={() => toggleExpand(category.id)}
-                          className="w-6 h-6 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors flex-shrink-0"
+                          className="w-6 h-6 flex items-center justify-center rounded-md text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
                           aria-label={isExpanded ? 'Hide subcategories' : 'View subcategories'}
                           title={isExpanded ? 'Hide subcategories' : 'View subcategories'}
                         >
                           {isExpanded ? (
-                            <CaretDown className="w-4 h-4 text-emerald-800" weight="bold" />
+                            <CaretDown className="w-4 h-4 text-emerald-800 dark:text-emerald-400" weight="bold" />
                           ) : (
-                            <CaretRight className="w-4 h-4" weight="bold" />
+                            <CaretRight className="w-4 h-4 text-slate-400 dark:text-slate-500" weight="bold" />
                           )}
                         </button>
 
@@ -342,8 +342,8 @@ export function CategoryTable({
                           className={cn(
                             'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors shadow-2xs',
                             isExpanded
-                              ? 'bg-[#1e4634] text-white'
-                              : 'bg-emerald-50 text-[#1e4634] border border-emerald-200/70'
+                              ? 'bg-[#1e4634] dark:bg-[#1b4332] text-white'
+                              : 'bg-emerald-50 dark:bg-emerald-950/50 text-[#1e4634] dark:text-emerald-400 border border-emerald-200/70 dark:border-emerald-800/60'
                           )}
                         >
                           {isExpanded ? (
@@ -355,10 +355,10 @@ export function CategoryTable({
 
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-xs text-slate-900 truncate">
+                            <span className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate">
                               {category.name}
                             </span>
-                            <span className="font-mono text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                               {category.id.length > 8 ? `${category.id.slice(0, 8)}...` : category.id}
                             </span>
                           </div>
@@ -368,7 +368,7 @@ export function CategoryTable({
 
                     {/* Level / Type */}
                     <td className="py-3.5 px-4 text-center">
-                      <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-[#1e4634] border border-emerald-200/80 tracking-wide uppercase shadow-2xs">
+                      <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-[#1e4634] dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 tracking-wide uppercase shadow-2xs">
                         Root Category
                       </span>
                     </td>
@@ -381,19 +381,19 @@ export function CategoryTable({
                         className={cn(
                           'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shadow-2xs',
                           isExpanded
-                            ? 'bg-emerald-100/70 text-emerald-900 border border-emerald-300'
-                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
+                            ? 'bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60'
+                            : 'bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                         )}
                         title="Expand or collapse child subcategories"
                       >
                         {isExpanded ? (
                           <>
-                            <CaretDown className="w-3.5 h-3.5 text-emerald-800" weight="bold" />
+                            <CaretDown className="w-3.5 h-3.5 text-emerald-800 dark:text-emerald-400" weight="bold" />
                             <span>Hide Subs</span>
                           </>
                         ) : (
                           <>
-                            <CaretRight className="w-3.5 h-3.5 text-slate-400" weight="bold" />
+                            <CaretRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" weight="bold" />
                             <span>View Subs</span>
                           </>
                         )}
@@ -406,10 +406,10 @@ export function CategoryTable({
                         <button
                           type="button"
                           onClick={() => onAddSubcategory(category)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1e4634] bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/80 hover:border-emerald-300 shadow-2xs hover:shadow-xs transition-all active:scale-[0.98]"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1e4634] dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs hover:shadow-xs transition-all active:scale-[0.98]"
                           title={`Add a subcategory nested under "${category.name}"`}
                         >
-                          <Plus className="w-3 h-3 text-[#1e4634]" weight="bold" />
+                          <Plus className="w-3 h-3 text-[#1e4634] dark:text-emerald-300" weight="bold" />
                           <span>Add Subcategory</span>
                         </button>
                       )}

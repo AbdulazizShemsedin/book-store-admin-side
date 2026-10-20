@@ -41,18 +41,18 @@ export function PublisherFormCard({ onCancel }: PublisherFormCardProps) {
   };
 
   return (
-    <Card id="publisher-form-card" className="h-fit shadow-sm border-slate-200 scroll-mt-24 transition-all duration-500">
+    <Card id="publisher-form-card" className="h-fit shadow-sm border-slate-200 dark:border-slate-800 scroll-mt-24 transition-all duration-500">
       <CardHeader
         title={
           <div className="flex items-center gap-2">
-            <Buildings className="w-5 h-5 text-[#1e4634]" />
+            <Buildings className="w-5 h-5 text-[#1e4634] dark:text-emerald-400" />
             <span>Add / Edit Publisher</span>
           </div>
         }
       />
       <CardContent className="space-y-4">
         {successMessage && (
-          <div className="p-3 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200">
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-medium border border-emerald-200 dark:border-emerald-800/60">
             {successMessage}
           </div>
         )}

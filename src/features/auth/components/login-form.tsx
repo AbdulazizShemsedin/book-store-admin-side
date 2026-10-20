@@ -53,17 +53,18 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-slate-200/80">
+    <div className="w-full max-w-md p-8 bg-white dark:bg-[#0d121d] rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 transition-colors duration-200">
       {/* Brand Icon Header */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-14 h-14 rounded-2xl bg-[#1e4634] flex items-center justify-center text-white shadow-md mb-4">
+        <div className="w-14 h-14 rounded-2xl bg-[#1e4634] dark:bg-[#1b4332] flex items-center justify-center text-white shadow-md mb-4">
           <BookOpen className="w-7 h-7" weight="fill" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Sign In</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Sign In</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">TEWBA Bookstore Administration Portal</p>
       </div>
 
       {formError && (
-        <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-xs font-medium text-red-700">
+        <div className="mb-6 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-xs font-medium text-red-700 dark:text-red-300">
           {formError}
         </div>
       )}
@@ -81,13 +82,13 @@ export function LoginForm() {
 
         <div className="relative">
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               Security PIN / Password <span className="text-red-500">*</span>
             </label>
             <button
               type="button"
               onClick={() => alert('Please contact the system administrator to reset your credentials.')}
-              className="text-xs font-medium text-emerald-800 hover:text-emerald-950 transition-colors"
+              className="text-xs font-medium text-emerald-800 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-300 transition-colors"
             >
               Forgot PIN?
             </button>
@@ -96,13 +97,13 @@ export function LoginForm() {
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
-              className="w-full h-10 px-3.5 pr-10 py-2 text-sm text-slate-900 bg-[#f8fafc] border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
+              className="w-full h-10 px-3.5 pr-10 py-2 text-sm text-slate-900 dark:text-slate-100 bg-[#f8fafc] dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors"
               {...register('pin')}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
               aria-label={showPassword ? 'Hide PIN' : 'Show PIN'}
               title={showPassword ? 'Hide PIN' : 'Show PIN'}
             >
@@ -110,14 +111,14 @@ export function LoginForm() {
             </button>
           </div>
           {errors.pin?.message && (
-            <p className="text-xs text-red-600 font-medium mt-1">{errors.pin.message}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 font-medium mt-1">{errors.pin.message}</p>
           )}
         </div>
 
         <Button
           type="submit"
           size="lg"
-          className="w-full mt-2 font-semibold shadow-md bg-[#1e4634] hover:bg-[#153426]"
+          className="w-full mt-2 font-semibold shadow-md bg-[#1e4634] dark:bg-[#1b4332] hover:bg-[#153426] dark:hover:bg-[#245842]"
           isLoading={isSubmitting}
           rightIcon={<ArrowRight className="w-4 h-4" weight="bold" />}
         >

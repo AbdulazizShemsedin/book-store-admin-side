@@ -26,12 +26,12 @@ export function Pagination({
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-white border-t border-slate-100 text-xs text-slate-600">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 bg-white dark:bg-[#0d121d] border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-600 dark:text-slate-400 transition-colors duration-150">
       {/* Left: page size and count summary */}
       <div className="flex items-center gap-3">
         {onPageSizeChange && (
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-500">View:</span>
+            <span className="text-slate-500 dark:text-slate-400">View:</span>
             <div className="flex items-center gap-1">
               {pageSizeOptions.map((size) => (
                 <button
@@ -41,8 +41,8 @@ export function Pagination({
                   className={cn(
                     'px-2 py-1 rounded text-xs font-medium transition-colors',
                     pageSize === size
-                      ? 'bg-[#1e4634] text-white'
-                      : 'text-slate-600 hover:bg-slate-100'
+                      ? 'bg-[#1e4634] dark:bg-[#1b4332] text-white'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                   )}
                 >
                   {size}
@@ -51,11 +51,11 @@ export function Pagination({
             </div>
           </div>
         )}
-        <span className="text-slate-400">|</span>
+        <span className="text-slate-400 dark:text-slate-600">|</span>
         <span>
-          Showing <span className="font-semibold text-slate-800">{startItem}</span> to{' '}
-          <span className="font-semibold text-slate-800">{endItem}</span> of{' '}
-          <span className="font-semibold text-slate-800">{totalItems.toLocaleString()}</span>{' '}
+          Showing <span className="font-semibold text-slate-800 dark:text-slate-200">{startItem}</span> to{' '}
+          <span className="font-semibold text-slate-800 dark:text-slate-200">{endItem}</span> of{' '}
+          <span className="font-semibold text-slate-800 dark:text-slate-200">{totalItems.toLocaleString()}</span>{' '}
           {itemLabel}
         </span>
       </div>
@@ -68,12 +68,12 @@ export function Pagination({
           disabled={currentPage <= 1}
           aria-label="Previous page"
           title="Previous page"
-          className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          className="p-1.5 rounded-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
         >
           <CaretLeft className="w-3.5 h-3.5" />
         </button>
 
-        <span className="px-3 py-1 font-medium text-slate-700">
+        <span className="px-3 py-1 font-medium text-slate-700 dark:text-slate-300">
           Page {currentPage} of {totalPages}
         </span>
 
@@ -83,7 +83,7 @@ export function Pagination({
           disabled={currentPage >= totalPages}
           aria-label="Next page"
           title="Next page"
-          className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+          className="p-1.5 rounded-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors"
         >
           <CaretRight className="w-3.5 h-3.5" />
         </button>

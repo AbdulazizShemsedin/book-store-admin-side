@@ -282,7 +282,7 @@ export function BookForm() {
   return (
     <div className="space-y-8 max-w-6xl">
       {/* 2-Step Stepper Navigation */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm">
+      <div className="bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/90 dark:border-slate-800/80 p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Step 1 Indicator */}
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -291,19 +291,19 @@ export function BookForm() {
                 'w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs transition-colors flex-shrink-0',
                 currentStep === 1
                   ? 'bg-[#1e4634] text-white shadow-xs'
-                  : 'bg-emerald-50 text-[#1e4634] border border-emerald-200'
+                  : 'bg-emerald-50 text-[#1e4634] dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60'
               )}
             >
               {currentStep === 2 ? <Check className="w-4 h-4" weight="bold" /> : '1'}
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
                 Step 1
               </span>
               <span
                 className={cn(
                   'text-xs font-bold leading-tight block',
-                  currentStep === 1 ? 'text-slate-900' : 'text-slate-600'
+                  currentStep === 1 ? 'text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'
                 )}
               >
                 Book Details & Pricing
@@ -312,7 +312,7 @@ export function BookForm() {
           </div>
 
           {/* Stepper Arrow Divider */}
-          <div className="hidden sm:block text-slate-300">
+          <div className="hidden sm:block text-slate-300 dark:text-slate-700">
             <ArrowRight className="w-4 h-4" />
           </div>
 
@@ -323,19 +323,19 @@ export function BookForm() {
                 'w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs transition-colors flex-shrink-0',
                 currentStep === 2
                   ? 'bg-[#1e4634] text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-400 border border-slate-200'
+                  : 'bg-slate-100 text-slate-400 dark:bg-slate-900 dark:text-slate-500 border border-slate-200 dark:border-slate-800'
               )}
             >
               2
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
                 Step 2
               </span>
               <span
                 className={cn(
                   'text-xs font-bold leading-tight block',
-                  currentStep === 2 ? 'text-slate-900' : 'text-slate-400'
+                  currentStep === 2 ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'
                 )}
               >
                 Media Assets & Taxonomy Tags
@@ -458,7 +458,7 @@ export function BookForm() {
                 <CardContent className="space-y-6">
                   {/* Format Choice */}
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-800 block">
+                    <label className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
                       Product Format
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -466,21 +466,21 @@ export function BookForm() {
                         className={cn(
                           'p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5',
                           watchedBookFormat === 'book_only'
-                            ? 'border-[#1e4634] bg-emerald-50/40 ring-1 ring-[#1e4634]'
-                            : 'border-slate-200 bg-white hover:border-slate-300'
+                            ? 'border-[#1e4634] bg-emerald-50/40 dark:bg-emerald-950/40 dark:border-emerald-500 ring-1 ring-[#1e4634] dark:ring-emerald-500'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#070a10] hover:border-slate-300 dark:hover:border-slate-700'
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-800">Book Only</span>
+                          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">Book Only</span>
                           <input
                             type="radio"
                             value="book_only"
                             checked={watchedBookFormat === 'book_only'}
                             onChange={() => setValue('bookFormat', 'book_only')}
-                            className="text-[#1e4634] focus:ring-[#1e4634]/20"
+                            className="text-[#1e4634] dark:text-emerald-500 focus:ring-[#1e4634]/20"
                           />
                         </div>
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
                           Digital e-book manuscript (EPUB or PDF).
                         </p>
                       </label>
@@ -489,12 +489,12 @@ export function BookForm() {
                         className={cn(
                           'p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5',
                           watchedBookFormat === 'audiobook_only'
-                            ? 'border-[#1e4634] bg-emerald-50/40 ring-1 ring-[#1e4634]'
-                            : 'border-slate-200 bg-white hover:border-slate-300'
+                            ? 'border-[#1e4634] bg-emerald-50/40 dark:bg-emerald-950/40 dark:border-emerald-500 ring-1 ring-[#1e4634] dark:ring-emerald-500'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#070a10] hover:border-slate-300 dark:hover:border-slate-700'
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-800">
+                          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
                             Audiobook Only
                           </span>
                           <input
@@ -502,10 +502,10 @@ export function BookForm() {
                             value="audiobook_only"
                             checked={watchedBookFormat === 'audiobook_only'}
                             onChange={() => setValue('bookFormat', 'audiobook_only')}
-                            className="text-[#1e4634] focus:ring-[#1e4634]/20"
+                            className="text-[#1e4634] dark:text-emerald-500 focus:ring-[#1e4634]/20"
                           />
                         </div>
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
                           Narration master track (MP3 or M4B).
                         </p>
                       </label>
@@ -514,12 +514,12 @@ export function BookForm() {
                         className={cn(
                           'p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col gap-1.5',
                           watchedBookFormat === 'both'
-                            ? 'border-[#1e4634] bg-emerald-50/40 ring-1 ring-[#1e4634]'
-                            : 'border-slate-200 bg-white hover:border-slate-300'
+                            ? 'border-[#1e4634] bg-emerald-50/40 dark:bg-emerald-950/40 dark:border-emerald-500 ring-1 ring-[#1e4634] dark:ring-emerald-500'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#070a10] hover:border-slate-300 dark:hover:border-slate-700'
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-800">
+                          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
                             Book & Audiobook
                           </span>
                           <input
@@ -527,10 +527,10 @@ export function BookForm() {
                             value="both"
                             checked={watchedBookFormat === 'both'}
                             onChange={() => setValue('bookFormat', 'both')}
-                            className="text-[#1e4634] focus:ring-[#1e4634]/20"
+                            className="text-[#1e4634] dark:text-emerald-500 focus:ring-[#1e4634]/20"
                           />
                         </div>
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
                           Complete bundle with text e-book and audio track.
                         </p>
                       </label>
@@ -573,22 +573,22 @@ export function BookForm() {
               <Card>
                 <CardHeader title="Catalog Preview" />
                 <CardContent className="space-y-4">
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60">
                       {watchedLanguage.toUpperCase()}
                     </span>
-                    <h3 className="text-base font-bold text-slate-900 leading-snug line-clamp-2">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2">
                       {watchedTitle}
                     </h3>
-                    <p className="text-xs text-slate-600">
-                      Author: <strong>{selectedAuthor?.name || '—'}</strong>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      Author: <strong className="text-slate-800 dark:text-slate-200">{selectedAuthor?.name || '—'}</strong>
                     </p>
-                    <p className="text-[11px] text-slate-500 capitalize">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 capitalize">
                       Format: {watchedBookFormat.replace('_', ' ')}
                     </p>
                   </div>
 
-                  <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-xl text-xs text-amber-900">
+                  <div className="p-3 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-300">
                     <strong>Note:</strong> In Step 1, the book record is assigned its official ID on
                     the backend. In Step 2, you will upload the cover image, media files, and attach
                     categories.
@@ -627,21 +627,21 @@ export function BookForm() {
       {currentStep === 2 && createdBook && (
         <div className="space-y-8 animate-in fade-in duration-300">
           {/* Success Banner */}
-          <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-[#1e4634] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                 <CheckCircle className="w-6 h-6" weight="fill" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   Book Created: &ldquo;{createdBook.name}&rdquo;
                 </h3>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Assigned ID: <code className="font-mono text-[11px] font-semibold text-[#1e4634]">{createdBook.id}</code>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  Assigned ID: <code className="font-mono text-[11px] font-semibold text-[#1e4634] dark:text-emerald-400">{createdBook.id}</code>
                 </p>
               </div>
             </div>
-            <div className="text-xs text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-emerald-200">
+            <div className="text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-slate-800">
               Step 2 of 2: Attach Files & Categories
             </div>
           </div>
@@ -689,8 +689,8 @@ export function BookForm() {
                     />
 
                     {manuscriptFile && !isManuscriptUploaded && (
-                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
-                        <span className="text-xs text-slate-700 truncate font-medium">
+                      <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">
                           Selected: {manuscriptFile.name} ({(manuscriptFile.size / 1024 / 1024).toFixed(1)} MB)
                         </span>
                         <Button
@@ -757,8 +757,8 @@ export function BookForm() {
                     />
 
                     {audioFile && !isAudioUploaded && (
-                      <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
-                        <span className="text-xs text-slate-700 truncate font-medium">
+                      <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">
                           Selected: {audioFile.name} ({(audioFile.size / 1024 / 1024).toFixed(1)} MB)
                         </span>
                         <Button
@@ -838,17 +838,17 @@ export function BookForm() {
                   )}
 
                   {attachedCategoryNames.length > 0 && (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
                         Linked Categories on Backend:
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {attachedCategoryNames.map((name) => (
                           <span
                             key={name}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-950 border border-emerald-200 shadow-2xs"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
                           >
-                            <Folder className="w-3.5 h-3.5 text-[#1e4634]" weight="fill" />
+                            <Folder className="w-3.5 h-3.5 text-[#1e4634] dark:text-emerald-400" weight="fill" />
                             <span>{name}</span>
                           </span>
                         ))}
@@ -866,7 +866,7 @@ export function BookForm() {
                   title="Storefront Cover Image"
                   action={
                     isCoverUploaded ? (
-                      <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60">
                         ✓ Uploaded
                       </span>
                     ) : null
@@ -874,11 +874,11 @@ export function BookForm() {
                 />
                 <CardContent className="space-y-4">
                   {coverError && (
-                    <p className="text-xs text-red-600 font-medium">{coverError}</p>
+                    <p className="text-xs text-red-600 dark:text-red-400 font-medium">{coverError}</p>
                   )}
 
                   {/* Preview Graphic */}
-                  <div className="relative aspect-[3/4] w-full rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex flex-col justify-end p-4 shadow-inner">
+                  <div className="relative aspect-[3/4] w-full rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col justify-end p-4 shadow-inner">
                     {coverPreviewUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -887,16 +887,16 @@ export function BookForm() {
                         className="absolute inset-0 w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 p-4 text-center">
                         <ImageIcon className="w-12 h-12 mb-2 stroke-1" />
                         <span className="text-xs font-medium">Cover Graphic</span>
                       </div>
                     )}
-                    <div className="relative z-10 bg-white/95 backdrop-blur-md p-2.5 rounded-lg shadow-sm border border-slate-200/60">
-                      <p className="text-xs font-bold text-slate-900 line-clamp-1">
+                    <div className="relative z-10 bg-white/95 dark:bg-[#0d121d]/95 backdrop-blur-md p-2.5 rounded-lg shadow-sm border border-slate-200/60 dark:border-slate-800">
+                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100 line-clamp-1">
                         {createdBook.name}
                       </p>
-                      <p className="text-[11px] text-slate-500 line-clamp-1">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
                         {createdBook.authorName || 'Author'}
                       </p>
                     </div>

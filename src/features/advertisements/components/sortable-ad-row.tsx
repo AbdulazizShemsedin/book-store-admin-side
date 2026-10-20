@@ -59,8 +59,8 @@ export function SortableAdRow({
     <tr
       ref={setNodeRef}
       style={style}
-      className={`hover:bg-slate-50/70 transition-colors border-b border-slate-100 ${
-        isDragging ? 'bg-emerald-50/50 shadow-md ring-1 ring-emerald-500/30' : 'bg-white'
+      className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/60 ${
+        isDragging ? 'bg-emerald-50/50 dark:bg-emerald-950/40 shadow-md ring-1 ring-emerald-500/30' : 'bg-white dark:bg-slate-900'
       }`}
     >
       {/* Drag handle */}
@@ -70,22 +70,22 @@ export function SortableAdRow({
           {...attributes}
           {...listeners}
           aria-label={`Drag to reorder ${ad.message}`}
-          className="p-1 text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing rounded"
+          className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-grab active:cursor-grabbing rounded"
         >
           <DotsSixVertical className="w-5 h-5" />
         </button>
       </td>
 
       {/* Order No */}
-      <td className="py-4 px-4 font-bold text-xs text-slate-700 font-mono">
-        <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200">
+      <td className="py-4 px-4 font-bold text-xs text-slate-700 dark:text-slate-300 font-mono">
+        <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           {orderDisplay}
         </span>
       </td>
 
       {/* Banner Preview Thumbnail */}
       <td className="py-4 px-4 w-40">
-        <div className="w-36 h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden relative shadow-xs flex items-center justify-center">
+        <div className="w-36 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-xs flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={ad.imageUrl}
@@ -102,8 +102,8 @@ export function SortableAdRow({
 
       {/* Ad Message */}
       <td className="py-4 px-6">
-        <span className="font-semibold text-slate-900 block text-xs">{ad.message}</span>
-        <span className="text-[11px] text-slate-400">Mobile Homepage Billboard</span>
+        <span className="font-semibold text-slate-900 dark:text-slate-100 block text-xs">{ad.message}</span>
+        <span className="text-[11px] text-slate-400 dark:text-slate-500">Mobile Homepage Billboard</span>
       </td>
 
       {/* Status */}
@@ -113,11 +113,11 @@ export function SortableAdRow({
 
       {/* Actions */}
       <td className="py-4 px-6 text-right">
-        <div className="flex items-center justify-end gap-1.5 text-slate-400">
+        <div className="flex items-center justify-end gap-1.5 text-slate-400 dark:text-slate-500">
           <button
             type="button"
             onClick={onEdit}
-            className="p-1.5 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+            className="p-1.5 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
             aria-label="Edit advertisement"
             title="Edit advertisement"
           >
@@ -126,7 +126,7 @@ export function SortableAdRow({
           <button
             type="button"
             onClick={onToggleStatus}
-            className="p-1.5 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+            className="p-1.5 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-colors"
             aria-label="Toggle banner status"
             title={ad.status === 'active' ? 'Disable banner' : 'Activate banner'}
           >
@@ -135,7 +135,7 @@ export function SortableAdRow({
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+            className="p-1.5 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors"
             aria-label="Delete advertisement"
             title="Delete advertisement"
           >

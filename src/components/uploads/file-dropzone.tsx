@@ -122,11 +122,11 @@ export function FileDropzone({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
         {selectedFile && status !== 'uploading' && (
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
             {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB
           </span>
         )}
@@ -137,10 +137,10 @@ export function FileDropzone({
         className={cn(
           'relative flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed transition-all text-center select-none',
           isDragActive
-            ? 'border-emerald-700 bg-emerald-50/40'
-            : 'border-slate-200 bg-[#f8fafc] hover:bg-slate-50/80 hover:border-slate-300',
-          status === 'error' && 'border-red-300 bg-red-50/20',
-          status === 'success' && 'border-emerald-400 bg-emerald-50/30'
+            ? 'border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/40 dark:border-emerald-500'
+            : 'border-slate-200 dark:border-slate-800 bg-[#f8fafc] dark:bg-[#070a10] hover:bg-slate-50/80 dark:hover:bg-[#0d121d] hover:border-slate-300 dark:hover:border-slate-700',
+          status === 'error' && 'border-red-300 dark:border-red-800 bg-red-50/20 dark:bg-red-950/20',
+          status === 'success' && 'border-emerald-400 dark:border-emerald-700 bg-emerald-50/30 dark:bg-emerald-950/30'
         )}
       >
         <input {...getInputProps()} />
@@ -148,14 +148,14 @@ export function FileDropzone({
         {/* IDLE STATE */}
         {status === 'idle' && (
           <div className="space-y-3">
-            <div className="w-12 h-12 rounded-full bg-emerald-100/60 text-[#1e4634] flex items-center justify-center mx-auto shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-emerald-100/60 dark:bg-emerald-950/60 text-[#1e4634] dark:text-emerald-300 flex items-center justify-center mx-auto shadow-sm">
               <IconComponent className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-800">
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                 {isDragActive ? 'Drop file here' : 'Click to browse or drop file'}
               </p>
-              {helperText && <p className="text-[11px] text-slate-500 mt-1">{helperText}</p>}
+              {helperText && <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{helperText}</p>}
             </div>
             <Button
               type="button"
@@ -173,24 +173,24 @@ export function FileDropzone({
         {status === 'uploading' && (
           <div className="w-full space-y-3 px-4">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-slate-800 truncate max-w-[200px]">
+              <span className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
                 {selectedFile?.name}
               </span>
-              <span className="font-mono text-emerald-800 font-semibold">{progress}%</span>
+              <span className="font-mono text-emerald-800 dark:text-emerald-400 font-semibold">{progress}%</span>
             </div>
             {/* Progress bar */}
-            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#1e4634] transition-all duration-300 rounded-full"
+                className="h-full bg-[#1e4634] dark:bg-emerald-500 transition-all duration-300 rounded-full"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
               <span>Streaming direct to cloud storage...</span>
               <button
                 type="button"
                 onClick={cancelUpload}
-                className="text-red-600 hover:underline flex items-center gap-0.5"
+                className="text-red-600 dark:text-red-400 hover:underline flex items-center gap-0.5"
               >
                 <X className="w-3 h-3" />
                 <span>Cancel</span>
@@ -202,13 +202,13 @@ export function FileDropzone({
         {/* SUCCESS STATE */}
         {status === 'success' && (
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 flex items-center justify-center mx-auto">
               <CheckCircle className="w-6 h-6" weight="fill" />
             </div>
-            <p className="text-xs font-semibold text-slate-800 truncate max-w-xs">
+            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate max-w-xs">
               {selectedFile?.name}
             </p>
-            <p className="text-[11px] text-emerald-700 font-medium">
+            <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
               {onUploaded ? 'Upload completed & verified' : 'File selected & ready for upload'}
             </p>
             <Button
@@ -216,7 +216,7 @@ export function FileDropzone({
               size="sm"
               variant="ghost"
               onClick={open}
-              className="text-xs text-slate-500 hover:text-slate-800"
+              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             >
               Replace File
             </Button>
@@ -226,10 +226,10 @@ export function FileDropzone({
         {/* ERROR STATE */}
         {status === 'error' && (
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+            <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/70 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
               <WarningCircle className="w-6 h-6" weight="fill" />
             </div>
-            <p className="text-xs font-semibold text-red-700">{errorMessage}</p>
+            <p className="text-xs font-semibold text-red-700 dark:text-red-400">{errorMessage}</p>
             <Button
               type="button"
               size="sm"

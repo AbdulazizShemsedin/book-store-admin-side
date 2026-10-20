@@ -4,6 +4,7 @@ import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { MswProvider } from '@/providers/msw-provider';
 import { SidebarProvider } from '@/providers/sidebar-provider';
+import { ThemeProvider } from '@/providers/theme-provider';
 
 export const metadata: Metadata = {
   title: 'TEWBA Admin Portal - Bookstore Management',
@@ -16,15 +17,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased min-h-screen bg-[#f8fafc] text-slate-900">
-        <MswProvider>
-          <QueryProvider>
-            <AuthProvider>
-              <SidebarProvider>{children}</SidebarProvider>
-            </AuthProvider>
-          </QueryProvider>
-        </MswProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="font-sans antialiased min-h-screen bg-[#f8fafc] dark:bg-[#070a10] text-slate-900 dark:text-slate-100">
+        <ThemeProvider>
+          <MswProvider>
+            <QueryProvider>
+              <AuthProvider>
+                <SidebarProvider>{children}</SidebarProvider>
+              </AuthProvider>
+            </QueryProvider>
+          </MswProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

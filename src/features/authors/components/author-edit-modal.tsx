@@ -181,20 +181,20 @@ export function AuthorEditModal({ author, isOpen, onClose }: AuthorEditModalProp
 
       {/* Historical Relink Suggestion Banner */}
       {authorSuggestion && linkedBooks.length > 0 && (
-        <div className="mb-4 p-3.5 bg-amber-50/90 border border-amber-200/90 rounded-xl flex items-start justify-between gap-3 text-xs shadow-2xs">
+        <div className="mb-4 p-3.5 bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-800/60 rounded-xl flex items-start justify-between gap-3 text-xs shadow-2xs">
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 font-bold text-amber-950">
-              <Sparkle className="w-4 h-4 text-amber-600 flex-shrink-0" weight="fill" />
+            <div className="flex items-center gap-1.5 font-bold text-amber-950 dark:text-amber-200">
+              <Sparkle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" weight="fill" />
               <span>Linked Catalog Book: &quot;{linkedBooks.map((b) => b.name).join(', ')}&quot;</span>
             </div>
-            <p className="text-amber-800 text-[11px] leading-relaxed">
-              Original author matched: <strong className="text-amber-950">{authorSuggestion.name}</strong> ({authorSuggestion.nationality})
+            <p className="text-amber-800 dark:text-amber-300 text-[11px] leading-relaxed">
+              Original author matched: <strong className="text-amber-950 dark:text-amber-100">{authorSuggestion.name}</strong> ({authorSuggestion.nationality})
             </p>
           </div>
           <button
             type="button"
             onClick={() => handleApplySuggestion(authorSuggestion)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-200/80 hover:bg-amber-300 border border-amber-300 rounded-lg transition-colors whitespace-nowrap shadow-2xs flex-shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-950 dark:text-amber-200 bg-amber-200/80 dark:bg-amber-900/60 hover:bg-amber-300 dark:hover:bg-amber-800/80 border border-amber-300 dark:border-amber-700 rounded-lg transition-colors whitespace-nowrap shadow-2xs flex-shrink-0"
             title="Auto-fill this author with the verified original details"
           >
             <ArrowCounterClockwise className="w-3.5 h-3.5" weight="bold" />
@@ -205,7 +205,7 @@ export function AuthorEditModal({ author, isOpen, onClose }: AuthorEditModalProp
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Headshot Quick Manager */}
-        <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+        <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
           <input
             ref={fileInputRef}
             type="file"
@@ -222,26 +222,26 @@ export function AuthorEditModal({ author, isOpen, onClose }: AuthorEditModalProp
                 width={56}
                 height={56}
                 unoptimized
-                className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
+                className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm"
               />
             ) : (
-              <div className="w-14 h-14 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs border border-slate-300">
+              <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center font-bold text-xs border border-slate-300 dark:border-slate-700">
                 <User className="w-6 h-6" />
               </div>
             )}
             {isUploadingAvatar && (
-              <div className="absolute inset-0 bg-white/80 rounded-full flex items-center justify-center">
+              <div className="absolute inset-0 bg-white/80 dark:bg-black/80 rounded-full flex items-center justify-center">
                 <Spinner size="sm" />
               </div>
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-slate-900">Profile Photo</p>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">Profile Photo</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               {avatarSuccess ? '✓ Photo updated on backend' : 'Displayed in catalog feeds'}
             </p>
-            {avatarError && <p className="text-[11px] text-red-600 mt-0.5">{avatarError}</p>}
+            {avatarError && <p className="text-[11px] text-red-600 dark:text-red-400 mt-0.5">{avatarError}</p>}
           </div>
 
           <Button
