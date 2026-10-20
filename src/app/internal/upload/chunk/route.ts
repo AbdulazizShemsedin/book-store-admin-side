@@ -3,6 +3,8 @@ import https from 'https';
 
 export const dynamic = 'force-dynamic';
 
+import { isAllowedUploadUrl } from '@/lib/upload/upload-security';
+
 /**
  * Server-side proxy for multipart upload chunks.
  * Running under /internal/upload/chunk so it is NOT intercepted by next.config.mjs /api/:path* rewrites.
@@ -15,6 +17,14 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       { error: 'Missing target upload URL (x-upload-url header)' },
       { status: 400 }
+    );
+  }
+
+  // Defend against Server-Side Request Forgery (SSRF)
+  if (!isAllowedUploadUrl(targetUrl)) {
+    return NextResponse.json(
+      { error: 'Forbidden: Target upload host is not authorized' },
+      { status: 403 }
     );
   }
 

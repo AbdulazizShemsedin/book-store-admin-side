@@ -11,13 +11,39 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, Eye, EyeSlash, ArrowRight } from '@phosphor-icons/react';
 import { ApiError } from '@/lib/api/error-handler';
 
+/**
+ * Sanitizes returnUrl to prevent Open Redirect attacks.
+ * Enforces that redirection target is strictly a relative internal path.
+ */
+export function getSafeReturnUrl(rawUrl: string | null): string {
+  if (!rawUrl || typeof rawUrl !== 'string') {
+    return '/dashboard';
+  }
+
+  const trimmed = rawUrl.trim();
+
+  // Must begin with a single '/'
+  // Must NOT begin with '//' (protocol-relative external redirect)
+  // Must NOT contain backslashes or URI scheme separators (javascript:, https:)
+  if (
+    trimmed.startsWith('/') &&
+    !trimmed.startsWith('//') &&
+    !trimmed.includes('\\') &&
+    !trimmed.includes(':')
+  ) {
+    return trimmed;
+  }
+
+  return '/dashboard';
+}
+
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const { signin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get('returnUrl') || '/dashboard';
+  const returnUrl = getSafeReturnUrl(searchParams.get('returnUrl'));
 
   const {
     register,
