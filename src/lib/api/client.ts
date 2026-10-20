@@ -31,7 +31,7 @@ class ApiClient {
    */
   private getStoredToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('tewba_access_token');
+    return sessionStorage.getItem('tewba_access_token') || localStorage.getItem('tewba_access_token');
   }
 
   /**
@@ -90,6 +90,7 @@ class ApiClient {
         if (response.status === 401 && typeof window !== 'undefined') {
           // Do not kick out if it's the signin attempt itself failing (to show invalid credentials message)
           if (!endpoint.includes('/signin')) {
+            sessionStorage.removeItem('tewba_access_token');
             localStorage.removeItem('tewba_access_token');
             localStorage.removeItem('tewba_user_profile');
             localStorage.removeItem('tewba_session_active');

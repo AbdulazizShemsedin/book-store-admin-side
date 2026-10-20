@@ -44,15 +44,16 @@ class AuthService {
 
   saveSession(token: string, refreshToken: string | null): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(TOKEN_KEY, token);
+    // Store access token in sessionStorage so it is never permanently retained on disk
+    sessionStorage.setItem(TOKEN_KEY, token);
     if (refreshToken) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+      sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     }
   }
 
   getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem(TOKEN_KEY);
+    return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
   }
 
   getUser(): UserProfile | null {
@@ -73,7 +74,7 @@ class AuthService {
 
   /**
    * Performs sign out by invalidating backend session cookie via POST /admin/api/signout
-   * and purging local storage.
+   * and purging session storage.
    */
   async signout(): Promise<void> {
     try {
@@ -87,6 +88,8 @@ class AuthService {
 
   clearLocalSession(): void {
     if (typeof window === 'undefined') return;
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
