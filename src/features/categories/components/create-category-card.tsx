@@ -224,7 +224,7 @@ export function CreateCategoryCard({
   return (
     <Card
       id="create-category-card"
-      className="h-fit shadow-xs border-slate-200 scroll-mt-24 transition-all duration-500"
+      className="h-fit shadow-xs border-slate-200 dark:border-slate-800 scroll-mt-24 transition-all duration-500"
     >
       <CardHeader
         title="Create Category"
@@ -232,13 +232,13 @@ export function CreateCategoryCard({
       />
       <CardContent className="space-y-4">
         {formError && (
-          <div className="p-3 rounded-lg bg-red-50 text-red-700 text-xs font-medium border border-red-200">
+          <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs font-medium border border-red-200 dark:border-red-800/60">
             {formError}
           </div>
         )}
 
         {successMessage && (
-          <div className="p-3 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200">
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-medium border border-emerald-200 dark:border-emerald-800/60">
             {successMessage}
           </div>
         )}
@@ -247,11 +247,11 @@ export function CreateCategoryCard({
           {/* Field 0: Parent Category (Taxonomy Hierarchy Placement) */}
           <div className="relative" ref={parentDropdownRef}>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <TreeStructure className="w-3.5 h-3.5 text-emerald-800" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <TreeStructure className="w-3.5 h-3.5 text-emerald-800 dark:text-emerald-400" />
                 Parent Category
               </label>
-              <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60">
                 Placement: Level {targetDepth} of 5
               </span>
             </div>
@@ -259,24 +259,24 @@ export function CreateCategoryCard({
             <button
               type="button"
               onClick={() => setIsParentDropdownOpen((prev) => !prev)}
-              className="w-full h-9 px-3 text-left text-xs bg-white border border-slate-300 rounded-lg flex items-center justify-between hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
+              className="w-full h-9 px-3 text-left text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg flex items-center justify-between hover:border-slate-400 dark:hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
             >
               <div className="truncate flex items-center gap-2">
                 {selectedParentNode ? (
                   <>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
                       L{selectedParentNode.depth}
                     </span>
-                    <span className="font-medium text-slate-800 truncate">
+                    <span className="font-medium text-slate-800 dark:text-slate-200 truncate">
                       {selectedParentNode.fullPath}
                     </span>
                   </>
                 ) : (
                   <>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
                       L1
                     </span>
-                    <span className="text-slate-600 font-medium">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">
                       None (Top-Level Category · Level 1)
                     </span>
                   </>
@@ -291,8 +291,8 @@ export function CreateCategoryCard({
 
             {/* Parent Category Searchable Dropdown Menu */}
             {isParentDropdownOpen && (
-              <div className="absolute z-30 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto divide-y divide-slate-100">
-                <div className="p-2 bg-slate-50 sticky top-0 z-10 border-b border-slate-100">
+              <div className="absolute z-30 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="p-2 bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800">
                   <div className="relative">
                     <MagnifyingGlass className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                     <input
@@ -300,7 +300,7 @@ export function CreateCategoryCard({
                       value={parentSearch}
                       onChange={(e) => setParentSearch(e.target.value)}
                       placeholder="Search existing categories..."
-                      className="w-full h-7 pl-7 pr-2.5 text-xs bg-white border border-slate-200 rounded placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+                      className="w-full h-7 pl-7 pr-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded placeholder:text-slate-400 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-700"
                     />
                   </div>
                 </div>
@@ -314,12 +314,12 @@ export function CreateCategoryCard({
                       setIsParentDropdownOpen(false);
                       setParentSearch('');
                     }}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-emerald-50 transition-colors ${
-                      !parentId ? 'bg-emerald-50/80 font-semibold text-emerald-900' : 'text-slate-700'
+                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
+                      !parentId ? 'bg-emerald-50/80 dark:bg-emerald-950/50 font-semibold text-emerald-900 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Folder className="w-3.5 h-3.5 text-emerald-700" weight="duotone" />
+                      <Folder className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" weight="duotone" />
                       <span>None (Top-Level Category · Level 1)</span>
                     </div>
                     <span className="text-[10px] text-slate-400">Root</span>
@@ -343,16 +343,16 @@ export function CreateCategoryCard({
                             setIsParentDropdownOpen(false);
                             setParentSearch('');
                           }}
-                          className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-emerald-50 transition-colors ${
-                            isSelected ? 'bg-emerald-50/80 font-semibold text-emerald-900' : 'text-slate-700'
+                          className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
+                            isSelected ? 'bg-emerald-50/80 dark:bg-emerald-950/50 font-semibold text-emerald-900 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'
                           }`}
                         >
                           <div className="flex items-center gap-2 truncate">
                             <span
                               className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
                                 node.depth === 1
-                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                  : 'bg-slate-100 text-slate-700 border-slate-200'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                               }`}
                             >
                               L{node.depth}
@@ -387,7 +387,7 @@ export function CreateCategoryCard({
 
           {/* Field 1: Category Name */}
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 block mb-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
               {targetDepth === 1 ? 'Category' : `Subcategory (Level ${targetDepth})`}{' '}
               <span className="text-red-500">*</span>
             </label>
@@ -400,13 +400,13 @@ export function CreateCategoryCard({
                   ? 'e.g. Fiction, History, Science...'
                   : `Name for Level ${targetDepth} subcategory...`
               }
-              className="w-full h-9 px-3 text-xs bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
+              className="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg placeholder:text-slate-400 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
             />
           </div>
 
           {/* Category Color Selection Palette */}
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 block mb-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
               Category Color
             </label>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -417,9 +417,9 @@ export function CreateCategoryCard({
                   onClick={() => setCategoryColor(c.value)}
                   title={c.name}
                   className={cn(
-                    'w-6 h-6 rounded-full transition-transform flex items-center justify-center border border-white shadow-xs',
+                    'w-6 h-6 rounded-full transition-transform flex items-center justify-center border border-white dark:border-slate-800 shadow-xs',
                     categoryColor === c.value
-                      ? 'scale-110 ring-2 ring-emerald-700 ring-offset-1'
+                      ? 'scale-110 ring-2 ring-emerald-700 ring-offset-1 dark:ring-offset-slate-900'
                       : 'hover:scale-105'
                   )}
                   style={{ backgroundColor: c.value }}
@@ -432,7 +432,7 @@ export function CreateCategoryCard({
               {/* Custom Color Input */}
               <label
                 title="Custom color"
-                className="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center cursor-pointer overflow-hidden bg-white hover:border-slate-400"
+                className="w-6 h-6 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer overflow-hidden bg-white dark:bg-slate-900 hover:border-slate-400 dark:hover:border-slate-600"
               >
                 <input
                   type="color"
@@ -449,7 +449,7 @@ export function CreateCategoryCard({
           {targetDepth < 5 ? (
             <div className="relative" ref={subDropdownRef}>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Subcategory
                 </label>
                 <span className="text-[10px] text-slate-400 font-medium">
@@ -468,12 +468,12 @@ export function CreateCategoryCard({
                     onFocus={() => setIsSubDropdownOpen(true)}
                     onKeyDown={handleKeyDownSubInput}
                     placeholder="Select registered subcategory or search..."
-                    className="w-full h-9 pl-3 pr-8 text-xs bg-white border border-slate-300 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
+                    className="w-full h-9 pl-3 pr-8 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg placeholder:text-slate-400 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
                   />
                   <button
                     type="button"
                     onClick={() => setIsSubDropdownOpen((prev) => !prev)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
                     aria-label="Toggle registered subcategories dropdown"
                   >
                     <CaretDown
@@ -497,10 +497,10 @@ export function CreateCategoryCard({
 
               {/* Registered Subcategories Searchable Dropdown Menu */}
               {isSubDropdownOpen && (
-                <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-52 overflow-y-auto py-1 divide-y divide-slate-100">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 flex items-center justify-between">
+                <div className="absolute z-20 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg max-h-52 overflow-y-auto py-1 divide-y divide-slate-100 dark:divide-slate-800">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
                     <span>Registered Subcategories</span>
-                    <span className="text-[10px] font-normal text-slate-500">
+                    <span className="text-[10px] font-normal text-slate-500 dark:text-slate-400">
                       {registeredSubcategories.length} available
                     </span>
                   </div>
@@ -515,10 +515,10 @@ export function CreateCategoryCard({
                         key={sub}
                         type="button"
                         onClick={() => handleSelectRegisteredSub(sub)}
-                        className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 flex items-center justify-between group transition-colors"
+                        className="w-full text-left px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 hover:text-emerald-900 dark:hover:text-emerald-200 flex items-center justify-between group transition-colors"
                       >
                         <span className="font-medium">{sub}</span>
-                        <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-700" />
+                        <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-400" />
                       </button>
                     ))}
 
@@ -530,7 +530,7 @@ export function CreateCategoryCard({
                       <button
                         type="button"
                         onClick={handleAddSubcategory}
-                        className="w-full text-left px-3 py-2 text-xs text-emerald-700 font-semibold hover:bg-emerald-50 flex items-center gap-1.5 transition-colors"
+                        className="w-full text-left px-3 py-2 text-xs text-emerald-700 dark:text-emerald-400 font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center gap-1.5 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" weight="bold" />
                         <span>Add &quot;{newSubInput.trim()}&quot; as custom subcategory</span>
@@ -556,7 +556,7 @@ export function CreateCategoryCard({
 
               {/* Subcategories Chip List */}
               {subcategories.length > 0 && (
-                <div className="mt-2.5 p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 space-y-1.5">
+                <div className="mt-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Level {targetDepth + 1} Subcategories to create ({subcategories.length}):
                   </span>
@@ -564,14 +564,14 @@ export function CreateCategoryCard({
                     {subcategories.map((sub, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs"
                       >
-                        <Tag className="w-3 h-3 text-emerald-700" />
+                        <Tag className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                         <span>{sub}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSubcategory(index)}
-                          className="hover:text-red-600 rounded-full transition-colors ml-0.5"
+                          className="hover:text-red-600 dark:hover:text-red-400 rounded-full transition-colors ml-0.5"
                           title="Remove subcategory"
                           aria-label={`Remove ${sub}`}
                         >
@@ -584,13 +584,13 @@ export function CreateCategoryCard({
               )}
             </div>
           ) : (
-            <div className="p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-amber-900 text-xs">
+            <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-300 text-xs">
               <span className="font-semibold block mb-0.5">Maximum Taxonomy Depth (Level 5)</span>
               This subcategory is being created at Level 5. Per catalog guidelines, Level 5 items cannot have further child subcategories.
             </div>
           )}
 
-          <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
             <Button
               type="submit"
               isLoading={isSubmitting}

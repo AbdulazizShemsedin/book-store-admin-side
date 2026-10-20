@@ -28,14 +28,14 @@ export function Toggle({
             <label
               htmlFor={toggleId}
               className={cn(
-                'text-sm font-medium text-slate-800 cursor-pointer select-none',
+                'text-sm font-medium text-slate-800 dark:text-slate-200 cursor-pointer select-none',
                 disabled && 'opacity-60 cursor-not-allowed'
               )}
             >
               {label}
             </label>
           )}
-          {description && <p className="text-xs text-slate-500">{description}</p>}
+          {description && <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>}
         </div>
       )}
       <button
@@ -46,8 +46,8 @@ export function Toggle({
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
         className={cn(
-          'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2',
-          checked ? 'bg-[#1e4634]' : 'bg-slate-200',
+          'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 dark:focus:ring-offset-slate-900',
+          checked ? 'bg-[#1e4634] dark:bg-emerald-600' : 'bg-slate-200 dark:bg-slate-700',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       >

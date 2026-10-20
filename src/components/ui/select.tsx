@@ -154,7 +154,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-xs font-semibold uppercase tracking-wider text-slate-700"
+            className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
           >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
@@ -171,20 +171,20 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             aria-haspopup="listbox"
             aria-expanded={isOpen}
             className={cn(
-              'w-full flex items-center justify-between text-left text-sm bg-[#f8fafc] border border-slate-200 rounded-lg transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed',
+              'w-full flex items-center justify-between text-left text-sm bg-[#f8fafc] border border-slate-200 rounded-lg transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-[#070a10] dark:border-slate-800 dark:text-slate-100 dark:focus:bg-[#0d121d] dark:focus:border-emerald-500/80 dark:disabled:bg-slate-900/50',
               size === 'sm' ? 'h-9 px-3 text-xs' : 'h-10 pl-3.5 pr-3 py-2',
-              error && 'border-red-500 focus:border-red-500 bg-red-50/20',
-              isOpen && 'border-emerald-700 ring-2 ring-emerald-700/20 bg-white',
+              error && 'border-red-500 focus:border-red-500 bg-red-50/20 dark:bg-red-950/20 dark:border-red-500',
+              isOpen && 'border-emerald-700 ring-2 ring-emerald-700/20 bg-white dark:bg-[#0d121d] dark:border-emerald-500',
               className
             )}
           >
-            <span className={cn('truncate', !selectedOption && 'text-slate-400')}>
+            <span className={cn('truncate', !selectedOption && 'text-slate-400 dark:text-slate-500')}>
               {selectedOption ? selectedOption.label : placeholder || 'Select an option...'}
             </span>
             <CaretDown
               className={cn(
-                'w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ml-2',
-                isOpen && 'transform rotate-180 text-emerald-800'
+                'w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 flex-shrink-0 ml-2',
+                isOpen && 'transform rotate-180 text-emerald-800 dark:text-emerald-400'
               )}
             />
           </button>
@@ -215,21 +215,21 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             <div
               role="listbox"
               className={cn(
-                'absolute left-0 right-0 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100 min-w-[200px]',
+                'absolute left-0 right-0 z-50 bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100 min-w-[200px]',
                 openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
               )}
             >
               {/* Optional Search Bar Input */}
               {showSearch && (
-                <div className="p-2 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2">
-                  <MagnifyingGlass className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 ml-1" />
+                <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-[#070a10] flex items-center gap-2">
+                  <MagnifyingGlass className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1" />
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Type to search..."
-                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700"
+                    className="w-full text-xs bg-white dark:bg-[#111827] px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-700 dark:focus:ring-emerald-500 focus:border-emerald-700 dark:focus:border-emerald-500"
                     onClick={(e) => e.stopPropagation()}
                   />
                   {searchQuery && (
@@ -240,7 +240,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                         setSearchQuery('');
                         searchInputRef.current?.focus();
                       }}
-                      className="p-1 text-slate-400 hover:text-slate-600 rounded"
+                      className="p-1 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 rounded"
                       aria-label="Clear search"
                       title="Clear search"
                     >
@@ -253,7 +253,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
               {/* Options List */}
               <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5">
                 {filteredOptions.length === 0 ? (
-                  <div className="px-3 py-3 text-xs text-center text-slate-400">
+                  <div className="px-3 py-3 text-xs text-center text-slate-400 dark:text-slate-500">
                     No matching options found
                   </div>
                 ) : (
@@ -270,14 +270,14 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                         className={cn(
                           'w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-left transition-colors',
                           isSelected
-                            ? 'bg-emerald-50 text-emerald-950 font-medium'
-                            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
+                            ? 'bg-emerald-50 text-emerald-950 font-medium dark:bg-emerald-950/60 dark:text-emerald-200'
+                            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-slate-100',
                           opt.disabled && 'opacity-50 cursor-not-allowed'
                         )}
                       >
                         <span className="truncate">{opt.label}</span>
                         {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-[#1e4634] flex-shrink-0 ml-2" weight="bold" />
+                          <Check className="w-3.5 h-3.5 text-[#1e4634] dark:text-emerald-400 flex-shrink-0 ml-2" weight="bold" />
                         )}
                       </button>
                     );
@@ -288,8 +288,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           )}
         </div>
 
-        {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
-        {helperText && !error && <p className="text-xs text-slate-500">{helperText}</p>}
+        {error && <p className="text-xs text-red-600 dark:text-red-400 font-medium">{error}</p>}
+        {helperText && !error && <p className="text-xs text-slate-500 dark:text-slate-400">{helperText}</p>}
       </div>
     );
   }

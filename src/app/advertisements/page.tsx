@@ -78,10 +78,10 @@ export default function AdvertisementsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search promotional banners..."
-                className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
+                className="w-full h-9 pl-9 pr-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg placeholder:text-slate-400 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
               />
             </div>
-            <span className="text-[11px] text-slate-400 font-medium hidden sm:inline-block">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium hidden sm:inline-block">
               Drag rows to reorder sequence
             </span>
           </div>

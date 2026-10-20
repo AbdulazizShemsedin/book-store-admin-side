@@ -77,14 +77,14 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 select-none z-30 transition-all duration-200 ease-in-out',
+        'flex-shrink-0 bg-white dark:bg-[#0d121d] border-r border-slate-200 dark:border-slate-800/80 flex flex-col h-screen sticky top-0 select-none z-30 transition-all duration-200 ease-in-out',
         isCollapsed ? 'w-18' : 'w-60'
       )}
     >
       {/* Brand Header */}
       <div
         className={cn(
-          'h-14 flex items-center border-b border-slate-100 transition-all px-4',
+          'h-14 flex items-center border-b border-slate-100 dark:border-slate-800/80 transition-all px-4',
           isCollapsed ? 'justify-center' : 'justify-between'
         )}
       >
@@ -96,17 +96,17 @@ export function Sidebar() {
           )}
         >
           {/* Logo Mark */}
-          <div className="w-8 h-8 rounded-lg bg-[#1e4634] flex items-center justify-center text-white shadow-xs flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#1e4634] dark:bg-[#1b4332] flex items-center justify-center text-white shadow-xs flex-shrink-0">
             <BookOpen className="w-4 h-4 text-white" weight="bold" />
           </div>
 
           {/* Logo Text */}
           {!isCollapsed && (
             <div className="flex flex-col min-w-0 leading-tight">
-              <span className="text-sm font-bold text-slate-900 tracking-tight">
+              <span className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 TEWBA
               </span>
-              <span className="text-[11px] font-normal text-slate-500">
+              <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
                 Bookstore Admin
               </span>
             </div>
@@ -120,7 +120,7 @@ export function Sidebar() {
             onClick={toggleSidebar}
             title="Collapse sidebar"
             aria-label="Collapse sidebar"
-            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-md transition-colors"
           >
             <CaretLeft className="w-4 h-4" />
           </button>
@@ -133,7 +133,7 @@ export function Sidebar() {
           <div key={idx} className="space-y-0.5">
             {/* Section Header */}
             {section.title && !isCollapsed && (
-              <div className="px-3 pt-2 pb-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <div className="px-3 pt-2 pb-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                 {section.title}
               </div>
             )}
@@ -157,15 +157,15 @@ export function Sidebar() {
                         ? 'justify-center w-10 h-10 mx-auto'
                         : 'gap-3 px-3 py-2',
                       isActive
-                        ? 'bg-[#1e4634] text-white font-semibold shadow-xs'
-                        : 'text-slate-700 font-medium hover:text-slate-900 hover:bg-slate-100'
+                        ? 'bg-[#1e4634] dark:bg-[#1b4332] text-white font-semibold shadow-xs'
+                        : 'text-slate-700 dark:text-slate-300 font-medium hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                     )}
                   >
                     <Icon
                       className={cn(
                         isCollapsed ? 'w-5 h-5' : 'w-4 h-4',
                         'flex-shrink-0',
-                        isActive ? 'text-white' : 'text-slate-500'
+                        isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'
                       )}
                       weight={isActive ? 'fill' : 'regular'}
                     />
@@ -183,7 +183,7 @@ export function Sidebar() {
       <div
         ref={userMenuRef}
         className={cn(
-          'border-t border-slate-200 relative bg-slate-50/60',
+          'border-t border-slate-200 dark:border-slate-800/80 relative bg-slate-50/60 dark:bg-slate-900/40',
           isCollapsed ? 'p-2' : 'p-3'
         )}
       >
@@ -191,15 +191,15 @@ export function Sidebar() {
         {isUserMenuOpen && (
           <div
             className={cn(
-              'absolute bottom-full mb-2 bg-white border border-slate-200 rounded-xl shadow-lg p-1.5 z-50',
+              'absolute bottom-full mb-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg p-1.5 z-50',
               isCollapsed ? 'left-2 w-48' : 'left-3 right-3'
             )}
           >
-            <div className="px-3 py-2 border-b border-slate-100 mb-1">
-              <p className="text-xs font-semibold text-slate-900 truncate">
+            <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1">
+              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
                 {userName}
               </p>
-              <p className="text-[11px] text-slate-500 truncate">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                 {userEmail}
               </p>
             </div>
@@ -210,9 +210,9 @@ export function Sidebar() {
                 setIsUserMenuOpen(false);
                 await signout();
               }}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-left"
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors text-left"
             >
-              <SignOut className="w-4 h-4 text-rose-500" />
+              <SignOut className="w-4 h-4 text-rose-500 dark:text-rose-400" />
               <span>Sign Out</span>
             </button>
           </div>
@@ -223,7 +223,7 @@ export function Sidebar() {
             <button
               type="button"
               onClick={() => setIsUserMenuOpen((prev) => !prev)}
-              className="w-9 h-9 rounded-full bg-[#1e4634] text-white flex items-center justify-center font-semibold text-xs hover:opacity-90 transition-opacity"
+              className="w-9 h-9 rounded-full bg-[#1e4634] dark:bg-[#1b4332] text-white flex items-center justify-center font-semibold text-xs hover:opacity-90 transition-opacity"
               title={`${userName} (Click for Menu)`}
               aria-label="User account menu"
             >
@@ -234,7 +234,7 @@ export function Sidebar() {
               onClick={toggleSidebar}
               title="Expand sidebar"
               aria-label="Expand sidebar"
-              className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded transition-colors"
+              className="w-7 h-7 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/80 rounded transition-colors"
             >
               <CaretRight className="w-3.5 h-3.5" />
             </button>
@@ -243,20 +243,20 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setIsUserMenuOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between gap-2.5 p-2 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 transition-colors text-left"
+            className="w-full flex items-center justify-between gap-2.5 p-2 rounded-lg bg-white dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 transition-colors text-left"
             title="User account menu"
             aria-label="User account menu"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-full bg-[#1e4634] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[#1e4634] dark:bg-[#1b4332] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
                 <span>{userInitial}</span>
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-900 truncate">
+                <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
                   {userName}
                 </p>
-                <p className="text-[11px] text-slate-500 truncate">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                   {userEmail}
                 </p>
               </div>
@@ -264,7 +264,7 @@ export function Sidebar() {
 
             <CaretDown
               className={cn(
-                'w-3.5 h-3.5 text-slate-400 transition-transform duration-150 flex-shrink-0',
+                'w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform duration-150 flex-shrink-0',
                 isUserMenuOpen && 'rotate-180'
               )}
             />

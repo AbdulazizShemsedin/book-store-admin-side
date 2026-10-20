@@ -83,9 +83,9 @@ export function AdvertisementTable({
 
   if (isLoading) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center bg-white rounded-xl border border-slate-200">
+      <div className="py-20 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
         <Spinner size="lg" />
-        <p className="mt-3 text-xs text-slate-500 font-medium">Loading promotional banners...</p>
+        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 font-medium">Loading promotional banners...</p>
       </div>
     );
   }
@@ -111,12 +111,12 @@ export function AdvertisementTable({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm overflow-hidden">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="py-3 px-3 w-10 text-center"></th>
                 <th className="py-3 px-4 w-24">Order</th>
                 <th className="py-3 px-4 w-44">Banner Preview</th>
@@ -125,7 +125,7 @@ export function AdvertisementTable({
                 <th className="py-3 px-6 text-right">Actions</th>
               </tr>
             </thead>
-          <tbody className="divide-y divide-slate-100 text-xs">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
             <SortableContext items={ads.map((a) => a.id)} strategy={verticalListSortingStrategy}>
               {ads.map((ad, index) => (
                 <SortableAdRow

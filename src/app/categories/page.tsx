@@ -76,21 +76,21 @@ export default function CategoriesPage() {
 
       <div className="space-y-5">
         {/* Top Controls Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#0d121d] p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
           <div className="w-full sm:w-80 relative">
-            <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <MagnifyingGlass className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search category name..."
-              className="w-full h-9 pl-9 pr-8 text-xs bg-slate-50/70 border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 focus:border-[#1e4634] focus:bg-white transition-colors"
+              className="w-full h-9 pl-9 pr-8 text-xs bg-slate-50/70 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 dark:focus:ring-emerald-500/20 focus:border-[#1e4634] dark:focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 transition-colors"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="w-4 h-4 text-slate-400 hover:text-slate-700 flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2"
+                className="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2"
                 title="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -98,9 +98,9 @@ export default function CategoriesPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Folders className="w-4 h-4 text-[#1e4634]" weight="duotone" />
-            <span className="font-semibold text-slate-800">{total}</span>
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <Folders className="w-4 h-4 text-[#1e4634] dark:text-emerald-400" weight="duotone" />
+            <span className="font-semibold text-slate-800 dark:text-slate-200">{total}</span>
             <span>total categories recorded</span>
           </div>
         </div>

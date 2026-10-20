@@ -58,11 +58,11 @@ export function AdEditorCard({ currentCount, onCancel }: AdEditorCardProps) {
   };
 
   return (
-    <Card id="ad-editor-card" className="h-fit shadow-sm border-slate-200 scroll-mt-24 transition-all duration-500">
+    <Card id="ad-editor-card" className="h-fit shadow-sm border-slate-200 dark:border-slate-800 scroll-mt-24 transition-all duration-500">
       <CardHeader
         title={
           <div className="flex items-center gap-2">
-            <Megaphone className="w-5 h-5 text-[#1e4634]" />
+            <Megaphone className="w-5 h-5 text-[#1e4634] dark:text-emerald-400" />
             <span>Advertisement editor</span>
           </div>
         }
@@ -74,8 +74,8 @@ export function AdEditorCard({ currentCount, onCancel }: AdEditorCardProps) {
       />
       <CardContent className="space-y-4">
         {successMessage && (
-          <div className="p-3 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-medium border border-emerald-200 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-medium border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
@@ -92,10 +92,10 @@ export function AdEditorCard({ currentCount, onCancel }: AdEditorCardProps) {
           {/* Order of Display Selector */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Order of Display <span className="text-red-500">*</span>
               </label>
-              <span className="text-[11px] text-slate-400">Position in mobile carousel</span>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">Position in mobile carousel</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -109,8 +109,8 @@ export function AdEditorCard({ currentCount, onCancel }: AdEditorCardProps) {
                   onClick={() => setValue('order', opt.val)}
                   className={`py-2 px-2 rounded-lg border text-xs font-medium transition-colors text-center ${
                     watchedOrder === opt.val
-                      ? 'border-emerald-700 bg-emerald-50 text-[#1e4634] font-semibold'
-                      : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100'
+                      ? 'border-emerald-700 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-[#1e4634] dark:text-emerald-300 font-semibold'
+                      : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   {opt.label}
@@ -141,11 +141,11 @@ export function AdEditorCard({ currentCount, onCancel }: AdEditorCardProps) {
 
           {/* Status Radio */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               Initial Status
             </label>
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
                   type="radio"
                   value="active"
@@ -155,7 +155,7 @@ export function AdEditorCard({ currentCount, onCancel }: AdEditorCardProps) {
                 />
                 <span>Active</span>
               </label>
-              <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
                   type="radio"
                   value="disabled"

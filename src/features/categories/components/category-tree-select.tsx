@@ -278,12 +278,12 @@ export function CategoryTreeSelect({
     const nodeColor = getCategoryColor(node, node.id);
 
     const depthBadge = {
-      1: { label: 'L1', style: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-      2: { label: 'L2', style: 'bg-slate-100 text-slate-700 border-slate-200' },
-      3: { label: 'L3', style: 'bg-blue-50 text-blue-700 border-blue-200' },
-      4: { label: 'L4', style: 'bg-purple-50 text-purple-700 border-purple-200' },
-      5: { label: 'L5', style: 'bg-amber-50 text-amber-800 border-amber-200' },
-    }[node.depth as 1 | 2 | 3 | 4 | 5] || { label: `L${node.depth}`, style: 'bg-slate-100 text-slate-700 border-slate-200' };
+      1: { label: 'L1', style: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800' },
+      2: { label: 'L2', style: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700' },
+      3: { label: 'L3', style: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800' },
+      4: { label: 'L4', style: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800' },
+      5: { label: 'L5', style: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800' },
+    }[node.depth as 1 | 2 | 3 | 4 | 5] || { label: `L${node.depth}`, style: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700' };
 
     const paddingLeft = (node.depth - 1) * 18 + 8;
 
@@ -297,10 +297,10 @@ export function CategoryTreeSelect({
           className={cn(
             'group flex items-center justify-between py-1.5 pr-2.5 rounded-md text-xs cursor-pointer transition-colors',
             isSelected
-              ? 'bg-emerald-50/80 text-emerald-950 font-medium'
+              ? 'bg-emerald-50/80 text-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-200 font-medium'
               : isAtLimit
-              ? 'opacity-50 cursor-not-allowed text-slate-400'
-              : 'hover:bg-slate-100 text-slate-700'
+              ? 'opacity-50 cursor-not-allowed text-slate-400 dark:text-slate-600'
+              : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'
           )}
         >
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -309,7 +309,7 @@ export function CategoryTreeSelect({
               <button
                 type="button"
                 onClick={(e) => toggleExpand(node.id, e)}
-                className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-200/80 rounded transition-colors flex-shrink-0"
+                className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-800 dark:text-slate-500 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 rounded transition-colors flex-shrink-0"
                 aria-label={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
               >
                 {isExpanded ? (
@@ -319,7 +319,7 @@ export function CategoryTreeSelect({
                 )}
               </button>
             ) : (
-              <span className="w-4 flex items-center justify-center text-slate-300 flex-shrink-0 text-[10px]">
+              <span className="w-4 flex items-center justify-center text-slate-300 dark:text-slate-600 flex-shrink-0 text-[10px]">
                 {node.depth > 1 ? '↳' : '•'}
               </span>
             )}
@@ -337,12 +337,12 @@ export function CategoryTreeSelect({
             {/* Folder / Tag icon with color indicator */}
             <div className="relative flex items-center justify-center flex-shrink-0">
               {hasChildren ? (
-                <Folder className="w-3.5 h-3.5 text-slate-500" weight="duotone" />
+                <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" weight="duotone" />
               ) : (
-                <Tag className="w-3.5 h-3.5 text-slate-400" />
+                <Tag className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               )}
               <span
-                className="w-1.5 h-1.5 rounded-full absolute -bottom-0.5 -right-0.5 border border-white"
+                className="w-1.5 h-1.5 rounded-full absolute -bottom-0.5 -right-0.5 border border-white dark:border-slate-900"
                 style={{ backgroundColor: nodeColor }}
               />
             </div>
@@ -363,7 +363,7 @@ export function CategoryTreeSelect({
                 'w-4 h-4 rounded border flex items-center justify-center transition-all',
                 isSelected
                   ? 'bg-emerald-700 border-emerald-700 text-white'
-                  : 'border-slate-300 bg-white group-hover:border-slate-400'
+                  : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 group-hover:border-slate-400 dark:group-hover:border-slate-500'
               )}
             >
               {isSelected && <Check className="w-3 h-3" weight="bold" />}
@@ -373,7 +373,7 @@ export function CategoryTreeSelect({
 
         {/* Nested Child Nodes */}
         {hasChildren && isExpanded && (
-          <div className="border-l border-slate-200/70 ml-2.5 my-0.5">
+          <div className="border-l border-slate-200/70 dark:border-slate-800 ml-2.5 my-0.5">
             {node.children.map((child) => renderTreeNode(child))}
           </div>
         )}
@@ -385,28 +385,28 @@ export function CategoryTreeSelect({
     <div className="space-y-2">
       {/* Label & Header Controls */}
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
           {label}{' '}
-          <span className="text-[11px] font-normal text-slate-500 lowercase">
+          <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 lowercase">
             ({selectedCategoryIds.length}/{maxSelections} selected)
           </span>
         </label>
         <button
           type="button"
           onClick={() => setIsCreatingNew((prev) => !prev)}
-          className="text-xs font-medium text-emerald-800 hover:text-emerald-950 flex items-center gap-1"
+          className="text-xs font-medium text-emerald-800 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-300 flex items-center gap-1"
         >
           <Plus className="w-3 h-3" weight="bold" />
           <span>{isCreatingNew ? 'Close New Category' : 'Add New Category'}</span>
         </button>
       </div>
 
-      {helperText && <p className="text-[11px] text-slate-500 -mt-1">{helperText}</p>}
+      {helperText && <p className="text-[11px] text-slate-500 dark:text-slate-400 -mt-1">{helperText}</p>}
 
       {/* Selected Categories as Full Lineage Badges / Chips */}
-      <div className="min-h-[38px] p-2 bg-slate-50/70 border border-slate-200 rounded-lg flex flex-wrap items-center gap-1.5">
+      <div className="min-h-[38px] p-2 bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-lg flex flex-wrap items-center gap-1.5">
         {selectedCategoryIds.length === 0 ? (
-          <span className="text-xs text-slate-400 italic">
+          <span className="text-xs text-slate-400 dark:text-slate-500 italic">
             No categories attached yet. Select up to 5 categories from the tree below.
           </span>
         ) : (
@@ -420,18 +420,18 @@ export function CategoryTreeSelect({
               <span
                 key={id}
                 title={fullPath}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-950 border border-emerald-300 shadow-2xs animate-in fade-in duration-150"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 shadow-2xs animate-in fade-in duration-150"
               >
                 {isNested ? (
                   <span className="flex items-center gap-1">
-                    <span className="text-emerald-700/80 font-normal">
+                    <span className="text-emerald-700/80 dark:text-emerald-400/80 font-normal">
                       {catNode.path.slice(0, -1).join(' › ')}
                     </span>
                     <span className="text-emerald-500 font-bold">›</span>
-                    <span className="font-bold text-emerald-950">{catNode.name}</span>
+                    <span className="font-bold text-emerald-950 dark:text-emerald-100">{catNode.name}</span>
                   </span>
                 ) : (
-                  <span className="font-bold text-emerald-950">{catName}</span>
+                  <span className="font-bold text-emerald-950 dark:text-emerald-100">{catName}</span>
                 )}
 
                 {/* Remove button */}
@@ -440,7 +440,7 @@ export function CategoryTreeSelect({
                   onClick={(e) => handleRemoveCategory(id, e)}
                   aria-label={`Remove category ${catName}`}
                   title={`Remove category ${catName}`}
-                  className="text-emerald-700 hover:text-emerald-950 rounded p-0.5 hover:bg-emerald-100 transition-colors ml-0.5"
+                  className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-200 rounded p-0.5 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors ml-0.5"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -452,30 +452,30 @@ export function CategoryTreeSelect({
 
       {/* Embedded "Create New Category" Panel */}
       {isCreatingNew && (
-        <div className="p-3.5 bg-white border border-emerald-200 rounded-xl shadow-xs space-y-3 animate-in fade-in duration-150">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-              <TreeStructure className="w-4 h-4 text-emerald-800" />
+        <div className="p-3.5 bg-white dark:bg-[#0d121d] border border-emerald-200 dark:border-emerald-800/80 rounded-xl shadow-xs space-y-3 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+              <TreeStructure className="w-4 h-4 text-emerald-800 dark:text-emerald-400" />
               Create & Attach New Category
             </span>
             <button
               type="button"
               onClick={() => setIsCreatingNew(false)}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {creationError && (
-            <p className="text-xs text-red-600 font-medium bg-red-50 p-2 rounded">
+            <p className="text-xs text-red-600 dark:text-red-400 font-medium bg-red-50 dark:bg-red-950/30 p-2 rounded border border-red-200 dark:border-red-900/50">
               {creationError}
             </p>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Category Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -483,18 +483,18 @@ export function CategoryTreeSelect({
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="e.g. Science Fiction, Epic Fantasy..."
-                className="w-full h-8 px-2.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
+                className="w-full h-8 px-2.5 text-xs bg-white dark:bg-[#111827] border border-slate-300 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Parent Category (Optional - Nesting up to L5)
               </label>
               <select
                 value={newParentId}
                 onChange={(e) => setNewParentId(e.target.value)}
-                className="w-full h-8 px-2 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
+                className="w-full h-8 px-2 text-xs bg-white dark:bg-[#111827] border border-slate-300 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500"
               >
                 <option value="">None (Top-Level Category)</option>
                 {eligibleParents.map((node) => (
@@ -507,29 +507,29 @@ export function CategoryTreeSelect({
           </div>
 
           {/* Live Breadcrumb Preview */}
-          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+          <div className="p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg text-xs space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
               Placement Preview
             </span>
-            <div className="flex items-center gap-1.5 font-medium text-emerald-900">
+            <div className="flex items-center gap-1.5 font-medium text-emerald-900 dark:text-emerald-200">
               {newParentId ? (
                 <>
-                  <Folder className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" weight="fill" />
-                  <span className="text-slate-600">
+                  <Folder className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 flex-shrink-0" weight="fill" />
+                  <span className="text-slate-600 dark:text-slate-400">
                     {eligibleParents.find((n) => n.id === newParentId)?.fullPath}
                   </span>
                   <span className="text-emerald-500 font-bold">›</span>
-                  <span className="font-bold text-emerald-950">
+                  <span className="font-bold text-emerald-950 dark:text-emerald-100">
                     {newCategoryName.trim() || '(Type category name...)'}
                   </span>
                 </>
               ) : (
                 <>
-                  <Folder className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" weight="fill" />
-                  <span className="font-bold text-emerald-950">
+                  <Folder className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 flex-shrink-0" weight="fill" />
+                  <span className="font-bold text-emerald-950 dark:text-emerald-100">
                     {newCategoryName.trim() || '(Type category name...)'}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal ml-1">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal ml-1">
                     (Top-Level)
                   </span>
                 </>
@@ -537,7 +537,7 @@ export function CategoryTreeSelect({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-1 border-t border-slate-100">
+          <div className="flex justify-end gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
             <Button
               type="button"
               size="sm"
@@ -565,16 +565,16 @@ export function CategoryTreeSelect({
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           className={cn(
-            'w-full h-10 px-3.5 text-left text-xs bg-white border rounded-lg flex items-center justify-between transition-colors shadow-2xs',
+            'w-full h-10 px-3.5 text-left text-xs bg-white dark:bg-[#070a10] border rounded-lg flex items-center justify-between transition-colors shadow-2xs',
             isOpen
-              ? 'border-emerald-700 ring-2 ring-emerald-700/20'
-              : 'border-slate-300 hover:border-slate-400',
+              ? 'border-emerald-700 dark:border-emerald-500 ring-2 ring-emerald-700/20 dark:ring-emerald-500/20'
+              : 'border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700',
             error && 'border-red-400'
           )}
         >
           <div className="flex items-center gap-2 truncate">
-            <TreeStructure className="w-4 h-4 text-emerald-800 flex-shrink-0" />
-            <span className="text-slate-800 font-medium">
+            <TreeStructure className="w-4 h-4 text-emerald-800 dark:text-emerald-400 flex-shrink-0" />
+            <span className="text-slate-800 dark:text-slate-200 font-medium">
               {selectedCategoryIds.length === 0
                 ? 'Browse Category Tree (Folder Hierarchy)...'
                 : `${selectedCategoryIds.length} categor${
@@ -582,8 +582,8 @@ export function CategoryTreeSelect({
                   } selected`}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-slate-400 flex-shrink-0">
-            <span className="text-[11px] text-slate-500">
+          <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 flex-shrink-0">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
               {selectedCategoryIds.length}/{maxSelections}
             </span>
             <CaretDown
@@ -594,30 +594,30 @@ export function CategoryTreeSelect({
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Header: Search + Expand/Collapse */}
-            <div className="p-2.5 bg-slate-50/80 border-b border-slate-200/80 space-y-2">
+            <div className="p-2.5 bg-slate-50/80 dark:bg-[#070a10] border-b border-slate-200/80 dark:border-slate-800 space-y-2">
               <div className="relative">
-                <MagnifyingGlass className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <MagnifyingGlass className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search categories (e.g. Fiction, Ottoman, Science)..."
-                  className="w-full h-8 pl-8 pr-7 text-xs bg-white border border-slate-200 rounded-md placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700"
+                  className="w-full h-8 pl-8 pr-7 text-xs bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-md placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500"
                 />
                 {search && (
                   <button
                     type="button"
                     onClick={() => setSearch('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
                 <span className="font-medium">
                   {filteredTree.length} root categor{filteredTree.length !== 1 ? 'ies' : 'y'}
                 </span>
@@ -625,16 +625,16 @@ export function CategoryTreeSelect({
                   <button
                     type="button"
                     onClick={handleExpandAll}
-                    className="hover:text-emerald-800 flex items-center gap-0.5"
+                    className="hover:text-emerald-800 dark:hover:text-emerald-400 flex items-center gap-0.5"
                   >
                     <ArrowsOutLineVertical className="w-3 h-3" />
                     <span>Expand All</span>
                   </button>
-                  <span className="text-slate-300">|</span>
+                  <span className="text-slate-300 dark:text-slate-700">|</span>
                   <button
                     type="button"
                     onClick={handleCollapseAll}
-                    className="hover:text-emerald-800 flex items-center gap-0.5"
+                    className="hover:text-emerald-800 dark:hover:text-emerald-400 flex items-center gap-0.5"
                   >
                     <ArrowsInLineVertical className="w-3 h-3" />
                     <span>Collapse All</span>
@@ -646,7 +646,7 @@ export function CategoryTreeSelect({
             {/* Tree Nodes List */}
             <div className="max-h-72 overflow-y-auto p-2 space-y-1">
               {filteredTree.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-400">
+                <div className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">
                   No matching categories found in catalog.
                 </div>
               ) : (

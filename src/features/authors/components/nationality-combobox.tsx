@@ -85,7 +85,7 @@ export function NationalityCombobox({
   return (
     <div className="w-full space-y-1.5" ref={containerRef}>
       {label && (
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
           {label}
         </label>
       )}
@@ -97,17 +97,17 @@ export function NationalityCombobox({
           disabled={disabled}
           onClick={() => !disabled && setIsOpen((prev) => !prev)}
           className={cn(
-            'w-full h-10 px-3.5 flex items-center justify-between text-left text-sm bg-[#f8fafc] border border-slate-200 rounded-lg transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed',
-            error && 'border-red-500 bg-red-50/20',
-            isOpen && 'border-emerald-700 ring-2 ring-emerald-700/20 bg-white'
+            'w-full h-10 px-3.5 flex items-center justify-between text-left text-sm bg-[#f8fafc] border border-slate-200 rounded-lg transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed dark:bg-[#070a10] dark:border-slate-800 dark:text-slate-100 dark:focus:bg-[#0d121d] dark:focus:border-emerald-500/80 dark:disabled:bg-slate-900/50',
+            error && 'border-red-500 bg-red-50/20 dark:bg-red-950/20 dark:border-red-500',
+            isOpen && 'border-emerald-700 ring-2 ring-emerald-700/20 bg-white dark:bg-[#0d121d] dark:border-emerald-500'
           )}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <GlobeHemisphereWest className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            <GlobeHemisphereWest className="w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0" />
             {value ? (
-              <span className="font-medium text-slate-900 truncate">{value}</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100 truncate">{value}</span>
             ) : (
-              <span className="text-slate-400 truncate">{placeholder}</span>
+              <span className="text-slate-400 dark:text-slate-500 truncate">{placeholder}</span>
             )}
           </div>
 
@@ -117,7 +117,7 @@ export function NationalityCombobox({
                 role="button"
                 tabIndex={0}
                 onClick={handleClear}
-                className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-600 transition-colors"
+                className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 title="Clear selection"
               >
                 <X className="w-3.5 h-3.5" />
@@ -125,8 +125,8 @@ export function NationalityCombobox({
             )}
             <CaretDown
               className={cn(
-                'w-4 h-4 text-slate-400 transition-transform duration-200',
-                isOpen && 'transform rotate-180 text-emerald-800'
+                'w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200',
+                isOpen && 'transform rotate-180 text-emerald-800 dark:text-emerald-400'
               )}
             />
           </div>
@@ -134,18 +134,18 @@ export function NationalityCombobox({
 
         {/* Searchable Dropdown Menu */}
         {isOpen && (
-          <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+          <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
             {/* Search Input Bar */}
-            <div className="p-2 border-b border-slate-100 bg-slate-50/70">
+            <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-[#070a10]">
               <div className="relative">
-                <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <MagnifyingGlass className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search country or nationality..."
-                  className="w-full h-8 pl-8 pr-3 text-xs bg-white border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
+                  className="w-full h-8 pl-8 pr-3 text-xs bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-lg placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors"
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
                       setIsOpen(false);
@@ -164,16 +164,16 @@ export function NationalityCombobox({
             </div>
 
             {/* Countries & Nationalities List */}
-            <div className="max-h-60 overflow-y-auto divide-y divide-slate-50 scrollbar-thin">
+            <div className="max-h-60 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800/60 scrollbar-thin">
               {/* Custom input entry if no exact match */}
               {search.trim() && !hasExactMatch && (
                 <button
                   type="button"
                   onClick={() => handleSelect(search.trim())}
-                  className="w-full px-3.5 py-2.5 text-left text-xs bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-950 font-semibold flex items-center justify-between transition-colors"
+                  className="w-full px-3.5 py-2.5 text-left text-xs bg-emerald-50/60 dark:bg-emerald-950/40 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/60 text-emerald-950 dark:text-emerald-200 font-semibold flex items-center justify-between transition-colors"
                 >
                   <span>Use custom: &quot;{search.trim()}&quot;</span>
-                  <Check className="w-3.5 h-3.5 text-emerald-700" />
+                  <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                 </button>
               )}
 
@@ -185,27 +185,27 @@ export function NationalityCombobox({
                     type="button"
                     onClick={() => handleSelect(item.nationality)}
                     className={cn(
-                      'w-full px-3.5 py-2 text-left text-xs flex items-center justify-between hover:bg-emerald-50/50 transition-colors group',
-                      isSelected && 'bg-emerald-50 text-emerald-900 font-semibold'
+                      'w-full px-3.5 py-2 text-left text-xs flex items-center justify-between hover:bg-emerald-50/50 dark:hover:bg-slate-800/50 transition-colors group',
+                      isSelected && 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 font-semibold'
                     )}
                   >
                     <div className="flex items-center gap-2 truncate">
-                      <span className="text-slate-900 font-medium group-hover:text-emerald-950 truncate">
+                      <span className="text-slate-900 dark:text-slate-200 font-medium group-hover:text-emerald-950 dark:group-hover:text-emerald-300 truncate">
                         {item.nationality}
                       </span>
-                      <span className="text-slate-400 text-[11px] truncate">
+                      <span className="text-slate-400 dark:text-slate-500 text-[11px] truncate">
                         ({item.country})
                       </span>
                     </div>
                     {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" weight="bold" />
+                      <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 flex-shrink-0" weight="bold" />
                     )}
                   </button>
                 );
               })}
 
               {filtered.length === 0 && !search.trim() && (
-                <div className="px-4 py-6 text-center text-xs text-slate-400">
+                <div className="px-4 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
                   No nationalities found.
                 </div>
               )}
