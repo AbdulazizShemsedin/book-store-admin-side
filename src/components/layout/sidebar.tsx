@@ -17,6 +17,7 @@ import {
   CaretLeft,
   CaretRight,
   CaretDown,
+  Books,
 } from '@phosphor-icons/react';
 import { useSidebar } from '@/providers/sidebar-provider';
 
@@ -39,6 +40,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Catalog',
     items: [
       { label: 'Books', href: '/books', icon: BookOpen },
+      { label: 'Series', href: '/series', icon: Books },
       { label: 'Categories', href: '/categories', icon: TreeStructure },
       { label: 'Authors', href: '/authors', icon: Users },
       { label: 'Publishers', href: '/publishers', icon: Buildings },

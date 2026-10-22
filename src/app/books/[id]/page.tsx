@@ -25,7 +25,13 @@ import {
   CheckCircle,
   UploadSimple,
   PencilSimple,
+  Books,
+  Trash,
+  LinkBreak,
 } from '@phosphor-icons/react';
+import Link from 'next/link';
+import { seriesApi } from '@/features/series/api/series-api';
+import { AssignBookSeriesModal } from '@/features/series/components/assign-book-series-modal';
 import {
   buildCategoryTree,
   flattenCategoryTree,
@@ -48,6 +54,9 @@ export default function BookDetailsPage() {
 
   const [selectedTagId, setSelectedTagId] = useState('');
   const [isAttachingTag, setIsAttachingTag] = useState(false);
+  const [isAssignSeriesModalOpen, setIsAssignSeriesModalOpen] = useState(false);
+  const [isRemovingFromSeries, setIsRemovingFromSeries] = useState(false);
+  const [seriesActionError, setSeriesActionError] = useState<string | null>(null);
   const [tagError, setTagError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -287,6 +296,22 @@ export default function BookDetailsPage() {
                         {book.hasAudiobook ? 'Has Audio Track' : 'Standard'}
                       </span>
                     </div>
+                    <div>
+                      <span className="text-slate-400 dark:text-slate-500 block text-[11px]">Series / Volume</span>
+                      {book.series ? (
+                        <Link
+                          href={`/series/${book.series.id}`}
+                          className="font-semibold text-[#1e4634] dark:text-emerald-400 hover:underline flex items-center gap-1 mt-0.5"
+                        >
+                          <Books className="w-3.5 h-3.5" weight="bold" />
+                          <span className="truncate">{book.series.name}</span>
+                        </Link>
+                      ) : (
+                        <span className="font-medium text-slate-400 dark:text-slate-500">
+                          Standalone
+                        </span>
+                      )}
+                    </div>
 
                     {book.price && (book.price.bookOnly || book.price.audioOnly || book.price.total) && (
                       <div className="col-span-2 sm:col-span-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap gap-5 text-xs">
@@ -433,6 +458,102 @@ export default function BookDetailsPage() {
 
         {/* Right Column (1 span): Categories & Attached Tags */}
         <div className="space-y-6">
+          {/* Series & Volume Card */}
+          <Card>
+            <CardHeader
+              title={
+                <div className="flex items-center gap-1.5">
+                  <Books className="w-4 h-4 text-[#1e4634] dark:text-emerald-400" />
+                  <span>Series Membership</span>
+                </div>
+              }
+              action={
+                book.series ? (
+                  <Badge variant="success" size="sm">
+                    In Series
+                  </Badge>
+                ) : (
+                  <Badge variant="default" size="sm">
+                    Standalone
+                  </Badge>
+                )
+              }
+            />
+            <CardContent className="space-y-3">
+              {seriesActionError && (
+                <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-xs text-red-700 dark:text-red-300 font-medium">
+                  {seriesActionError}
+                </div>
+              )}
+
+              {book.series ? (
+                <div className="space-y-3">
+                  <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold block">
+                      Parent Series
+                    </span>
+                    <Link
+                      href={`/series/${book.series.id}`}
+                      className="text-sm font-bold text-slate-900 dark:text-slate-100 hover:text-[#1e4634] dark:hover:text-emerald-400 flex items-center gap-1.5"
+                    >
+                      <Books className="w-4 h-4 text-[#1e4634] dark:text-emerald-400" weight="bold" />
+                      <span>{book.series.name}</span>
+                    </Link>
+                    <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 block truncate">
+                      ID: {book.series.id}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link href={`/series/${book.series.id}`} className="flex-1">
+                      <Button size="sm" variant="secondary" className="w-full text-xs">
+                        Manage in Series
+                      </Button>
+                    </Link>
+
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      isLoading={isRemovingFromSeries}
+                      onClick={async () => {
+                        if (!book.series) return;
+                        if (!confirm(`Remove "${book.name}" from "${book.series.name}"?`)) return;
+                        setIsRemovingFromSeries(true);
+                        setSeriesActionError(null);
+                        try {
+                          await seriesApi.removeBook(book.series.id, book.id);
+                          await refetch();
+                        } catch (err: any) {
+                          setSeriesActionError(err?.message || 'Failed to remove from series.');
+                        } finally {
+                          setIsRemovingFromSeries(false);
+                        }
+                      }}
+                      leftIcon={<LinkBreak className="w-3.5 h-3.5 text-red-500" />}
+                      className="text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 px-2.5"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    This book is not currently assigned to any serialized volume set.
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => setIsAssignSeriesModalOpen(true)}
+                    leftIcon={<Plus className="w-3.5 h-3.5" />}
+                    className="w-full bg-[#1e4634] hover:bg-[#153426] text-white text-xs"
+                  >
+                    Assign to Series
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Categories Card */}
           <Card>
             <CardHeader
@@ -573,6 +694,13 @@ export default function BookDetailsPage() {
           </Card>
         </div>
       </div>
+      <AssignBookSeriesModal
+        isOpen={isAssignSeriesModalOpen}
+        onClose={() => setIsAssignSeriesModalOpen(false)}
+        bookId={book.id}
+        bookName={book.name}
+        onSuccess={() => refetch()}
+      />
     </AdminShell>
   );
 }

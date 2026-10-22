@@ -1,6 +1,6 @@
 /**
  * TypeScript API Types derived directly from the backend OpenAPI contract.
- * Source: references/openapi.yaml
+ * Source: references/openapi.yaml & live backend OpenAPI schema
  */
 
 export interface ErrorDetail {
@@ -166,6 +166,11 @@ export interface PriceStruct {
   total?: string | null;
 }
 
+export interface GetBookAdminResponseSeries {
+  id: string; // uuid
+  name: string;
+}
+
 export interface GetBookAdminResponseBody {
   id: string;
   name: string;
@@ -180,6 +185,7 @@ export interface GetBookAdminResponseBody {
   status: string;
   tags?: string[] | null;
   thumbnail?: string | null;
+  series?: GetBookAdminResponseSeries | null;
 }
 
 export interface UpdateBookRequestBody {
@@ -194,6 +200,11 @@ export interface UpdateBookRequestBody {
   total_price?: string;
 }
 
+export interface GetBookResponseSeries {
+  id: string; // uuid
+  name: string;
+}
+
 export interface GetBookResponseBody {
   id: string;
   name: string;
@@ -204,6 +215,7 @@ export interface GetBookResponseBody {
   rating?: string | null;
   tags?: string[] | null;
   thumbnail?: string | null;
+  series?: GetBookResponseSeries | null;
 }
 
 // BOOK ASSETS & THUMBNAILS & TAGS
@@ -312,3 +324,63 @@ export interface CompleteBookUploadRequestBody {
   session_id: string;
 }
 
+// SERIES (/admin/api/series & /api/series)
+export interface CreateSeriesRequestBody {
+  name: string; // minLength: 1, maxLength: 128
+}
+
+export interface CreateSeriesResponseBody {
+  id: string;
+}
+
+export interface ListSeriesResponseItem {
+  id: string; // uuid
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ListSeriesResponseBody {
+  page: number;
+  page_size: number;
+  total: number;
+  series: ListSeriesResponseItem[] | null;
+}
+
+export interface AddBookToSeriesRequestBody {
+  book_id: string; // uuid
+  position: number; // 1..128
+}
+
+export interface ListBookInSeriesAdminResponseItem {
+  id: string; // uuid
+  name: string;
+  position: number;
+  author: string | null;
+  rating: string | null;
+  thumbnail: string | null;
+}
+
+export interface ListBookInSeriesAdminResponseBody {
+  page: number;
+  page_size: number;
+  total: number;
+  books: ListBookInSeriesAdminResponseItem[] | null;
+}
+
+export interface ListSeriesBookResponseItem {
+  id: string; // uuid
+  name: string;
+  position: number;
+  author: string | null;
+  rating: string | null;
+  thumbnail: string | null;
+  owned: boolean;
+}
+
+export interface ListBookInSeriesResponseBody {
+  page: number;
+  page_size: number;
+  total: number;
+  books: ListSeriesBookResponseItem[] | null;
+}
