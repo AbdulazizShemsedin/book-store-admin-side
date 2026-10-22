@@ -47,8 +47,31 @@ export interface Book {
     audioOnly?: string | null;
     total?: string | null;
   };
+  series?: {
+    id: string;
+    name: string;
+    position?: number;
+  } | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Series {
+  id: string;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+  booksCount?: number;
+}
+
+export interface SeriesBook {
+  id: string;
+  name: string;
+  position: number;
+  author?: string | null;
+  rating?: string | null;
+  thumbnail?: string | null;
+  owned?: boolean;
 }
 
 export interface Publisher {

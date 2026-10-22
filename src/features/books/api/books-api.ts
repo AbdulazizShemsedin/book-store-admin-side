@@ -177,6 +177,7 @@ export const booksApi = {
           audioOnly: response.price?.audio_only || null,
           total: response.price?.total || null,
         },
+        series: response.series ? { id: response.series.id, name: response.series.name } : null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -196,6 +197,7 @@ export const booksApi = {
         hasAudiobook: Boolean(response.has_audio),
         thumbnail: response.thumbnail,
         coverUrl: response.thumbnail || undefined,
+        series: response.series ? { id: response.series.id, name: response.series.name } : null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
