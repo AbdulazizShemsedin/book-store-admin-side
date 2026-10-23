@@ -36,6 +36,8 @@ import {
   WheelchairMotion,
   Lightning,
   WarningCircle,
+  Lock,
+  Key,
 } from '@phosphor-icons/react';
 
 interface AdminTelemetryModalProps {
@@ -64,6 +66,49 @@ export function AdminTelemetryModal({ isOpen, onClose }: AdminTelemetryModalProp
   const [isSendingWebhook, setIsSendingWebhook] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState<string | null>(null);
   const [copiedJson, setCopiedJson] = useState(false);
+
+  // Security PIN Lock states
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
+
+  const REQUIRED_PIN = process.env.NEXT_PUBLIC_HUD_PIN || '2026';
+
+  // Restore unlock state from current browser tab session
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('tewba_hud_unlocked');
+      if (saved === 'true') {
+        setIsUnlocked(true);
+      }
+    }
+  }, [isOpen]);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput.trim() === REQUIRED_PIN) {
+      setIsUnlocked(true);
+      setPinError(false);
+      setPinInput('');
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('tewba_hud_unlocked', 'true');
+      }
+      fetchSessions();
+    } else {
+      setPinError(true);
+      setPinInput('');
+    }
+  };
+
+  const handleLock = () => {
+    setIsUnlocked(false);
+    setPinInput('');
+    setPinError(false);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('tewba_hud_unlocked');
+    }
+    setSessions([]);
+  };
 
   const mySessionId = typeof window !== 'undefined' ? getOrCreateSessionId() : '';
 
@@ -97,12 +142,12 @@ export function AdminTelemetryModal({ isOpen, onClose }: AdminTelemetryModalProp
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isUnlocked) {
       fetchSessions();
       const interval = setInterval(fetchSessions, 4000);
       return () => clearInterval(interval);
     }
-  }, [isOpen]);
+  }, [isOpen, isUnlocked]);
 
   const currentSession = sessions.find((s) => s.session_id === selectedSessionId);
   const telemetry = currentSession?.telemetry;
@@ -284,6 +329,70 @@ export function AdminTelemetryModal({ isOpen, onClose }: AdminTelemetryModalProp
 
   if (!isOpen) return null;
 
+  // Render PIN Lock Screen if not unlocked
+  if (!isUnlocked) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none">
+        <div className="bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-3">
+            <Lock className="w-6 h-6" weight="bold" />
+          </div>
+
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+            Admin Telemetry HUD
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5">
+            Enter admin security PIN to access live tester telemetry and device inspection.
+          </p>
+
+          <form onSubmit={handleUnlock} className="w-full space-y-3">
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={12}
+              placeholder="••••"
+              value={pinInput}
+              onChange={(e) => {
+                setPinInput(e.target.value);
+                setPinError(false);
+              }}
+              autoFocus
+              className={`w-full h-11 text-center font-mono text-lg tracking-[0.35em] rounded-xl border bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 transition-all ${
+                pinError
+                  ? 'border-red-500 focus:ring-red-500/20'
+                  : 'border-slate-300 dark:border-slate-700 focus:ring-emerald-500/20 focus:border-emerald-500'
+              }`}
+            />
+
+            {pinError && (
+              <p className="text-xs font-semibold text-red-600 dark:text-red-400">
+                Incorrect PIN. Access Denied.
+              </p>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 h-9 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!pinInput.trim()}
+                className="flex-1 h-9 rounded-lg bg-[#1e4634] hover:bg-[#153426] disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Unlock HUD</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   const isSessionActive = (lastUpdated: string) => {
     const diffSeconds = (Date.now() - new Date(lastUpdated).getTime()) / 1000;
     return diffSeconds <= 15;
@@ -328,8 +437,9 @@ export function AdminTelemetryModal({ isOpen, onClose }: AdminTelemetryModalProp
                 <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-semibold">
                   Supabase Live Sync
                 </span>
-                <span className="text-[10px] font-mono bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded">
-                  Ctrl+Shift+A
+                <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-semibold flex items-center gap-1">
+                  <Lock className="w-3 h-3" weight="bold" />
+                  <span>Secured</span>
                 </span>
               </div>
               <p className="text-[11px] text-slate-500">
@@ -345,6 +455,13 @@ export function AdminTelemetryModal({ isOpen, onClose }: AdminTelemetryModalProp
               title="Refresh Devices"
             >
               <ArrowsClockwise className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={handleLock}
+              className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+              title="Lock HUD Session"
+            >
+              <Lock className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
