@@ -8,6 +8,7 @@ export interface TelemetryClick {
   y: number;
   isRage: boolean;
   isDead: boolean;
+  route?: string;
 }
 
 export interface TelemetryTimeMetrics {
@@ -17,14 +18,48 @@ export interface TelemetryTimeMetrics {
   tabSwitchCount: number;
 }
 
+export interface PerformanceVitals {
+  currentFps: number;
+  avgFps: number;
+  usedJsHeapMb: number;
+  totalJsHeapMb: number;
+  jsHeapLimitMb: number;
+  uiFreezesCount: number;
+  maxFreezeDurationMs: number;
+  storageQuotaMb: number;
+  storageUsageMb: number;
+}
+
+export interface InputAndAccessibility {
+  pointerType: 'fine' | 'coarse';
+  canHover: boolean;
+  prefersReducedMotion: boolean;
+  forcedColorsHighContrast: boolean;
+}
+
+export interface FeaturesExplored {
+  visitedDashboard: boolean;
+  browsedBooks: boolean;
+  viewedSeries: boolean;
+  viewedCategories: boolean;
+  viewedAuthors: boolean;
+  viewedPublishers: boolean;
+  usedSearch: boolean;
+  usedThemeToggle: boolean;
+}
+
 export interface TelemetryPayload {
   hardware: DeviceHardwareInfo;
   time: TelemetryTimeMetrics;
+  vitals?: PerformanceVitals;
+  inputAndA11y?: InputAndAccessibility;
   clicks: TelemetryClick[];
   rageClicksCount: number;
   deadClicksCount: number;
   maxScrollDepthPercent: number;
   currentPath: string;
+  pageAttention?: Record<string, number>; // path -> active seconds
+  featuresExplored?: FeaturesExplored;
 }
 
 export interface AdminMessage {
