@@ -5,7 +5,7 @@ import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { AuthorTable } from '@/features/authors/components/author-table';
 import { AuthorModal } from '@/features/authors/components/author-modal';
-import { useAuthors } from '@/features/authors/hooks/use-authors';
+import { useAuthors, useDeleteAuthor } from '@/features/authors/hooks/use-authors';
 import { Pagination } from '@/components/tables/pagination';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +35,8 @@ export default function AuthorsPage() {
     pageSize,
     search: debouncedSearch,
   });
+
+  const deleteAuthorMutation = useDeleteAuthor();
 
   const authors = data?.authors || [];
   const total = data?.total || 0;
@@ -71,7 +73,6 @@ export default function AuthorsPage() {
           </>
         }
       />
-
 
       {/* Filter and Search Bar */}
       <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -112,6 +113,11 @@ export default function AuthorsPage() {
           isError={isError}
           error={error}
           onRetry={() => refetch()}
+          onDelete={(author) => {
+            if (confirm(`Remove author "${author.name}"? This action cannot be undone.`)) {
+              deleteAuthorMutation.mutate(author.id);
+            }
+          }}
         />
 
         <Pagination

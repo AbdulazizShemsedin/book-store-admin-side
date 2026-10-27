@@ -384,3 +384,90 @@ export interface ListBookInSeriesResponseBody {
   total: number;
   books: ListSeriesBookResponseItem[] | null;
 }
+
+
+// PLANS (/admin/api/plan & /api/plans)
+export interface ListPlanResponseItem {
+  id: string; // uuid
+  string: string; // plan title
+  price: string;
+  discount?: number | null;
+}
+
+export interface ListPlanResponseBody {
+  page: number;
+  page_size: number;
+  total: number;
+  plans: ListPlanResponseItem[] | null;
+}
+
+export interface GetPlanResponseBody {
+  id: string; // uuid
+  string: string; // plan title
+  price: string;
+  discount?: number | null;
+  discounted_price?: string | null;
+  require_seats: boolean;
+  minimum_seats: number;
+  maximum_seats?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdatePlanRequestBody {
+  price?: string;
+  discount?: number; // 1..100
+}
+
+// ADVERTISEMENTS (/admin/api/advertisement)
+export interface BookDetailAction {
+  type: 'book_detail';
+  book_id: string;
+}
+
+export interface ExternalLinkAction {
+  type: 'external_link';
+  url: string;
+}
+
+export interface SubscriptionAction {
+  type: 'subscription';
+}
+
+export type AdvertisementAction = BookDetailAction | ExternalLinkAction | SubscriptionAction;
+
+export interface CreateAdvertisementRequestBody {
+  message: string; // 1..128
+  action: AdvertisementAction;
+  button_label?: string; // 1..128
+  active_until?: string; // ISO date-time
+}
+
+export interface CreateAdvertisementResponseBody {
+  id: string; // uuid
+}
+
+export interface ListAdvertisementResponseItem {
+  id: string; // uuid
+  message: string;
+  active_until?: string | null;
+  banner?: string | null;
+}
+
+export interface ListAdvertisementResponseBody {
+  page: number;
+  page_size: number;
+  total: number;
+  advertisements: ListAdvertisementResponseItem[] | null;
+}
+
+export interface GetAdvertisementResponseBody {
+  id: string; // uuid
+  message: string;
+  action: AdvertisementAction;
+  button_label?: string | null;
+  active_until?: string | null;
+  banner?: string | null;
+  created_at: string;
+  updated_at: string;
+}

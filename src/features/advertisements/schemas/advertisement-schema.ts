@@ -5,9 +5,11 @@ export const advertisementSchema = z.object({
     .string()
     .min(1, 'Ad message is required')
     .max(128, 'Ad message must not exceed 128 characters'),
-  order: z.coerce.number().min(1, 'Display order must be at least 1'),
-  status: z.enum(['active', 'disabled']).default('active'),
-  imageUrl: z.string().optional(),
+  buttonLabel: z.string().max(128).optional().or(z.literal('')),
+  activeUntil: z.string().optional().or(z.literal('')),
+  actionType: z.enum(['subscription', 'book_detail', 'external_link']).default('subscription'),
+  actionUrl: z.string().url('Must be a valid URL (e.g. https://example.com)').optional().or(z.literal('')),
+  actionBookId: z.string().optional().or(z.literal('')),
 });
 
 export type AdvertisementFormData = z.infer<typeof advertisementSchema>;

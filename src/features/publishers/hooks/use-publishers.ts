@@ -17,11 +17,34 @@ export function usePublishers(params: ListPublishersParams = {}) {
   });
 }
 
+export function usePublisher(id: string) {
+  return useQuery({
+    queryKey: [PUBLISHERS_QUERY_KEY, id],
+    queryFn: () => publishersApi.getById(id),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCreatePublisher(onSuccessCallback?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: PublisherFormData) => publishersApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [PUBLISHERS_QUERY_KEY] });
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+    },
+  });
+}
+
+export function useUpdatePublisher(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: PublisherFormData }) =>
+      publishersApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PUBLISHERS_QUERY_KEY] });
       if (onSuccessCallback) {

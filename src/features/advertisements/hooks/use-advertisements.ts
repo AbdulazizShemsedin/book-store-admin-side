@@ -11,11 +11,20 @@ export function useAdvertisements() {
   });
 }
 
+export function useAdvertisement(id: string | null) {
+  return useQuery({
+    queryKey: [ADS_QUERY_KEY, id],
+    queryFn: () => (id ? advertisementsApi.getById(id) : null),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCreateAdvertisement(onSuccessCallback?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: AdvertisementFormData) => advertisementsApi.create(data),
+    mutationFn: ({ data, bannerFile }: { data: AdvertisementFormData; bannerFile?: File }) =>
+      advertisementsApi.create(data, bannerFile),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ADS_QUERY_KEY] });
       if (onSuccessCallback) onSuccessCallback();
@@ -23,35 +32,15 @@ export function useCreateAdvertisement(onSuccessCallback?: () => void) {
   });
 }
 
-export function useReorderAdvertisements() {
+export function useUploadAdvertisementBanner(onSuccessCallback?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (orderedIds: string[]) => advertisementsApi.reorder(orderedIds),
+    mutationFn: ({ id, file }: { id: string; file: File }) =>
+      advertisementsApi.uploadBanner(id, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ADS_QUERY_KEY] });
-    },
-  });
-}
-
-export function useToggleAdStatus() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => advertisementsApi.toggleStatus(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [ADS_QUERY_KEY] });
-    },
-  });
-}
-
-export function useDeleteAd() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => advertisementsApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [ADS_QUERY_KEY] });
+      if (onSuccessCallback) onSuccessCallback();
     },
   });
 }

@@ -18,6 +18,7 @@ import {
   CaretRight,
   CaretDown,
   Books,
+  CreditCard,
 } from '@phosphor-icons/react';
 import { useSidebar } from '@/providers/sidebar-provider';
 
@@ -47,8 +48,9 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    title: 'Marketing & Reports',
+    title: 'Subscriptions & Marketing',
     items: [
+      { label: 'Plans', href: '/plans', icon: CreditCard },
       { label: 'Advertisements', href: '/advertisements', icon: Megaphone },
       { label: 'Reports', href: '/reports', icon: ChartBar },
     ],

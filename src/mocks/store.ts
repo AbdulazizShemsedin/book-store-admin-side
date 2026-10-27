@@ -16,6 +16,12 @@ import {
   ListCategoryAdminResponseItem,
   ListPublisherResponseItem,
   ListPublisherResponseBody,
+  ListPlanResponseItem,
+  ListPlanResponseBody,
+  GetPlanResponseBody,
+  ListAdvertisementResponseItem,
+  ListAdvertisementResponseBody,
+  CreateAdvertisementRequestBody,
 } from '@/types/api';
 
 export type ErrorScenario = 'NONE' | 'SERVER_ERROR' | 'UNAUTHORIZED' | 'VALIDATION_ERROR' | 'EMPTY_STATE';
@@ -31,6 +37,15 @@ class MockStore {
   private categories: ListCategoryResponseItem[] = [];
   private publishers: ListPublisherResponseItem[] = [];
   private tags: MockTag[] = [];
+  private plans: ListPlanResponseItem[] = [
+    { id: 'plan-01', string: 'Monthly Membership', price: '9.99', discount: null },
+    { id: 'plan-02', string: 'Annual Membership', price: '89.99', discount: 15 },
+    { id: 'plan-03', string: 'Family Multi-Seat', price: '149.99', discount: 20 },
+  ];
+  private advertisements: ListAdvertisementResponseItem[] = [
+    { id: 'ad-01', message: 'Ramadan & Eid Book Fair — 30% OFF Classical Works', banner: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80', active_until: null },
+    { id: 'ad-02', message: 'Scholar Spotlight: Imam Al-Ghazali Collection — 20% OFF', banner: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80', active_until: null },
+  ];
   private activeScenario: ErrorScenario = 'NONE';
 
   constructor() {
@@ -497,6 +512,10 @@ class MockStore {
     };
   }
 
+  getPublisherById(id: string): ListPublisherResponseItem | null {
+    return this.publishers.find((p) => p.id === id) || null;
+  }
+
   createPublisher(name: string): { id: string } {
     const trimmed = name.trim();
     if (!trimmed || trimmed.length > 128) {
@@ -512,6 +531,20 @@ class MockStore {
     this.publishers.unshift(newPublisher);
     this.saveToStorage();
     return { id };
+  }
+
+  updatePublisher(id: string, name: string): { id: string; string: string } | null {
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.length > 128) {
+      throw new Error('Publisher name must be between 1 and 128 characters.');
+    }
+
+    const publisher = this.publishers.find((p) => p.id === id);
+    if (!publisher) return null;
+
+    publisher.string = trimmed;
+    this.saveToStorage();
+    return { id, string: trimmed };
   }
 
   // ==========================================
@@ -570,6 +603,88 @@ class MockStore {
     const book = this.books.find((b) => b.id === bookId);
     if (!book) return false;
     book.thumbnail = thumbnailUrl;
+    this.saveToStorage();
+    return true;
+  }
+
+  deletePublisher(id: string): boolean {
+    const idx = this.publishers.findIndex((p) => p.id === id);
+    if (idx !== -1) {
+      this.publishers.splice(idx, 1);
+      this.saveToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  getPlans(params: { page?: number; pageSize?: number }): ListPlanResponseBody {
+    const total = this.plans.length;
+    const page = Math.max(1, params.page || 1);
+    const pageSize = Math.max(1, params.pageSize || 10);
+    const start = (page - 1) * pageSize;
+    return {
+      plans: this.plans.slice(start, start + pageSize),
+      total,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  getPlanById(id: string): GetPlanResponseBody | null {
+    const p = this.plans.find((x) => x.id === id);
+    if (!p) return null;
+    return {
+      id: p.id,
+      string: p.string,
+      price: p.price,
+      discount: p.discount ?? null,
+      discounted_price: p.discount ? (parseFloat(p.price) * (1 - p.discount / 100)).toFixed(2) : null,
+      require_seats: p.string.toLowerCase().includes('family') || p.string.toLowerCase().includes('multi'),
+      minimum_seats: 1,
+      maximum_seats: p.string.toLowerCase().includes('family') ? 5 : null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  }
+
+  updatePlan(id: string, updates: { price?: string; discount?: number }): GetPlanResponseBody | null {
+    const p = this.plans.find((x) => x.id === id);
+    if (!p) return null;
+    if (updates.price) p.price = updates.price;
+    if (updates.discount !== undefined) p.discount = updates.discount;
+    this.saveToStorage();
+    return this.getPlanById(id);
+  }
+
+  getAdvertisements(params: { page?: number; pageSize?: number }): ListAdvertisementResponseBody {
+    const total = this.advertisements.length;
+    const page = Math.max(1, params.page || 1);
+    const pageSize = Math.max(1, params.pageSize || 10);
+    const start = (page - 1) * pageSize;
+    return {
+      advertisements: this.advertisements.slice(start, start + pageSize),
+      total,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  createAdvertisement(body: CreateAdvertisementRequestBody): { id: string } {
+    const id = `ad-`;
+    this.advertisements.unshift({
+      id,
+      message: body.message,
+      banner: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
+      active_until: body.active_until || null,
+    });
+    this.saveToStorage();
+    return { id };
+  }
+
+  uploadAdvertisementBanner(id: string, bannerUrl: string): boolean {
+    const ad = this.advertisements.find((a) => a.id === id);
+    if (!ad) return false;
+    ad.banner = bannerUrl;
     this.saveToStorage();
     return true;
   }

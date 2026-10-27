@@ -5,14 +5,17 @@ import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PublisherTable } from '@/features/publishers/components/publisher-table';
 import { PublisherFormCard } from '@/features/publishers/components/publisher-form-card';
+import { EditPublisherModal } from '@/features/publishers/components/edit-publisher-modal';
 import { usePublishers, useDeletePublisher } from '@/features/publishers/hooks/use-publishers';
 import { Pagination } from '@/components/tables/pagination';
 import { MagnifyingGlass } from '@phosphor-icons/react';
+import { Publisher } from '@/types/domain';
 
 export default function PublishersPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
+  const [editingPublisher, setEditingPublisher] = useState<Publisher | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#publisher-form-card') {
@@ -56,7 +59,7 @@ export default function PublishersPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
+                placeholder="Search publishers..."
                 className="w-full h-9 pl-9 pr-3 text-xs bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors"
               />
             </div>
@@ -71,7 +74,7 @@ export default function PublishersPage() {
             isError={isError}
             error={error}
             onRetry={() => refetch()}
-            onEdit={(pub) => alert(`Editing publisher: ${pub.name}`)}
+            onEdit={(pub) => setEditingPublisher(pub)}
             onDelete={(pub) => {
               if (confirm(`Remove publisher ${pub.name}?`)) {
                 deletePublisherMutation.mutate(pub.id);
@@ -89,11 +92,18 @@ export default function PublishersPage() {
           />
         </div>
 
-        {/* Right Column: Add / Edit Publisher Form */}
+        {/* Right Column: Add Publisher Form */}
         <div className="lg:col-span-1">
           <PublisherFormCard />
         </div>
       </div>
+
+      {/* Edit Publisher Modal */}
+      <EditPublisherModal
+        publisher={editingPublisher}
+        isOpen={Boolean(editingPublisher)}
+        onClose={() => setEditingPublisher(null)}
+      />
     </AdminShell>
   );
 }

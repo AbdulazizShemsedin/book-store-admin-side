@@ -23,7 +23,9 @@ export default function RootLayout({
           <MswProvider>
             <QueryProvider>
               <AuthProvider>
-                <SidebarProvider>{children}</SidebarProvider>
+                <SidebarProvider>
+                  {children}
+                </SidebarProvider>
               </AuthProvider>
             </QueryProvider>
           </MswProvider>

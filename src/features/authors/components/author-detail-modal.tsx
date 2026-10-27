@@ -138,64 +138,65 @@ export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDet
               onClick={onClose}
               className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/60 px-2.5 py-1 rounded-md border border-emerald-200/60 dark:border-emerald-800/60 transition-colors shadow-2xs"
             >
-              <span>View in catalog</span>
-              <ArrowSquareOut className="w-3 h-3" />
+              <span>View all in books catalog</span>
+              <ArrowSquareOut className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {isLoadingBooks ? (
-            <div className="py-8 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-200 dark:border-slate-800">
-              <Spinner size="md" />
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Retrieving author publication list...</p>
+            <div className="py-8 flex flex-col items-center justify-center bg-slate-50/60 dark:bg-slate-900/30 rounded-xl border border-slate-200/80 dark:border-slate-800">
+              <Spinner size="sm" />
+              <p className="mt-2 text-xs text-slate-400">Loading catalog books...</p>
             </div>
           ) : authorBooks.length > 0 ? (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 shadow-2xs overflow-hidden max-h-64 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
               {authorBooks.map((book) => (
-                <div
+                <Link
                   key={book.id}
-                  className="flex items-center justify-between p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group"
+                  href={`/books/${book.id}`}
+                  onClick={onClose}
+                  className="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/50 hover:shadow-xs transition-all group"
                 >
-                  <div className="flex items-center gap-3 min-w-0 pr-3">
-                    <div className="w-9 h-11 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 flex-shrink-0 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/50 group-hover:text-emerald-800 dark:group-hover:text-emerald-300 transition-colors shadow-2xs">
-                      <BookOpen className="w-5 h-5" />
+                  {book.coverUrl ? (
+                    <Image
+                      src={book.coverUrl}
+                      alt={book.name}
+                      width={36}
+                      height={48}
+                      unoptimized
+                      className="w-9 h-12 rounded object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-9 h-12 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-4 h-4 text-slate-400" />
                     </div>
-                    <div className="min-w-0">
-                      <Link
-                        href={`/books/${book.id}`}
-                        onClick={onClose}
-                        className="font-semibold text-xs text-slate-900 dark:text-slate-100 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1 group-hover:underline"
-                        title={book.name}
-                      >
-                        {book.name}
-                      </Link>
-                      <div className="flex items-center gap-2 mt-1">
-                        <StatusBadge status={book.status || 'Published'} />
-                        {book.hasAudiobook && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded border border-purple-200/60 dark:border-purple-800/60">
-                            <Headphones className="w-2.5 h-2.5" />
-                            Audiobook
-                          </span>
-                        )}
-                      </div>
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-400 truncate">
+                      {book.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                      {book.publisher || 'Independent Press'}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                        {book.language || 'ar'}
+                      </span>
+                      {book.hasAudiobook && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                          <Headphones className="w-2.5 h-2.5" /> Audio
+                        </span>
+                      )}
                     </div>
                   </div>
-
-                  <Link
-                    href={`/books/${book.id}`}
-                    onClick={onClose}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-[#1e4634] dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-[#1e4634] dark:hover:bg-emerald-700 hover:text-white dark:hover:text-white border border-emerald-200/80 dark:border-emerald-800/60 rounded-lg transition-all flex-shrink-0 shadow-2xs"
-                    title={`View details for ${book.name}`}
-                  >
-                    <span>View Book</span>
-                    <ArrowSquareOut className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (
-            <div className="p-6 rounded-xl bg-slate-50/60 dark:bg-slate-900/30 border border-dashed border-slate-200 dark:border-slate-800 text-center space-y-2">
+            <div className="p-6 text-center rounded-xl bg-slate-50/50 dark:bg-slate-900/20 border border-dashed border-slate-200 dark:border-slate-800 space-y-1">
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                No catalog books are currently linked to <span className="font-semibold text-slate-700 dark:text-slate-300">{author.name}</span>.
+                No active books in the catalog currently reference this author.
               </p>
               <Link
                 href="/books/new"
@@ -212,17 +213,27 @@ export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDet
 
         {/* Modal Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-          {onEdit ? (
-            <button
-              type="button"
-              onClick={() => onEdit(author)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg transition-colors"
-              title="Edit author profile details and avatar"
+          <div className="flex items-center gap-2">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(author)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg transition-colors"
+                title="Edit author profile details and avatar"
+              >
+                <PencilSimple className="w-3.5 h-3.5" />
+                <span>Edit Author</span>
+              </button>
+            )}
+            <Link
+              href={`/authors/${author.id}`}
+              onClick={onClose}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1e4634] dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/60 border border-emerald-200/60 dark:border-emerald-800/60 rounded-lg transition-colors"
             >
-              <PencilSimple className="w-3.5 h-3.5" />
-              <span>Edit Author</span>
-            </button>
-          ) : <div />}
+              <span>Full Profile Page</span>
+              <ArrowSquareOut className="w-3.5 h-3.5" />
+            </Link>
+          </div>
           <button
             type="button"
             onClick={onClose}

@@ -167,6 +167,77 @@ export const handlers = [
     }
   }),
 
+  http.delete('*/admin/api/publisher/:id', ({ params }) => {
+    const id = params.id as string;
+    mockStore.deletePublisher(id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  // PLANS
+  http.get('*/admin/api/plan', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(url.searchParams.get('page_size') || '10', 10);
+    return HttpResponse.json(mockStore.getPlans({ page, pageSize }));
+  }),
+
+  http.get('*/admin/api/plan/:id', ({ params }) => {
+    const plan = mockStore.getPlanById(params.id as string);
+    if (!plan) {
+      return HttpResponse.json({ title: 'Not Found', status: 404 }, { status: 404 });
+    }
+    return HttpResponse.json(plan);
+  }),
+
+  http.patch('*/admin/api/plan/:id', async ({ params, request }) => {
+    try {
+      const body = (await request.json()) as { price?: string; discount?: number };
+      const updated = mockStore.updatePlan(params.id as string, body);
+      if (!updated) {
+        return HttpResponse.json({ title: 'Not Found', status: 404 }, { status: 404 });
+      }
+      return HttpResponse.json(updated);
+    } catch (err: any) {
+      return HttpResponse.json({ title: 'Bad Request', detail: err.message, status: 400 }, { status: 400 });
+    }
+  }),
+
+  // ADVERTISEMENTS
+  http.get('*/admin/api/advertisement', ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(url.searchParams.get('page_size') || '10', 10);
+    return HttpResponse.json(mockStore.getAdvertisements({ page, pageSize }));
+  }),
+
+  http.post('*/admin/api/advertisement', async ({ request }) => {
+    try {
+      const body = (await request.json()) as any;
+      if (!body?.message?.trim()) {
+        return HttpResponse.json(
+          {
+            title: 'Unprocessable Entity',
+            status: 422,
+            errors: [{ location: 'body.message', message: 'Message is required' }],
+          },
+          { status: 422 }
+        );
+      }
+      const created = mockStore.createAdvertisement(body);
+      return HttpResponse.json(created, { status: 201 });
+    } catch (err: any) {
+      return HttpResponse.json({ title: 'Bad Request', detail: err.message, status: 400 }, { status: 400 });
+    }
+  }),
+
+  http.put('*/admin/api/advertisement/:id/banner', async ({ params }) => {
+    mockStore.uploadAdvertisementBanner(
+      params.id as string,
+      'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80'
+    );
+    return new HttpResponse(null, { status: 200 });
+  }),
+
   // ==========================================
   // BOOKS
   // ==========================================
@@ -496,6 +567,40 @@ export const handlers = [
 
     const created = mockStore.createPublisher(body.name);
     return HttpResponse.json(created, { status: 201 });
+  }),
+
+  http.get('*/admin/api/publisher/:id', ({ params }) => {
+    const pub = mockStore.getPublisherById(params.id as string);
+    if (!pub) {
+      return HttpResponse.json({ title: 'Not Found', status: 404 }, { status: 404 });
+    }
+    return HttpResponse.json(pub);
+  }),
+
+  http.patch('*/admin/api/publisher/:id', async ({ params, request }) => {
+    try {
+      const body = (await request.json()) as { name?: string };
+      if (!body?.name?.trim()) {
+        return HttpResponse.json(
+          {
+            title: 'Unprocessable Entity',
+            status: 422,
+            errors: [{ location: 'body.name', message: 'Publisher name is required' }],
+          },
+          { status: 422 }
+        );
+      }
+      const updated = mockStore.updatePublisher(params.id as string, body.name);
+      if (!updated) {
+        return HttpResponse.json({ title: 'Not Found', status: 404 }, { status: 404 });
+      }
+      return HttpResponse.json(updated);
+    } catch (err: any) {
+      return HttpResponse.json(
+        { title: 'Bad Request', detail: err.message, status: 400 },
+        { status: 400 }
+      );
+    }
   }),
 
   http.put('*/admin/api/category/:id', async ({ params, request }) => {
