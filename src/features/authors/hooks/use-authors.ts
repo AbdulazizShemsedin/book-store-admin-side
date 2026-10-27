@@ -16,6 +16,14 @@ export function useAuthors(params: ListAuthorsParams = {}) {
   });
 }
 
+export function useAuthor(id: string) {
+  return useQuery({
+    queryKey: [AUTHORS_QUERY_KEY, id],
+    queryFn: () => authorsApi.getById(id),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCreateAuthor(onSuccessCallback?: () => void) {
   const queryClient = useQueryClient();
 
@@ -50,6 +58,20 @@ export function useUpdateAuthor(onSuccessCallback?: () => void) {
         await authorsApi.uploadAvatar(authorId, avatarFile);
       }
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [AUTHORS_QUERY_KEY] });
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+    },
+  });
+}
+
+export function useDeleteAuthor(onSuccessCallback?: () => void) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => authorsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [AUTHORS_QUERY_KEY] });
       if (onSuccessCallback) {

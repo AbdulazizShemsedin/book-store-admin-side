@@ -4,14 +4,11 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Author } from '@/types/domain';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, User, Eye, GlobeHemisphereWest, PencilSimple, ArrowRight } from '@phosphor-icons/react';
+import { BookOpen, User, Eye, GlobeHemisphereWest, PencilSimple, ArrowRight, Trash } from '@phosphor-icons/react';
 import { Spinner } from '@/components/ui/spinner';
-import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { AuthorDetailModal } from './author-detail-modal';
 import { AuthorEditModal } from './author-edit-modal';
-import { cn } from '@/lib/utils/cn';
 
 interface AuthorTableProps {
   authors: Author[];
@@ -20,6 +17,7 @@ interface AuthorTableProps {
   error?: Error | null;
   onRetry?: () => void;
   onEdit?: (author: Author) => void;
+  onDelete?: (author: Author) => void;
 }
 
 function getInitials(name: string): string {
@@ -35,8 +33,8 @@ export function AuthorTable({
   isError,
   error,
   onRetry,
+  onDelete,
 }: AuthorTableProps) {
-  const [viewingAuthor, setViewingAuthor] = useState<Author | null>(null);
   const [editingAuthor, setEditingAuthor] = useState<Author | null>(null);
 
   if (isLoading) {
@@ -85,7 +83,7 @@ export function AuthorTable({
                 <th className="py-3 px-5">Author</th>
                 <th className="py-3 px-4">Nationality</th>
                 <th className="py-3 px-4">Catalog Works</th>
-                <th className="py-3 px-5 text-right w-44">Actions</th>
+                <th className="py-3 px-5 text-right w-48">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -114,13 +112,12 @@ export function AuthorTable({
                         )}
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setViewingAuthor(author)}
+                            <Link
+                              href={`/authors/${author.id}`}
                               className="font-bold text-slate-900 dark:text-slate-100 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors block text-xs group-hover:underline text-left truncate"
                             >
                               {author.name}
-                            </button>
+                            </Link>
                             <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                               {author.id.length > 8 ? `${author.id.slice(0, 8)}...` : author.id}
                             </span>
@@ -167,25 +164,34 @@ export function AuthorTable({
 
                     {/* Actions */}
                     <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setViewingAuthor(author)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-900 dark:hover:text-white bg-slate-100 dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-slate-700 shadow-2xs transition-all active:scale-[0.98]"
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/authors/${author.id}`}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-900 dark:hover:text-white bg-slate-100 dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-slate-700 shadow-2xs transition-all active:scale-[0.98]"
                           title="View author profile & books"
                         >
                           <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-emerald-700" />
                           <span>View</span>
-                        </button>
+                        </Link>
                         <button
                           type="button"
                           onClick={() => setEditingAuthor(author)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-[#1e4634] dark:text-emerald-300 hover:text-white dark:hover:text-white bg-emerald-50 dark:bg-emerald-950/50 hover:bg-[#1e4634] dark:hover:bg-emerald-700 border border-emerald-200 dark:border-emerald-800/70 shadow-2xs transition-all active:scale-[0.98]"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-[#1e4634] dark:text-emerald-300 hover:text-white dark:hover:text-white bg-emerald-50 dark:bg-emerald-950/50 hover:bg-[#1e4634] dark:hover:bg-emerald-700 border border-emerald-200 dark:border-emerald-800/70 shadow-2xs transition-all active:scale-[0.98]"
                           title="Edit author profile & photo"
                         >
                           <PencilSimple className="w-3.5 h-3.5" weight="bold" />
                           <span>Edit</span>
                         </button>
+                        {onDelete && (
+                          <button
+                            type="button"
+                            onClick={() => onDelete(author)}
+                            className="inline-flex items-center p-1 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-900/50 transition-colors"
+                            title="Delete author"
+                          >
+                            <Trash className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -195,17 +201,6 @@ export function AuthorTable({
           </table>
         </div>
       </div>
-
-      {/* Author Details Modal */}
-      <AuthorDetailModal
-        author={viewingAuthor}
-        isOpen={Boolean(viewingAuthor)}
-        onClose={() => setViewingAuthor(null)}
-        onEdit={(auth) => {
-          setViewingAuthor(null);
-          setEditingAuthor(auth);
-        }}
-      />
 
       {/* Author Edit Modal */}
       <AuthorEditModal

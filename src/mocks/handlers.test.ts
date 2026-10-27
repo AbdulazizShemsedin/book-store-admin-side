@@ -188,6 +188,7 @@ describe('OpenAPI Compliance: Categories Endpoints', () => {
     const data = (await res.json()) as { id: string };
     expect(data).toHaveProperty('id');
   });
+
 });
 
 describe('OpenAPI Compliance: Multipart Upload Workflow', () => {
@@ -288,6 +289,92 @@ describe('OpenAPI Compliance: Publishers Endpoints', () => {
     });
     expect(res.status).toBe(201);
     const data = (await res.json()) as CreatePublisherResponseBody;
+    expect(data).toHaveProperty('id');
+  });
+
+  it('GET /admin/api/publisher/:id returns single publisher by ID', async () => {
+    const listRes = await fetch('http://localhost:8000/admin/api/publisher');
+    const listData = await listRes.json();
+    const pubId = listData.publishers[0].id;
+
+    const res = await fetch('http://localhost:8000/admin/api/publisher/' + pubId);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toHaveProperty('id', pubId);
+    expect(data).toHaveProperty('string');
+  });
+
+  it('PATCH /admin/api/publisher/:id updates publisher name', async () => {
+    const listRes = await fetch('http://localhost:8000/admin/api/publisher');
+    const listData = await listRes.json();
+    const pubId = listData.publishers[0].id;
+
+    const res = await fetch('http://localhost:8000/admin/api/publisher/' + pubId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Updated Publisher Imprint' }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toHaveProperty('id', pubId);
+    expect(data).toHaveProperty('string', 'Updated Publisher Imprint');
+  });
+
+  it('DELETE /admin/api/publisher/:id removes publisher and returns 204', async () => {
+    const listRes = await fetch('http://localhost:8000/admin/api/publisher');
+    const listData = await listRes.json();
+    const pubId = listData.publishers[0].id;
+
+    const delRes = await fetch('http://localhost:8000/admin/api/publisher/' + pubId, {
+      method: 'DELETE',
+    });
+    expect(delRes.status).toBe(204);
+  });
+});
+
+describe('OpenAPI Compliance: Plans Endpoints', () => {
+  it('GET /admin/api/plan returns ListPlanResponseBody with tiers', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/plan');
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toHaveProperty('plans');
+    expect(data).toHaveProperty('total');
+    expect(data.plans.length).toBeGreaterThan(0);
+  });
+
+  it('PATCH /admin/api/plan/:id updates plan price and discount', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/plan/plan-01', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price: '12.99', discount: 10 }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toHaveProperty('price', '12.99');
+    expect(data).toHaveProperty('discount', 10);
+  });
+});
+
+describe('OpenAPI Compliance: Advertisements Endpoints', () => {
+  it('GET /admin/api/advertisement returns ListAdvertisementResponseBody', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/advertisement');
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toHaveProperty('advertisements');
+    expect(data).toHaveProperty('total');
+  });
+
+  it('POST /admin/api/advertisement creates ad and returns 201 with id', async () => {
+    const res = await fetch('http://localhost:8000/admin/api/advertisement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'Spring Special Sale',
+        action: { type: 'subscription' },
+      }),
+    });
+    expect(res.status).toBe(201);
+    const data = await res.json();
     expect(data).toHaveProperty('id');
   });
 });

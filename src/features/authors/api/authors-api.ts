@@ -135,4 +135,11 @@ export const authorsApi = {
     formData.append('avatar', preparedFile, preparedFile.name);
     await apiClient.post(`/admin/api/author/${authorId}/avatar`, formData);
   },
+
+  /**
+   * Deletes an author via DELETE /admin/api/author/{author_id}.
+   */
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(`/admin/api/author/${id}`);
+  },
 };

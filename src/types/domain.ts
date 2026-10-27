@@ -90,13 +90,35 @@ export interface Category {
   subcategories?: Category[];
 }
 
+export interface Plan {
+  id: string;
+  name: string; // mapped from backend "string"
+  price: string;
+  discount?: number | null;
+  discountedPrice?: string | null;
+  requireSeats: boolean;
+  minimumSeats: number;
+  maximumSeats?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Advertisement {
   id: string;
   message: string;
   imageUrl: string;
+  banner?: string | null;
+  buttonLabel?: string | null;
+  activeUntil?: string | null;
   status: 'active' | 'disabled';
   order: number; // 1, 2, 3...
   createdAt?: string;
+  action?: {
+    type: 'book_detail' | 'external_link' | 'subscription';
+    bookId?: string;
+    url?: string;
+    planId?: string;
+  };
 }
 
 export interface ReportSummary {

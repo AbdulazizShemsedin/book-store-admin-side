@@ -1,113 +1,101 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { AdvertisementTable } from '@/features/advertisements/components/advertisement-table';
-import { AdEditorCard } from '@/features/advertisements/components/ad-editor-card';
-import {
-  useAdvertisements,
-  useReorderAdvertisements,
-  useToggleAdStatus,
-  useDeleteAd,
-} from '@/features/advertisements/hooks/use-advertisements';
+import { CreateAdvertisementModal } from '@/features/advertisements/components/create-advertisement-modal';
+import { AdvertisementDetailModal } from '@/features/advertisements/components/advertisement-detail-modal';
+import { useAdvertisements } from '@/features/advertisements/hooks/use-advertisements';
 import { Button } from '@/components/ui/button';
-import { Plus, MagnifyingGlass } from '@phosphor-icons/react';
-import { Advertisement } from '@/types/domain';
+import { Plus, MagnifyingGlass, ArrowClockwise } from '@phosphor-icons/react';
 
 export default function AdvertisementsPage() {
   const [search, setSearch] = useState('');
-  const { data: ads = [], isLoading, isError, error, refetch } = useAdvertisements();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#ad-editor-card') {
-      const el = document.getElementById('ad-editor-card');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
-        setTimeout(() => {
-          el.classList.remove('ring-4', 'ring-emerald-500/50', 'border-emerald-600', 'shadow-lg');
-        }, 2500);
-      }
-    }
-  }, []);
-
-  const reorderMutation = useReorderAdvertisements();
-  const toggleMutation = useToggleAdStatus();
-  const deleteMutation = useDeleteAd();
+  const { data: ads = [], isLoading, isError, error, refetch, isFetching } = useAdvertisements();
 
   const filteredAds = search
     ? ads.filter((a) => a.message.toLowerCase().includes(search.toLowerCase()))
     : ads;
-
-  const handleReorder = (newAds: Advertisement[]) => {
-    // Send array of IDs in new order to reorder mutation
-    const orderedIds = newAds.map((a) => a.id);
-    reorderMutation.mutate(orderedIds);
-  };
 
   return (
     <AdminShell>
       <PageHeader
         breadcrumbs={[{ label: 'Admin' }, { label: 'Advertisements' }]}
         title="Advertisements"
-        subtitle="Manage promotional hero banners, discount callouts, and reorder sequence for the mobile store carousel."
+        subtitle="Manage promotional hero banners, discount campaigns, and featured offers for the mobile bookstore."
         actions={
-          <Button
-            size="sm"
-            leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
-            onClick={() => {
-              const el = document.getElementById('ad-message');
-              if (el) el.focus();
-            }}
-            className="bg-[#1e4634] hover:bg-[#153426]"
-          >
-            Add Advertisement
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              leftIcon={
+                <ArrowClockwise
+                  className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-emerald-600' : ''}`}
+                />
+              }
+              onClick={() => refetch()}
+            >
+              Refresh
+            </Button>
+            <Button
+              size="sm"
+              leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-[#1e4634] hover:bg-[#153426]"
+            >
+              Create Advertisement
+            </Button>
+          </div>
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Left Column (2 spans): Search & Sortable Table */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="w-full sm:w-80 relative">
-              <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search promotional banners..."
-                className="w-full h-9 pl-9 pr-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg placeholder:text-slate-400 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
-              />
-            </div>
-            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium hidden sm:inline-block">
-              Drag rows to reorder sequence
-            </span>
+      <div className="space-y-4">
+        {/* Search Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="w-full sm:w-80 relative">
+            <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search promotional banners..."
+              className="w-full h-9 pl-9 pr-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg placeholder:text-slate-400 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition-colors"
+            />
           </div>
 
-          <AdvertisementTable
-            ads={filteredAds}
-            isLoading={isLoading}
-            isError={isError}
-            error={error}
-            onRetry={() => refetch()}
-            onReorder={handleReorder}
-            onToggleStatus={(id) => toggleMutation.mutate(id)}
-            onDelete={(id) => {
-              if (confirm('Delete this promotional banner?')) {
-                deleteMutation.mutate(id);
-              }
-            }}
-            onEdit={(ad) => alert(`Editing banner: ${ad.message}`)}
-          />
+          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            Showing <span className="font-bold text-slate-800 dark:text-slate-200">{filteredAds.length}</span>{' '}
+            advertisement{filteredAds.length === 1 ? '' : 's'}
+          </div>
         </div>
 
-        {/* Right Column (1 span): Advertisement Editor */}
-        <div className="lg:col-span-1">
-          <AdEditorCard currentCount={ads.length} />
-        </div>
+        {/* Full Width Table */}
+        <AdvertisementTable
+          ads={filteredAds}
+          isLoading={isLoading}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
+          onSelectAd={(id) => setSelectedAdId(id)}
+          onAddNew={() => setIsCreateModalOpen(true)}
+        />
       </div>
+
+      {/* Step 1 & 2 Creation Wizard Modal */}
+      <CreateAdvertisementModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      {/* Details & Banner Upload Modal */}
+      <AdvertisementDetailModal
+        adId={selectedAdId}
+        onClose={() => setSelectedAdId(null)}
+      />
     </AdminShell>
   );
 }

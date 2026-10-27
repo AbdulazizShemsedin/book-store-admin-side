@@ -3,6 +3,8 @@ import {
   ListPublisherResponseBody,
   CreatePublisherRequestBody,
   CreatePublisherResponseBody,
+  UpdatePublisherRequestBody,
+  GetPublisherResponseBody,
 } from '@/types/api';
 import { Publisher } from '@/types/domain';
 import { PublisherFormData } from '../schemas/publisher-schema';
@@ -73,6 +75,27 @@ export const publishersApi = {
   },
 
   /**
+   * Retrieves single publisher details from GET /admin/api/publisher/{publisher_id}.
+   */
+  async getById(id: string): Promise<Publisher> {
+    const raw = await apiClient.get<GetPublisherResponseBody>(`/admin/api/publisher/${id}`);
+    const name = raw.string || 'Unknown Publisher';
+    const words = name.trim().split(/\s+/);
+    const monogram = words
+      .slice(0, 3)
+      .map((w) => w[0]?.toUpperCase())
+      .join('') || 'PUB';
+
+    return {
+      id: raw.id || id,
+      name,
+      monogram,
+      booksCount: 0,
+      status: 'Active',
+    };
+  },
+
+  /**
    * Creates a publisher via documented POST /admin/api/publisher.
    */
   async create(data: PublisherFormData): Promise<{ id: string }> {
@@ -89,9 +112,20 @@ export const publishersApi = {
   },
 
   /**
-   * Deletion of publisher is not currently exposed in backend OpenAPI contract.
+   * Updates an existing publisher via documented PATCH /admin/api/publisher/{publisher_id}.
    */
-  async delete(_id: string): Promise<void> {
-    throw new Error('Publisher deletion is not supported by the backend API contract.');
+  async update(id: string, data: PublisherFormData): Promise<void> {
+    const requestBody: UpdatePublisherRequestBody = {
+      name: data.name.trim(),
+    };
+
+    await apiClient.patch(`/admin/api/publisher/${id}`, requestBody);
+  },
+
+  /**
+   * Deletes a publisher via DELETE /admin/api/publisher/{publisher_id}.
+   */
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(`/admin/api/publisher/`);
   },
 };
