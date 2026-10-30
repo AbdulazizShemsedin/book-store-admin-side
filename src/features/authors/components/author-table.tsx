@@ -52,7 +52,7 @@ function AuthorTableRow({
       key={author.id}
       ref={measureRef}
       onMouseEnter={onPrefetch}
-      className="hover:bg-emerald-50/20 dark:hover:bg-slate-800/30 transition-colors group"
+      className="glass-table-row group relative"
     >
       {/* Author Name & Profile Photo */}
       <td className="py-3.5 px-5">
@@ -64,10 +64,10 @@ function AuthorTableRow({
               width={40}
               height={40}
               unoptimized
-              className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200 ease-out"
+              className="w-10 h-10 rounded-full object-cover border border-slate-200/80 dark:border-white/10 flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform duration-200 ease-out"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-50 to-emerald-100/90 dark:from-emerald-950/70 dark:to-emerald-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-800/60 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform duration-200 ease-out">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform duration-200 ease-out backdrop-blur-sm">
               {getInitials(author.name)}
             </div>
           )}
@@ -79,7 +79,7 @@ function AuthorTableRow({
               >
                 {author.name}
               </Link>
-              <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+              <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500 bg-white/60 dark:bg-white/[0.05] px-1.5 py-0.5 rounded-md border border-slate-200/60 dark:border-white/10">
                 {author.id.length > 8 ? `${author.id.slice(0, 8)}...` : author.id}
               </span>
             </div>
@@ -97,7 +97,7 @@ function AuthorTableRow({
       {/* Nationality */}
       <td className="py-3.5 px-4 whitespace-nowrap">
         {author.nationality ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/10 backdrop-blur-sm">
             <GlobeHemisphereWest className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <span>{author.nationality}</span>
           </span>
@@ -110,7 +110,7 @@ function AuthorTableRow({
       <td className="py-3.5 px-4 whitespace-nowrap">
         <Link
           href={`/books?author_id=${encodeURIComponent(author.id)}&author_name=${encodeURIComponent(author.name)}`}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/60 border border-emerald-200/60 dark:border-emerald-800/60 transition-colors shadow-2xs group/link"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-emerald-100 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 transition-all shadow-2xs group/link backdrop-blur-sm"
           title={`View catalog books by ${author.name}`}
         >
           <BookOpen className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
@@ -128,7 +128,7 @@ function AuthorTableRow({
         <div className="flex items-center justify-end gap-1.5">
           <Link
             href={`/authors/${author.id}`}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-900 dark:hover:text-white bg-slate-100 dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-slate-700 shadow-2xs transition-all active:scale-[0.98]"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-900 dark:hover:text-white bg-white/70 dark:bg-white/[0.06] hover:bg-white dark:hover:bg-white/[0.12] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
             title="View author profile & books"
           >
             <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-emerald-700" />
@@ -137,7 +137,7 @@ function AuthorTableRow({
           <button
             type="button"
             onClick={() => onEdit(author)}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-[#1e4634] dark:text-emerald-300 hover:text-white dark:hover:text-white bg-emerald-50 dark:bg-emerald-950/50 hover:bg-[#1e4634] dark:hover:bg-emerald-700 border border-emerald-200 dark:border-emerald-800/70 shadow-2xs transition-all active:scale-[0.98]"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 hover:text-white dark:hover:text-white bg-emerald-500/10 hover:bg-emerald-700 dark:hover:bg-emerald-600 border border-emerald-500/25 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
             title="Edit author profile & photo"
           >
             <PencilSimple className="w-3.5 h-3.5" weight="bold" />
@@ -147,7 +147,7 @@ function AuthorTableRow({
             <button
               type="button"
               onClick={() => onDelete(author)}
-              className="inline-flex items-center p-1 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-900/50 transition-colors"
+              className="inline-flex items-center p-1.5 rounded-xl text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-colors"
               title="Delete author"
             >
               <Trash className="w-3.5 h-3.5" />
@@ -156,6 +156,49 @@ function AuthorTableRow({
         </div>
       </td>
     </tr>
+  );
+}
+
+function AuthorTableSkeleton() {
+  return (
+    <div className="glass-panel rounded-3xl shadow-xs overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="sticky top-0 z-10 glass-table-th">
+              <th className="py-3.5 px-5">Author</th>
+              <th className="py-3.5 px-4">Nationality</th>
+              <th className="py-3.5 px-4">Catalog Works</th>
+              <th className="py-3.5 px-5 text-right w-48">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.04]">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <tr key={i} className="animate-pulse">
+                <td className="py-3.5 px-5">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-full bg-slate-200/60 dark:bg-white/[0.06] flex-shrink-0" />
+                    <div className="space-y-1.5 w-48">
+                      <div className="h-3.5 bg-slate-200/80 dark:bg-white/[0.08] rounded-md w-3/4" />
+                      <div className="h-2.5 bg-slate-200/50 dark:bg-white/[0.04] rounded-md w-full" />
+                    </div>
+                  </div>
+                </td>
+                <td className="py-3.5 px-4">
+                  <div className="h-5 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-24" />
+                </td>
+                <td className="py-3.5 px-4">
+                  <div className="h-5 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-20" />
+                </td>
+                <td className="py-3.5 px-5 text-right">
+                  <div className="h-7 bg-slate-200/60 dark:bg-white/[0.06] rounded-xl w-32 ml-auto" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
@@ -189,15 +232,7 @@ export function AuthorTable({
       : 0;
 
   if (isLoading) {
-    return (
-      <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/90 dark:border-slate-800/80 shadow-sm">
-        <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 flex items-center justify-center mb-3">
-          <Spinner size="md" />
-        </div>
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Loading authors directory...</p>
-        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Retrieving registered authors from backend</p>
-      </div>
-    );
+    return <AuthorTableSkeleton />;
   }
 
   if (isError) {
@@ -212,8 +247,8 @@ export function AuthorTable({
 
   if (authors.length === 0) {
     return (
-      <div className="py-16 bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/90 dark:border-slate-800/80 shadow-sm text-center px-4">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
+      <div className="py-16 glass-panel rounded-3xl shadow-xs text-center px-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/10 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
           <User className="w-7 h-7" />
         </div>
         <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No authors found</h3>
@@ -234,21 +269,21 @@ export function AuthorTable({
 
   return (
     <>
-      <div className="bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/90 dark:border-slate-800/80 shadow-sm overflow-hidden">
+      <div className="glass-panel rounded-3xl shadow-xs overflow-hidden">
         <div
           ref={parentRef}
-          className={cn('overflow-x-auto', isVirtualized && 'max-h-[750px] overflow-y-auto')}
+          className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-290px)] min-h-[380px] relative"
         >
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-[#070a10]/95 backdrop-blur-xs text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <th className="py-3 px-5">Author</th>
-                <th className="py-3 px-4">Nationality</th>
-                <th className="py-3 px-4">Catalog Works</th>
-                <th className="py-3 px-5 text-right w-48">Actions</th>
+              <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">
+                <th className="py-3.5 px-5">Author</th>
+                <th className="py-3.5 px-4">Nationality</th>
+                <th className="py-3.5 px-4">Catalog Works</th>
+                <th className="py-3.5 px-5 text-right w-48">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+            <tbody>
               {isVirtualized ? (
                 <>
                   {paddingTop > 0 && (

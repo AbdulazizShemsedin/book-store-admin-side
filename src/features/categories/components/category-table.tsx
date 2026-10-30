@@ -260,8 +260,8 @@ export function CategoryTable({
 
   if (isLoading) {
     return (
-      <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs dark:shadow-none transition-colors duration-150">
-        <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-[#1e4634] dark:text-emerald-400 flex items-center justify-center mb-3">
+      <div className="py-24 flex flex-col items-center justify-center glass-panel rounded-3xl shadow-xs transition-colors duration-150">
+        <div className="w-12 h-12 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/60 text-[#1e4634] dark:text-emerald-400 flex items-center justify-center mb-3 border border-emerald-200/50 dark:border-emerald-800/40">
           <Spinner size="md" />
         </div>
         <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Loading catalog categories...</p>
@@ -282,8 +282,8 @@ export function CategoryTable({
 
   if (categories.length === 0) {
     return (
-      <div className="py-16 bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs dark:shadow-none text-center px-4 transition-colors duration-150">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
+      <div className="py-16 glass-panel rounded-3xl shadow-xs text-center px-4 transition-colors duration-150">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/60 dark:border-white/10 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
           <TreeStructure className="w-7 h-7" />
         </div>
         <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">No categories found</h3>
@@ -295,19 +295,19 @@ export function CategoryTable({
   }
 
   return (
-    <div className="bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/90 dark:border-slate-800/80 shadow-xs dark:shadow-none overflow-hidden transition-colors duration-150">
+    <div className="glass-panel rounded-3xl shadow-xs overflow-hidden transition-colors duration-150">
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-290px)] min-h-[380px] relative">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-slate-50/90 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800/80 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300">Category Name</th>
-              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300 w-36 text-center">Type</th>
-              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300 w-44">Subcategories</th>
-              <th className="py-3.5 px-4 font-bold text-slate-600 dark:text-slate-300 text-right w-44">Actions</th>
+            <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">
+              <th className="py-3.5 px-4 font-bold">Category Name</th>
+              <th className="py-3.5 px-4 font-bold w-36 text-center">Type</th>
+              <th className="py-3.5 px-4 font-bold w-44">Subcategories</th>
+              <th className="py-3.5 px-4 font-bold text-right w-44">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+          <tbody>
             {categories.map((category) => {
               const isExpanded = expandedIds.has(category.id);
 
@@ -315,10 +315,8 @@ export function CategoryTable({
                 <React.Fragment key={category.id}>
                   <tr
                     className={cn(
-                      'group transition-colors border-b border-slate-100 dark:border-slate-800/60',
-                      isExpanded
-                        ? 'bg-emerald-50/20 dark:bg-emerald-950/20'
-                        : 'bg-white dark:bg-[#0d121d] hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
+                      'glass-table-row group transition-colors',
+                      isExpanded && 'bg-emerald-500/[0.08] dark:bg-emerald-400/[0.05]'
                     )}
                   >
                     {/* Category Name & Expand Caret */}

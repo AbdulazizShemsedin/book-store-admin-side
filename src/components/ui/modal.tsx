@@ -57,11 +57,11 @@ export function Modal({
 
       <div
         className={cn(
-          'w-full bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden transform transition-all animate-scale-in text-slate-900 dark:text-slate-100',
+          'w-full bg-white/85 dark:bg-[#0d121d]/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/80 dark:border-white/10 overflow-hidden transform transition-all animate-scale-in text-slate-900 dark:text-slate-100',
           maxWidthClasses[maxWidth]
         )}
       >
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4.5 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between">
           <div>
             <h3 id="modal-title" className="text-base font-semibold text-slate-900 dark:text-slate-100">
               {title}

@@ -2,12 +2,11 @@
 
 import React from 'react';
 import { Advertisement } from '@/types/domain';
-import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
-import { Megaphone, Eye, UploadSimple } from '@phosphor-icons/react';
+import { Megaphone, Eye } from '@phosphor-icons/react';
 
 interface AdvertisementTableProps {
   ads: Advertisement[];
@@ -17,6 +16,49 @@ interface AdvertisementTableProps {
   onRetry?: () => void;
   onSelectAd: (adId: string) => void;
   onAddNew: () => void;
+}
+
+function AdvertisementTableSkeleton() {
+  return (
+    <div className="glass-panel rounded-3xl overflow-hidden shadow-xs">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="sticky top-0 z-10 glass-table-th">
+              <th className="py-3.5 px-5 w-48">Banner</th>
+              <th className="py-3.5 px-4">Campaign Message</th>
+              <th className="py-3.5 px-4">Timing & Expiry</th>
+              <th className="py-3.5 px-4 w-28">Status</th>
+              <th className="py-3.5 px-5 text-right w-32">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.04]">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i} className="animate-pulse">
+                <td className="py-3.5 px-5">
+                  <div className="w-36 h-14 rounded-xl bg-slate-200/60 dark:bg-white/[0.06]" />
+                </td>
+                <td className="py-3.5 px-4 space-y-2">
+                  <div className="h-3.5 bg-slate-200/80 dark:bg-white/[0.08] rounded-md w-3/4" />
+                  <div className="h-2.5 bg-slate-200/50 dark:bg-white/[0.04] rounded-md w-1/3" />
+                </td>
+                <td className="py-3.5 px-4 space-y-1.5">
+                  <div className="h-3.5 bg-slate-200/70 dark:bg-white/[0.06] rounded-md w-24" />
+                  <div className="h-2.5 bg-slate-200/40 dark:bg-white/[0.04] rounded-md w-16" />
+                </td>
+                <td className="py-3.5 px-4">
+                  <div className="h-5 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-20" />
+                </td>
+                <td className="py-3.5 px-5 text-right">
+                  <div className="h-7 bg-slate-200/60 dark:bg-white/[0.06] rounded-xl w-20 ml-auto" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 export function AdvertisementTable({
@@ -29,14 +71,7 @@ export function AdvertisementTable({
   onAddNew,
 }: AdvertisementTableProps) {
   if (isLoading) {
-    return (
-      <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-        <Spinner size="lg" />
-        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
-          Loading promotional advertisements from backend...
-        </p>
-      </div>
-    );
+    return <AdvertisementTableSkeleton />;
   }
 
   if (isError) {
@@ -51,30 +86,32 @@ export function AdvertisementTable({
 
   if (ads.length === 0) {
     return (
-      <EmptyState
-        icon={<Megaphone className="w-8 h-8 text-slate-400" />}
-        title="No advertisements found"
-        description="Create your first promotional hero banner to highlight campaigns on the store homepage."
-        actionLabel="Create Advertisement"
-        onAction={onAddNew}
-      />
+      <div className="glass-panel rounded-3xl p-8">
+        <EmptyState
+          icon={<Megaphone className="w-8 h-8 text-emerald-800 dark:text-emerald-400" />}
+          title="No advertisements found"
+          description="Create your first promotional hero banner to highlight campaigns on the store homepage."
+          actionLabel="Create Advertisement"
+          onAction={onAddNew}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="overflow-hidden bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-      <div className="overflow-x-auto">
+    <div className="glass-panel rounded-3xl overflow-hidden shadow-xs transition-colors duration-150">
+      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)] min-h-[340px] relative">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/50 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider select-none">
-              <th className="py-3 px-4 w-44">Banner</th>
-              <th className="py-3 px-4">Campaign Message</th>
-              <th className="py-3 px-4">Timing & Expiry</th>
-              <th className="py-3 px-4 w-28">Status</th>
-              <th className="py-3 px-4 text-right w-32">Actions</th>
+            <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">
+              <th className="py-3.5 px-5 w-48">Banner</th>
+              <th className="py-3.5 px-4">Campaign Message</th>
+              <th className="py-3.5 px-4">Timing & Expiry</th>
+              <th className="py-3.5 px-4 w-28">Status</th>
+              <th className="py-3.5 px-5 text-right w-32">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+          <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.04]">
             {ads.map((ad) => {
               const isExpired = ad.activeUntil
                 ? new Date(ad.activeUntil).getTime() < Date.now()
@@ -84,12 +121,12 @@ export function AdvertisementTable({
                 <tr
                   key={ad.id}
                   onClick={() => onSelectAd(ad.id)}
-                  className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                  className="glass-table-row group cursor-pointer relative"
                 >
                   {/* Banner Preview */}
-                  <td className="py-3.5 px-4">
+                  <td className="py-3.5 px-5">
                     {ad.banner ? (
-                      <div className="w-36 h-14 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 relative shadow-2xs group-hover:border-emerald-600/40 transition-colors">
+                      <div className="w-36 h-14 rounded-xl overflow-hidden bg-slate-100/80 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 relative shadow-2xs group-hover:scale-[1.02] group-hover:shadow-md transition-all">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={ad.banner}
@@ -98,7 +135,7 @@ export function AdvertisementTable({
                         />
                       </div>
                     ) : (
-                      <div className="w-36 h-14 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center text-slate-400">
+                      <div className="w-36 h-14 rounded-xl bg-white/60 dark:bg-white/[0.03] border border-dashed border-slate-300/80 dark:border-white/20 flex flex-col items-center justify-center text-slate-400 group-hover:border-emerald-500/50 transition-colors">
                         <span className="text-[10px] font-medium text-slate-400">No Banner</span>
                         <span className="text-[9px] text-emerald-700 dark:text-emerald-400 font-semibold group-hover:underline">
                           + Upload
@@ -109,10 +146,10 @@ export function AdvertisementTable({
 
                   {/* Campaign Message */}
                   <td className="py-3.5 px-4 max-w-sm">
-                    <span className="font-semibold text-slate-900 dark:text-slate-100 block text-xs truncate">
+                    <span className="font-bold text-slate-900 dark:text-slate-100 block text-xs truncate group-hover:underline">
                       {ad.message}
                     </span>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 block">
                       ID: {ad.id}
                     </span>
                   </td>
@@ -121,14 +158,14 @@ export function AdvertisementTable({
                   <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">
                     {ad.activeUntil ? (
                       <div>
-                        <span className="font-medium text-xs block">
+                        <span className="font-semibold text-xs block text-slate-800 dark:text-slate-200">
                           {new Date(ad.activeUntil).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
                           })}
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-slate-400 font-mono">
                           {new Date(ad.activeUntil).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
@@ -146,7 +183,7 @@ export function AdvertisementTable({
                   </td>
 
                   {/* Actions */}
-                  <td className="py-3.5 px-4 text-right">
+                  <td className="py-3.5 px-5 text-right">
                     <Button
                       size="sm"
                       variant="secondary"
@@ -155,7 +192,7 @@ export function AdvertisementTable({
                         e.stopPropagation();
                         onSelectAd(ad.id);
                       }}
-                      className="text-xs"
+                      className="text-xs rounded-xl shadow-2xs backdrop-blur-md"
                     >
                       Details
                     </Button>

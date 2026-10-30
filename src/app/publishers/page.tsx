@@ -49,25 +49,26 @@ export default function PublishersPage() {
         subtitle="Manage registered catalog publishers, press imprints, and distribution partners."
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Left Column: Search & Table */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="w-full sm:w-80 relative">
-              <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search publishers..."
-                className="w-full h-9 pl-9 pr-3 text-xs bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors"
-              />
-            </div>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              {total} RECORDS
-            </span>
-          </div>
+      {/* Sticky Search Toolbar */}
+      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs flex items-center justify-between gap-4 transition-all">
+        <div className="w-full sm:w-80 relative">
+          <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search publishers..."
+            className="w-full h-9 pl-10 pr-3 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
+          />
+        </div>
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          {total} RECORDS
+        </span>
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Left Column: Table & Pagination */}
+        <div className="lg:col-span-2 space-y-0">
           <PublisherTable
             publishers={publishers}
             isLoading={isLoading}
@@ -92,8 +93,8 @@ export default function PublishersPage() {
           />
         </div>
 
-        {/* Right Column: Add Publisher Form */}
-        <div className="lg:col-span-1">
+        {/* Right Column: Sticky Add Publisher Form */}
+        <div className="lg:col-span-1 lg:sticky lg:top-20">
           <PublisherFormCard />
         </div>
       </div>

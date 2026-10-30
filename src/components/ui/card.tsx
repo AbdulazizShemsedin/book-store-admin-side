@@ -7,7 +7,7 @@ export function Card({ className, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'bg-white dark:bg-[#0d121d] rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs dark:shadow-none transition-colors duration-150',
+        'glass-panel rounded-2xl shadow-xs transition-colors duration-150',
         className
       )}
       {...props}
@@ -31,7 +31,7 @@ export function CardHeader({
 }: CardHeaderProps) {
   return (
     <div
-      className={cn('px-6 py-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between', className)}
+      className={cn('px-6 py-5 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between', className)}
       {...props}
     >
       <div>

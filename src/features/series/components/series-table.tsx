@@ -38,9 +38,9 @@ export function SeriesTable() {
   const total = data?.total || 0;
 
   return (
-    <div className="space-y-4">
-      {/* Search and Action Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+    <div className="space-y-0">
+      {/* Sticky Search and Action Bar */}
+      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between transition-all">
         <div className="w-full sm:w-80">
           <Input
             placeholder="Search series by title..."
@@ -56,24 +56,24 @@ export function SeriesTable() {
         <Button
           onClick={() => setIsCreateModalOpen(true)}
           leftIcon={<Plus className="w-4 h-4" />}
-          className="bg-[#1e4634] hover:bg-[#153426] text-white self-start sm:self-auto"
+          className="bg-[#1e4634] hover:bg-[#153426] text-white self-start sm:self-auto rounded-xl shadow-xs"
         >
           Create Series
         </Button>
       </div>
 
       {/* Series Data Table */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0d121d] overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
+      <div className="glass-panel rounded-3xl overflow-hidden shadow-xs transition-colors duration-150">
+        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-290px)] min-h-[380px] relative">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-              <tr>
-                <th className="py-3 px-4">Series Name</th>
-                <th className="py-3 px-4">Created Date</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+            <thead>
+              <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">
+                <th className="py-3.5 px-4">Series Name</th>
+                <th className="py-3.5 px-4">Created Date</th>
+                <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+            <tbody>
               {isLoading ? (
                 <tr>
                   <td colSpan={3} className="py-12 text-center text-slate-500">
@@ -122,7 +122,7 @@ export function SeriesTable() {
                 seriesList.map((series) => (
                   <tr
                     key={series.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                    className="glass-table-row group relative"
                   >
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
@@ -191,18 +191,17 @@ export function SeriesTable() {
 
         {/* Pagination Footer */}
         {total > 0 && (
-          <div className="border-t border-slate-200 dark:border-slate-800 p-3">
-            <Pagination
-              currentPage={page}
-              totalItems={total}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={(newSize) => {
-                setPageSize(newSize);
-                setPage(1);
-              }}
-            />
-          </div>
+          <Pagination
+            currentPage={page}
+            totalItems={total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+            className="mt-0 rounded-t-none border-t border-white/80 dark:border-white/10 shadow-none bg-transparent"
+          />
         )}
       </div>
 
