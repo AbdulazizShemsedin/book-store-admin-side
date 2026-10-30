@@ -21,6 +21,7 @@ import {
   CreditCard,
 } from '@phosphor-icons/react';
 import { useSidebar } from '@/providers/sidebar-provider';
+import { TewbaLogo } from '@/components/ui/tewba-logo';
 
 interface NavSection {
   title?: string;
@@ -92,9 +93,9 @@ export function Sidebar() {
           href="/dashboard"
           className="flex items-center gap-2.5 min-w-0 transition-opacity hover:opacity-90 overflow-hidden"
         >
-          {/* Logo Mark */}
-          <div className="w-8 h-8 rounded-lg bg-[#1e4634] dark:bg-[#1b4332] flex items-center justify-center text-white shadow-xs flex-shrink-0">
-            <BookOpen className="w-4 h-4 text-white" weight="bold" />
+          {/* Official Logo Mark */}
+          <div className="w-8 h-8 rounded-lg bg-emerald-50/80 dark:bg-slate-900 border border-emerald-100/80 dark:border-slate-800 flex items-center justify-center shadow-xs flex-shrink-0 p-1">
+            <TewbaLogo variant="mark" size="sm" />
           </div>
 
           {/* Logo Text - Smoothly fades and slides */}

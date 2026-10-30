@@ -39,14 +39,23 @@ export const plansApi = {
 
     const rawPlans = response.plans || [];
 
-    const plans: Plan[] = rawPlans.map((item) => ({
-      id: item.id,
-      name: item.string || 'Plan',
-      price: item.price,
-      discount: item.discount ?? null,
-      requireSeats: false,
-      minimumSeats: 1,
-    }));
+    const plans: Plan[] = rawPlans.map((item) => {
+      const isOrg =
+        (item.string || '').toLowerCase().includes('organization') ||
+        (item.string || '').toLowerCase().includes('org');
+      const requireSeats = item.require_seats !== undefined ? Boolean(item.require_seats) : isOrg;
+
+      return {
+        id: item.id,
+        name: item.string || 'Plan',
+        price: item.price,
+        discount: item.discount ?? null,
+        discountedPrice: item.discounted_price ?? null,
+        requireSeats,
+        minimumSeats: item.minimum_seats ?? (requireSeats ? 5 : 1),
+        maximumSeats: item.maximum_seats ?? null,
+      };
+    });
 
     return {
       plans,

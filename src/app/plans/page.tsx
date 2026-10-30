@@ -89,9 +89,16 @@ export default function PlansPage() {
                   {/* Card Top: Plan Name & Badge */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-400 transition-colors">
-                        {plan.name}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-400 transition-colors">
+                          {plan.name}
+                        </h3>
+                        {plan.requireSeats && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                            Seat-based
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
                         {plan.id.length > 12 ? `${plan.id.slice(0, 10)}...` : plan.id}
                       </p>

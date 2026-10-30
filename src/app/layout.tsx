@@ -9,6 +9,23 @@ import { ThemeProvider } from '@/providers/theme-provider';
 export const metadata: Metadata = {
   title: 'TEWBA Admin Portal - Bookstore Management',
   description: 'Administrative portal for managing books, authors, publishers, categories, promotional campaigns, and financial analytics.',
+  icons: {
+    icon: '/images/tewba-mark.png',
+    shortcut: '/images/tewba-mark.png',
+    apple: '/images/tewba-mark.png',
+  },
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
 };
 
 export default function RootLayout({

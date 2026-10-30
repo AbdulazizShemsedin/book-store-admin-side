@@ -48,9 +48,11 @@ export default function BookDetailsPage() {
   const { data: book, isLoading, isError, error, refetch } = useBook(bookId);
   const { data: allCategoriesData } = useAllCategories();
   const { data: categoriesData } = useCategories({ pageSize: 100 });
-  const allCategories = allCategoriesData && allCategoriesData.length > 0
-    ? allCategoriesData
-    : (categoriesData?.categories || []);
+  const allCategories = React.useMemo(() => {
+    return allCategoriesData && allCategoriesData.length > 0
+      ? allCategoriesData
+      : (categoriesData?.categories || []);
+  }, [allCategoriesData, categoriesData?.categories]);
 
   const [selectedTagId, setSelectedTagId] = useState('');
   const [isAttachingTag, setIsAttachingTag] = useState(false);

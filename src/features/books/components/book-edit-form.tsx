@@ -51,11 +51,13 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
   const { data: allCategoriesData } = useAllCategories();
   const { data: categoriesData } = useCategories({ pageSize: 100 });
 
-  const authors = authorsData?.authors || [];
-  const publishers = publishersData?.publishers || [];
-  const categories = allCategoriesData && allCategoriesData.length > 0
-    ? allCategoriesData
-    : (categoriesData?.categories || []);
+  const authors = React.useMemo(() => authorsData?.authors || [], [authorsData?.authors]);
+  const publishers = React.useMemo(() => publishersData?.publishers || [], [publishersData?.publishers]);
+  const categories = React.useMemo(() => {
+    return allCategoriesData && allCategoriesData.length > 0
+      ? allCategoriesData
+      : (categoriesData?.categories || []);
+  }, [allCategoriesData, categoriesData?.categories]);
 
   // Match initial author / publisher ID by name if not explicit
   const initialAuthorId =

@@ -8,7 +8,8 @@ import { loginSchema, LoginFormData } from '../schemas/login-schema';
 import { useAuth } from '@/providers/auth-provider';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Eye, EyeSlash, ArrowRight } from '@phosphor-icons/react';
+import { Eye, EyeSlash, ArrowRight } from '@phosphor-icons/react';
+import { TewbaLogo } from '@/components/ui/tewba-logo';
 import { ApiError } from '@/lib/api/error-handler';
 
 /**
@@ -80,12 +81,12 @@ export function LoginForm() {
 
   return (
     <div className="w-full max-w-md p-8 bg-white dark:bg-[#0d121d] rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 transition-colors duration-200">
-      {/* Brand Icon Header */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="w-14 h-14 rounded-2xl bg-[#1e4634] dark:bg-[#1b4332] flex items-center justify-center text-white shadow-md mb-4">
-          <BookOpen className="w-7 h-7" weight="fill" />
+      {/* Official Brand Header */}
+      <div className="flex flex-col items-center mb-7">
+        <div className="mb-4 p-2.5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-center shadow-xs">
+          <TewbaLogo variant="full" size="xl" priority />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Sign In</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Admin Sign In</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">TEWBA Bookstore Administration Portal</p>
       </div>
 

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { useReports } from '@/features/reports/hooks/use-reports';
+import { GetReportsParams } from '@/features/reports/api/reports-api';
 import dynamic from 'next/dynamic';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,8 +48,20 @@ export default function ReportsPage() {
   const [startDate, setStartDate] = useState(thirtyDaysAgoStr);
   const [endDate, setEndDate] = useState(todayStr);
   const [customRangeLabel, setCustomRangeLabel] = useState<string | null>(null);
+  const [appliedCustomDates, setAppliedCustomDates] = useState<{ start: string; end: string } | null>(null);
 
-  const { data, isLoading, isError, error, refetch } = useReports(period);
+  const reportsParams = useMemo<GetReportsParams>(() => {
+    if (period === 'custom') {
+      return {
+        period: 'custom',
+        startDate: appliedCustomDates?.start ?? startDate,
+        endDate: appliedCustomDates?.end ?? endDate,
+      };
+    }
+    return { period };
+  }, [period, appliedCustomDates, startDate, endDate]);
+
+  const { data, isLoading, isError, error, refetch } = useReports(reportsParams);
 
   const handleApplyCustomRange = () => {
     if (!startDate || !endDate) return;
@@ -57,7 +70,7 @@ export default function ReportsPage() {
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: '2-digit', year: 'numeric' };
     const label = `${startObj.toLocaleDateString('en-US', options)} – ${endObj.toLocaleDateString('en-US', options)}`;
     setCustomRangeLabel(label);
-    refetch();
+    setAppliedCustomDates({ start: startDate, end: endDate });
   };
 
   if (isLoading) {
@@ -78,7 +91,6 @@ export default function ReportsPage() {
           title="Failed to load reports"
           message={error?.message || 'Unable to retrieve financial and transaction records.'}
           onRetry={() => refetch()}
-          isBackendGap
         />
       </AdminShell>
     );
@@ -145,6 +157,7 @@ export default function ReportsPage() {
                   setPeriod(item.id as typeof period);
                   if (item.id !== 'custom') {
                     setCustomRangeLabel(null);
+                    setAppliedCustomDates(null);
                   }
                 }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
