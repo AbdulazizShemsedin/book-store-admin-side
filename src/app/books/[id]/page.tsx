@@ -185,7 +185,7 @@ export default function BookDetailsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left Column (2 spans): Primary Book Metadata & Assets */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           {/* Identity Card */}
           <Card>
             <CardHeader title="Book Overview" />
@@ -459,7 +459,7 @@ export default function BookDetailsPage() {
         </div>
 
         {/* Right Column (1 span): Categories & Attached Tags */}
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           {/* Series & Volume Card */}
           <Card>
             <CardHeader
@@ -557,7 +557,7 @@ export default function BookDetailsPage() {
           </Card>
 
           {/* Categories Card */}
-          <Card>
+          <Card className="overflow-hidden">
             <CardHeader
               title={
                 <div className="flex items-center gap-1.5">
@@ -586,14 +586,14 @@ export default function BookDetailsPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5 max-w-full">
                     {attachedTags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs max-w-full"
                       >
-                        <Folder className="w-3.5 h-3.5 text-[#1e4634] dark:text-emerald-400" weight="fill" />
-                        <span>{tag}</span>
+                        <Folder className="w-3.5 h-3.5 text-[#1e4634] dark:text-emerald-400 flex-shrink-0" weight="fill" />
+                        <span className="truncate">{tag}</span>
                       </span>
                     ))}
                   </div>
@@ -624,12 +624,12 @@ export default function BookDetailsPage() {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <div className="flex gap-2">
+                <div className="space-y-2.5">
+                  <div className="relative">
                     <select
                       value={selectedTagId}
                       onChange={(e) => setSelectedTagId(e.target.value)}
-                      className="flex-1 h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 dark:focus:ring-emerald-500/20 focus:border-[#1e4634] dark:focus:border-emerald-500 transition-colors"
+                      className="w-full h-9.5 px-3 pr-8 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 dark:focus:ring-emerald-500/20 focus:border-[#1e4634] dark:focus:border-emerald-500 transition-colors truncate"
                     >
                       <option value="">Select category to attach...</option>
                       {flatCategoryNodes.map((node) => {
@@ -649,24 +649,25 @@ export default function BookDetailsPage() {
                         );
                       })}
                     </select>
-
-                    <Button
-                      size="sm"
-                      onClick={handleAttachCategory}
-                      isLoading={isAttachingTag}
-                      disabled={!selectedTagId}
-                      leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
-                      className="bg-[#1e4634] hover:bg-[#153426] dark:bg-[#1b4332] dark:hover:bg-[#245842] text-white h-9 px-3 text-xs font-semibold shadow-xs"
-                    >
-                      Attach
-                    </Button>
                   </div>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAttachCategory}
+                    isLoading={isAttachingTag}
+                    disabled={!selectedTagId}
+                    leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
+                    className="w-full bg-[#1e4634] hover:bg-[#153426] dark:bg-[#1b4332] dark:hover:bg-[#245842] text-white h-9 px-3 text-xs font-semibold rounded-xl shadow-xs transition-all"
+                  >
+                    Attach Category
+                  </Button>
 
                   {/* Lineage Info Pill */}
                   {selectedNode && selectedNode.depth > 1 && (
-                    <div className="p-2 bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60 rounded-lg text-[11px] text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
-                      <TreeStructure className="w-3.5 h-3.5 text-[#1e4634] dark:text-emerald-400 flex-shrink-0" />
-                      <span>
+                    <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60 rounded-xl text-[11px] text-emerald-900 dark:text-emerald-300 flex items-start gap-2">
+                      <TreeStructure className="w-3.5 h-3.5 text-[#1e4634] dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <span className="leading-snug break-words">
                         Path: <strong>{selectedNode.fullPath}</strong> (will automatically link parent levels)
                       </span>
                     </div>
