@@ -168,8 +168,8 @@ function BooksContent() {
         </div>
       )}
 
-      {/* Sticky Filter Bar & Table Actions */}
-      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs transition-all">
+      {/* Search & Filter Toolbar */}
+      <div className="glass-panel p-3.5 rounded-2xl mb-4 relative z-10 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Search Input */}
         <div className="w-full lg:w-80 relative">
@@ -316,7 +316,7 @@ function BooksContent() {
 
       {/* Active Filters Row */}
       {(language !== 'All' || format !== 'All') && (
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+        <div className="mt-3 pt-3 border-t border-white/60 dark:border-white/10 flex flex-wrap items-center gap-2 text-xs">
           <span className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">Active filters:</span>
           {language !== 'All' && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 font-medium">

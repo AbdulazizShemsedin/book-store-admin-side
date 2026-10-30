@@ -79,8 +79,8 @@ export default function AdvertisementsPage() {
         }
       />
 
-      {/* Sticky Search & Filter Toolbar */}
-      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs transition-all">
+      {/* Search & Filter Toolbar */}
+      <div className="glass-panel p-3.5 rounded-2xl mb-4 relative z-10 shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="w-full sm:w-80 relative">

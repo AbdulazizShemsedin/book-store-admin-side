@@ -22,7 +22,7 @@ interface PublisherTableProps {
 function PublisherTableSkeleton() {
   return (
     <div className="glass-panel rounded-3xl shadow-xs overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[calc(100vh-320px)] min-h-[380px]">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="sticky top-0 z-10 glass-table-th">
@@ -103,7 +103,7 @@ export function PublisherTable({
 
   return (
     <div className="glass-panel rounded-3xl shadow-xs overflow-hidden transition-colors duration-150">
-      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-290px)] min-h-[380px] relative">
+      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] min-h-[380px] relative scroll-smooth overscroll-contain">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">

@@ -39,32 +39,34 @@ export function SeriesTable() {
 
   return (
     <div className="space-y-0">
-      {/* Sticky Search and Action Bar */}
-      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between transition-all">
-        <div className="w-full sm:w-80">
-          <Input
-            placeholder="Search series by title..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            leftIcon={<MagnifyingGlass className="w-4 h-4 text-slate-400" />}
-          />
-        </div>
+      {/* Search and Action Bar */}
+      <div className="glass-panel p-3.5 rounded-2xl mb-4 relative z-10 shadow-xs">
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <div className="w-full sm:w-80">
+            <Input
+              placeholder="Search series by title..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              leftIcon={<MagnifyingGlass className="w-4 h-4 text-slate-400" />}
+            />
+          </div>
 
-        <Button
-          onClick={() => setIsCreateModalOpen(true)}
-          leftIcon={<Plus className="w-4 h-4" />}
-          className="bg-[#1e4634] hover:bg-[#153426] text-white self-start sm:self-auto rounded-xl shadow-xs"
-        >
-          Create Series
-        </Button>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            leftIcon={<Plus className="w-4 h-4" />}
+            className="bg-[#1e4634] hover:bg-[#153426] text-white self-start sm:self-auto rounded-xl shadow-xs"
+          >
+            Create Series
+          </Button>
+        </div>
       </div>
 
       {/* Series Data Table */}
       <div className="glass-panel rounded-3xl overflow-hidden shadow-xs transition-colors duration-150">
-        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-290px)] min-h-[380px] relative">
+        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] min-h-[380px] relative scroll-smooth overscroll-contain">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">

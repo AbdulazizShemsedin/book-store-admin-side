@@ -297,7 +297,7 @@ export function CategoryTable({
   return (
     <div className="glass-panel rounded-3xl shadow-xs overflow-hidden transition-colors duration-150">
       {/* Table */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-290px)] min-h-[380px] relative">
+      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] min-h-[380px] relative scroll-smooth overscroll-contain">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">
