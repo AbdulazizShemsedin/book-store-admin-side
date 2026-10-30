@@ -19,7 +19,13 @@ import {
   User,
   X,
   Translate,
+  DownloadSimple,
+  Headphones,
+  FileText,
 } from '@phosphor-icons/react';
+import { exportToCSV, exportToJSON } from '@/lib/utils/export-utils';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils/cn';
 
 import { useDebounce } from '@/lib/hooks/use-debounce';
 
@@ -82,6 +88,39 @@ function BooksContent() {
     setPage(1);
   };
 
+  const handleExportCSV = () => {
+    if (!displayedBooks || displayedBooks.length === 0) {
+      toast.error('No books available to export');
+      return;
+    }
+    exportToCSV(
+      displayedBooks.map((b) => ({
+        id: b.id,
+        title: b.name,
+        author: b.author || '',
+        publisher: b.publisher || '',
+        language: b.language || '',
+        format: b.hasAudiobook ? 'Audiobook' : 'E-Book',
+        pageCount: b.pageCount || '',
+        createdAt: b.createdAt || '',
+      })),
+      `tewba-books-${new Date().toISOString().split('T')[0]}`
+    );
+    toast.success(`Exported ${displayedBooks.length} books to CSV`);
+  };
+
+  const handleExportJSON = () => {
+    if (!displayedBooks || displayedBooks.length === 0) {
+      toast.error('No books available to export');
+      return;
+    }
+    exportToJSON(
+      displayedBooks,
+      `tewba-books-${new Date().toISOString().split('T')[0]}`
+    );
+    toast.success(`Exported ${displayedBooks.length} books to JSON`);
+  };
+
   return (
     <>
       {/* Top Page Header */}
@@ -129,10 +168,11 @@ function BooksContent() {
         </div>
       )}
 
-      {/* Filter Bar */}
-      <div className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Sticky Filter Bar & Table Actions */}
+      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs transition-all">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Search Input */}
-        <div className="w-full md:w-96 relative">
+        <div className="w-full lg:w-80 relative">
           <MagnifyingGlass className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
@@ -142,17 +182,68 @@ function BooksContent() {
               setPage(1);
             }}
             placeholder="Search by title, author, or publisher..."
-            className="w-full h-9 pl-10 pr-9 text-xs bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors shadow-xs"
+            className="w-full h-9 pl-10 pr-9 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
             <Funnel className="w-3.5 h-3.5" />
           </div>
         </div>
 
-        {/* Dropdown Filters & Refresh */}
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        {/* Dropdown Filters & Actions */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          {/* Quick Format Pills */}
+          <div className="flex items-center p-0.5 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 backdrop-blur-md shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                setFormat('All');
+                setPage(1);
+              }}
+              className={cn(
+                'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                format === 'All'
+                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              )}
+            >
+              All Formats
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormat('Audiobook');
+                setPage(1);
+              }}
+              className={cn(
+                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                format === 'Audiobook'
+                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              )}
+            >
+              <Headphones className="w-3.5 h-3.5" />
+              <span>Audiobook</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormat('Text');
+                setPage(1);
+              }}
+              className={cn(
+                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                format === 'Text'
+                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              )}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>E-Book</span>
+            </button>
+          </div>
+
           {/* Category Dropdown */}
-          <div className="w-36">
+          <div className="w-32">
             <Select
               size="sm"
               value={category}
@@ -171,7 +262,7 @@ function BooksContent() {
           </div>
 
           {/* Language Filter */}
-          <div className="w-36">
+          <div className="w-32">
             <Select
               size="sm"
               value={language}
@@ -188,21 +279,26 @@ function BooksContent() {
             />
           </div>
 
-          {/* Format Filter */}
-          <div className="w-36">
-            <Select
-              size="sm"
-              value={format}
-              onChange={(e) => {
-                setFormat(e.target.value);
-                setPage(1);
-              }}
-              options={[
-                { label: 'Filter: Format', value: 'All' },
-                { label: 'has Audiobook', value: 'Audiobook' },
-                { label: 'Text-only', value: 'Text' },
-              ]}
-            />
+          {/* Export Dropdown Group */}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              title="Export current view to CSV"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 h-9 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
+            >
+              <DownloadSimple className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+              <span>CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportJSON}
+              title="Export current view to JSON"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 h-9 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
+            >
+              <span>JSON</span>
+            </button>
           </div>
 
           {/* Refresh Action */}
@@ -211,7 +307,7 @@ function BooksContent() {
             onClick={() => refetch()}
             aria-label="Refresh table"
             title="Refresh books list"
-            className="p-2 bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-xs"
+            className="p-2 h-9 w-9 flex items-center justify-center bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl hover:bg-white dark:hover:bg-white/[0.1] transition-all shadow-2xs backdrop-blur-md"
           >
             <ArrowClockwise className="w-4 h-4" />
           </button>
@@ -270,6 +366,7 @@ function BooksContent() {
           </button>
         </div>
       )}
+      </div>
 
       {/* Books Table & Pagination */}
       <div className="space-y-0">

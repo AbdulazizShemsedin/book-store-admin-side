@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, DownloadSimple, MagnifyingGlass, Funnel, ArrowsDownUp } from '@phosphor-icons/react';
 import { useDebounce } from '@/lib/hooks/use-debounce';
+import { exportToCSV, exportToJSON } from '@/lib/utils/export-utils';
+import { toast } from 'sonner';
 
 export default function AuthorsPage() {
   const [page, setPage] = useState(1);
@@ -41,6 +43,33 @@ export default function AuthorsPage() {
   const authors = data?.authors || [];
   const total = data?.total || 0;
 
+  const handleExportCSV = () => {
+    if (!authors || authors.length === 0) {
+      toast.error('No authors available to export');
+      return;
+    }
+    exportToCSV(
+      authors.map((a) => ({
+        id: a.id,
+        name: a.name,
+        nationality: a.nationality || '',
+        bio: a.bio || '',
+        worksCount: a.worksCount ?? 0,
+      })),
+      `tewba-authors-${new Date().toISOString().split('T')[0]}`
+    );
+    toast.success(`Exported ${authors.length} authors to CSV`);
+  };
+
+  const handleExportJSON = () => {
+    if (!authors || authors.length === 0) {
+      toast.error('No authors available to export');
+      return;
+    }
+    exportToJSON(authors, `tewba-authors-${new Date().toISOString().split('T')[0]}`);
+    toast.success(`Exported ${authors.length} authors to JSON`);
+  };
+
   return (
     <AdminShell>
       {/* Header */}
@@ -53,55 +82,52 @@ export default function AuthorsPage() {
           </Badge>
         }
         actions={
-          <>
-            <Button
-              variant="secondary"
-              size="sm"
-              leftIcon={<DownloadSimple className="w-3.5 h-3.5" />}
-              onClick={() => alert('Exporting author catalog CSV...')}
-            >
-              Export
-            </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                title="Export authors to CSV"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.06] hover:bg-white dark:hover:bg-white/[0.12] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
+              >
+                <DownloadSimple className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                <span>Export CSV</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleExportJSON}
+                title="Export authors to JSON"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.06] hover:bg-white dark:hover:bg-white/[0.12] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
+              >
+                <span>JSON</span>
+              </button>
+            </div>
+
             <Button
               size="sm"
               leftIcon={<Plus className="w-3.5 h-3.5" weight="bold" />}
               onClick={() => setIsModalOpen(true)}
-              className="bg-[#1e4634] hover:bg-[#153426]"
+              className="bg-[#1e4634] hover:bg-[#153426] rounded-xl shadow-sm"
             >
               Add Author
             </Button>
-          </>
+          </div>
         }
       />
 
-      {/* Filter and Search Bar */}
-      <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="w-full sm:w-80 relative">
-          <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search author by name, ID, or bio..."
-            className="w-full h-9 pl-9 pr-3 text-xs bg-white dark:bg-[#0d121d] border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button
-            variant="secondary"
-            size="sm"
-            leftIcon={<Funnel className="w-3.5 h-3.5 text-slate-500" />}
-          >
-            Filter Field
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            leftIcon={<ArrowsDownUp className="w-3.5 h-3.5 text-slate-500" />}
-          >
-            Sort: Joined
-          </Button>
+      {/* Sticky Filter and Search Bar */}
+      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs transition-all">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="w-full sm:w-80 relative">
+            <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search author by name, ID, or bio..."
+              className="w-full h-9 pl-10 pr-3 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
+            />
+          </div>
         </div>
       </div>
 
