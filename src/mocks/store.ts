@@ -22,6 +22,10 @@ import {
   ListAdvertisementResponseItem,
   ListAdvertisementResponseBody,
   CreateAdvertisementRequestBody,
+  ListPurchaseRecordsResponseItem,
+  ListPurchaseRecordsResponseBody,
+  ListSubscriptionRecordsResponseItem,
+  ListSubscriptionRecordsResponseBody,
 } from '@/types/api';
 
 export type ErrorScenario = 'NONE' | 'SERVER_ERROR' | 'UNAUTHORIZED' | 'VALIDATION_ERROR' | 'EMPTY_STATE';
@@ -45,6 +49,74 @@ class MockStore {
   private advertisements: ListAdvertisementResponseItem[] = [
     { id: 'ad-01', message: 'Ramadan & Eid Book Fair — 30% OFF Classical Works', banner: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80', active_until: null },
     { id: 'ad-02', message: 'Scholar Spotlight: Imam Al-Ghazali Collection — 20% OFF', banner: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80', active_until: null },
+  ];
+  private purchaseRecords: ListPurchaseRecordsResponseItem[] = [
+    {
+      id: 'purch-01',
+      plan: { id: 'book-01', name: 'Fiqh us-Sunnah (Complete Set)' },
+      type: 'both',
+      paid_price: '24.99',
+      user: { id: 'usr-01', name: 'Ahmed Nur', deleted_at: null },
+      created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+    },
+    {
+      id: 'purch-02',
+      plan: { id: 'book-02', name: 'Riyad as-Salihin' },
+      type: 'audio_only',
+      paid_price: '14.50',
+      user: { id: 'usr-02', name: 'Fatima Zahra', deleted_at: null },
+      created_at: new Date(Date.now() - 26 * 3600 * 1000).toISOString(),
+    },
+    {
+      id: 'purch-03',
+      plan: { id: 'book-03', name: 'Tafsir Ibn Kathir (Vol. 1-8)' },
+      type: 'book_only',
+      paid_price: '45.00',
+      user: { id: 'usr-03', name: 'Bilal Habashi', deleted_at: '2026-10-20T10:00:00Z' },
+      created_at: new Date(Date.now() - 3 * 86400 * 1000).toISOString(),
+    },
+    {
+      id: 'purch-04',
+      plan: { id: 'book-04', name: 'The Sealed Nectar (Ar-Raheeq Al-Makhtum)' },
+      type: 'both',
+      paid_price: '18.00',
+      user: { id: 'usr-04', name: 'Zaynab bint Ali', deleted_at: null },
+      created_at: new Date(Date.now() - 5 * 86400 * 1000).toISOString(),
+    },
+    {
+      id: 'purch-05',
+      plan: { id: 'book-05', name: 'Stories of the Prophets' },
+      type: 'audio_only',
+      paid_price: '12.00',
+      user: { id: 'usr-05', name: 'Hamza Yusuf', deleted_at: null },
+      created_at: new Date(Date.now() - 10 * 86400 * 1000).toISOString(),
+    },
+  ];
+  private subscriptionRecords: ListSubscriptionRecordsResponseItem[] = [
+    {
+      id: 'sub-01',
+      plan: { id: 'plan-01', name: 'Monthly Membership' },
+      type: 'init',
+      paid_price: '9.99',
+      user: { id: 'usr-06', name: 'Khalid ibn Walid', deleted_at: null },
+      created_at: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
+    },
+    {
+      id: 'sub-02',
+      plan: { id: 'plan-02', name: 'Annual Membership' },
+      type: 'renewal',
+      paid_price: '89.99',
+      user: { id: 'usr-07', name: 'Maryam Yasin', deleted_at: null },
+      created_at: new Date(Date.now() - 2 * 86400 * 1000).toISOString(),
+    },
+    {
+      id: 'sub-03',
+      plan: { id: 'plan-03', name: 'Family Multi-Seat' },
+      type: 'init',
+      paid_price: '149.99',
+      user: { id: 'usr-08', name: 'Tariq Ziyad', deleted_at: '2026-10-15T08:00:00Z' },
+      created_at: new Date(Date.now() - 8 * 86400 * 1000).toISOString(),
+    },
   ];
   private activeScenario: ErrorScenario = 'NONE';
 
@@ -687,6 +759,62 @@ class MockStore {
     ad.banner = bannerUrl;
     this.saveToStorage();
     return true;
+  }
+
+  getPurchaseRecords(params: {
+    page?: number;
+    pageSize?: number;
+    period?: string;
+    date_start?: string;
+    date_end?: string;
+  }): ListPurchaseRecordsResponseBody {
+    let list = [...this.purchaseRecords];
+    if (params.date_start) {
+      const startMs = new Date(params.date_start).getTime();
+      list = list.filter((r) => new Date(r.created_at).getTime() >= startMs);
+    }
+    if (params.date_end) {
+      const endMs = new Date(params.date_end).getTime();
+      list = list.filter((r) => new Date(r.created_at).getTime() <= endMs);
+    }
+    const total = list.length;
+    const page = Math.max(1, params.page || 1);
+    const pageSize = Math.max(1, params.pageSize || 50);
+    const start = (page - 1) * pageSize;
+    return {
+      records: list.slice(start, start + pageSize),
+      total,
+      page,
+      page_size: pageSize,
+    };
+  }
+
+  getSubscriptionRecords(params: {
+    page?: number;
+    pageSize?: number;
+    period?: string;
+    date_start?: string;
+    date_end?: string;
+  }): ListSubscriptionRecordsResponseBody {
+    let list = [...this.subscriptionRecords];
+    if (params.date_start) {
+      const startMs = new Date(params.date_start).getTime();
+      list = list.filter((r) => new Date(r.created_at).getTime() >= startMs);
+    }
+    if (params.date_end) {
+      const endMs = new Date(params.date_end).getTime();
+      list = list.filter((r) => new Date(r.created_at).getTime() <= endMs);
+    }
+    const total = list.length;
+    const page = Math.max(1, params.page || 1);
+    const pageSize = Math.max(1, params.pageSize || 50);
+    const start = (page - 1) * pageSize;
+    return {
+      records: list.slice(start, start + pageSize),
+      total,
+      page,
+      page_size: pageSize,
+    };
   }
 }
 

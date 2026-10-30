@@ -155,7 +155,7 @@ export interface TopSoldAudiobook {
 }
 
 export interface TransactionRecord {
-  id: string; // e.g. TXN-01
+  id: string; // e.g. TXN-01 or uuid
   title: string;
   category: string;
   author: string;
@@ -164,6 +164,9 @@ export interface TransactionRecord {
   unitsSold: number;
   income: number;
   date?: string;
+  userName?: string;
+  userDeletedAt?: string | null;
+  recordType?: 'purchase' | 'subscription';
 }
 
 export interface UserProfile {

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import {
@@ -205,13 +206,13 @@ export default function DashboardPage() {
                           <td className="py-3 px-4 text-center">
                             <div className="w-8 h-11 mx-auto rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 overflow-hidden shadow-2xs">
                               {bookCover ? (
-                                <img
+                                <Image
                                   src={bookCover}
                                   alt={book.name}
+                                  width={32}
+                                  height={44}
                                   className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    (e.target as HTMLElement).style.display = 'none';
-                                  }}
+                                  unoptimized
                                 />
                               ) : (
                                 <BookOpen className="w-4 h-4 text-slate-300 dark:text-slate-600" weight="duotone" />

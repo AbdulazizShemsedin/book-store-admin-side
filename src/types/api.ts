@@ -392,6 +392,10 @@ export interface ListPlanResponseItem {
   string: string; // plan title
   price: string;
   discount?: number | null;
+  discounted_price?: string | null;
+  require_seats?: boolean;
+  minimum_seats?: number;
+  maximum_seats?: number | null;
 }
 
 export interface ListPlanResponseBody {
@@ -470,4 +474,53 @@ export interface GetAdvertisementResponseBody {
   banner?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// REPORTS (/admin/api/reports/records/purchase & /admin/api/reports/records/subscription)
+export interface ReportUserStruct {
+  id: string; // uuid
+  name: string;
+  deleted_at?: string | null;
+}
+
+export interface PurchaseRecordBookStruct {
+  id: string; // uuid
+  name: string;
+}
+
+export interface ListPurchaseRecordsResponseItem {
+  id: string; // uuid
+  plan: PurchaseRecordBookStruct;
+  type: 'book_only' | 'audio_only' | 'both';
+  paid_price: string;
+  user: ReportUserStruct;
+  created_at: string;
+}
+
+export interface ListPurchaseRecordsResponseBody {
+  page: number;
+  page_size: number;
+  total: number;
+  records: ListPurchaseRecordsResponseItem[] | null;
+}
+
+export interface SubscriptionRecordPlanStruct {
+  id: string; // uuid
+  name: string;
+}
+
+export interface ListSubscriptionRecordsResponseItem {
+  id: string; // uuid
+  plan: SubscriptionRecordPlanStruct;
+  type: 'init' | 'renewal';
+  paid_price: string;
+  user: ReportUserStruct;
+  created_at: string;
+}
+
+export interface ListSubscriptionRecordsResponseBody {
+  page: number;
+  page_size: number;
+  total: number;
+  records: ListSubscriptionRecordsResponseItem[] | null;
 }

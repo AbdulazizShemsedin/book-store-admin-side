@@ -6,6 +6,9 @@ import { Publisher } from '@/types/domain';
 import { Buildings, BookOpen, PencilSimple, Eye, Trash } from '@phosphor-icons/react';
 import { Spinner } from '@/components/ui/spinner';
 import { ErrorState } from '@/components/ui/error-state';
+import { useQueryClient } from '@tanstack/react-query';
+import { PUBLISHERS_QUERY_KEY } from '../hooks/use-publishers';
+import { publishersApi } from '../api/publishers-api';
 
 interface PublisherTableProps {
   publishers: Publisher[];
@@ -26,6 +29,7 @@ export function PublisherTable({
   onEdit,
   onDelete,
 }: PublisherTableProps) {
+  const queryClient = useQueryClient();
   if (isLoading) {
     return (
       <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-[#0d121d] rounded-2xl border border-slate-200/90 dark:border-slate-800/80 shadow-sm">
@@ -44,7 +48,6 @@ export function PublisherTable({
         title="Failed to load publishers"
         message={error?.message || 'Unable to retrieve publishers directory.'}
         onRetry={onRetry}
-        isBackendGap
       />
     );
   }

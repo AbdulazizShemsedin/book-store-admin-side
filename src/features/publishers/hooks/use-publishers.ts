@@ -11,7 +11,7 @@ export function usePublishers(params: ListPublishersParams = {}) {
 
   return useQuery({
     queryKey: [PUBLISHERS_QUERY_KEY, { page, pageSize, search }],
-    queryFn: () => publishersApi.list({ page, pageSize, search }),
+    queryFn: ({ signal }) => publishersApi.list({ page, pageSize, search }, signal),
     placeholderData: (prev) => prev,
     staleTime: 5 * 60 * 1000, // 5 minutes fresh cache for static publishers
   });

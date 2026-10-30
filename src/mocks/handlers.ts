@@ -655,7 +655,39 @@ export const handlers = [
       'image/png',
       'image/jpeg',
       'image/webp',
-    ];
+      // ==========================================
+  // REPORTS
+  // ==========================================
+  http.get('*/admin/api/reports/records/purchase', ({ request }) => {
+    const scenario = mockStore.getScenario();
+    if (scenario === 'SERVER_ERROR') {
+      return HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 });
+    }
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(url.searchParams.get('page_size') || '50', 10);
+    const period = url.searchParams.get('period') || undefined;
+    const date_start = url.searchParams.get('date_start') || undefined;
+    const date_end = url.searchParams.get('date_end') || undefined;
+    const result = mockStore.getPurchaseRecords({ page, pageSize, period, date_start, date_end });
+    return HttpResponse.json(result);
+  }),
+
+  http.get('*/admin/api/reports/records/subscription', ({ request }) => {
+    const scenario = mockStore.getScenario();
+    if (scenario === 'SERVER_ERROR') {
+      return HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 });
+    }
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(url.searchParams.get('page_size') || '50', 10);
+    const period = url.searchParams.get('period') || undefined;
+    const date_start = url.searchParams.get('date_start') || undefined;
+    const date_end = url.searchParams.get('date_end') || undefined;
+    const result = mockStore.getSubscriptionRecords({ page, pageSize, period, date_start, date_end });
+    return HttpResponse.json(result);
+  }),
+];
 
     if (!body?.content_type || !allowedContentTypes.includes(body.content_type)) {
       return HttpResponse.json(
