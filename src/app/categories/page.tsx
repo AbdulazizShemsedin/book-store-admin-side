@@ -74,33 +74,35 @@ export default function CategoriesPage() {
         }
       />
 
-      {/* Sticky Top Controls Bar */}
-      <div className="sticky top-0 z-20 -mx-6 sm:-mx-8 px-6 sm:px-8 py-3 mb-5 bg-[#edf2ef]/85 dark:bg-[#06090e]/85 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition-all">
-        <div className="w-full sm:w-80 relative">
-          <MagnifyingGlass className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search category name..."
-            className="w-full h-9 pl-9 pr-8 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 dark:focus:ring-emerald-500/20 focus:border-[#1e4634] dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch('')}
-              className="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2"
-              title="Clear search"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
+      {/* Top Controls Bar */}
+      <div className="glass-panel p-3.5 rounded-2xl mb-4 relative z-10 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="w-full sm:w-80 relative">
+            <MagnifyingGlass className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search category name..."
+              className="w-full h-9 pl-9 pr-8 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 dark:focus:ring-emerald-500/20 focus:border-[#1e4634] dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="w-4 h-4 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center absolute right-2.5 top-1/2 -translate-y-1/2"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-          <Folders className="w-4 h-4 text-[#1e4634] dark:text-emerald-400" weight="duotone" />
-          <span className="font-semibold text-slate-800 dark:text-slate-200">{total}</span>
-          <span>total categories recorded</span>
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <Folders className="w-4 h-4 text-[#1e4634] dark:text-emerald-400" weight="duotone" />
+            <span className="font-semibold text-slate-800 dark:text-slate-200">{total}</span>
+            <span>total categories recorded</span>
+          </div>
         </div>
       </div>
 

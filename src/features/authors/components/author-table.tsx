@@ -162,7 +162,7 @@ function AuthorTableRow({
 function AuthorTableSkeleton() {
   return (
     <div className="glass-panel rounded-3xl shadow-xs overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[calc(100vh-320px)] min-h-[380px]">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="sticky top-0 z-10 glass-table-th">
@@ -272,7 +272,7 @@ export function AuthorTable({
       <div className="glass-panel rounded-3xl shadow-xs overflow-hidden">
         <div
           ref={parentRef}
-          className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-290px)] min-h-[380px] relative"
+          className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] min-h-[380px] relative scroll-smooth overscroll-contain"
         >
           <table className="w-full text-left border-collapse text-xs">
             <thead>
