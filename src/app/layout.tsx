@@ -5,6 +5,7 @@ import { AuthProvider } from '@/providers/auth-provider';
 import { MswProvider } from '@/providers/msw-provider';
 import { SidebarProvider } from '@/providers/sidebar-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { TesterTelemetryRoot } from '@/features/tester-telemetry';
 
 export const metadata: Metadata = {
   title: 'TEWBA Admin Portal - Bookstore Management',
@@ -42,6 +43,7 @@ export default function RootLayout({
               <AuthProvider>
                 <SidebarProvider>
                   {children}
+                  <TesterTelemetryRoot />
                 </SidebarProvider>
               </AuthProvider>
             </QueryProvider>

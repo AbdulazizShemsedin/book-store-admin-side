@@ -121,6 +121,7 @@ export interface ListBookItem {
   id: string; // uuid
   name: string;
   publisher?: string | null;
+  publisher_id?: string | null;
   thumbnail?: string | null;
   language: string;
   has_book: boolean;
@@ -176,6 +177,8 @@ export interface GetBookAdminResponseBody {
   name: string;
   author?: string | null;
   author_id?: string | null;
+  publisher?: string | null;
+  publisher_id?: string | null;
   description: string;
   has_book: boolean;
   has_audio: boolean;
@@ -212,6 +215,9 @@ export interface GetBookResponseBody {
   has_book: boolean;
   has_audio: boolean;
   author?: string | null;
+  author_id?: string | null;
+  publisher?: string | null;
+  publisher_id?: string | null;
   rating?: string | null;
   tags?: string[] | null;
   thumbnail?: string | null;

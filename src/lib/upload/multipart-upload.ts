@@ -1,14 +1,13 @@
 import { apiClient } from '@/lib/api/client';
 import {
   InitBookUploadRequestBody,
-  InitBookUploadResponseBody,
   GetBookUploadPartURLRequestBody,
   GetBookUploadPartURLResponseBody,
   CompleteBookUploadRequestBody,
   Part,
 } from '@/types/api';
 
-const PART_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB per part
+const PART_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB per part (required minimum by S3 & Cloudflare R2)
 
 export interface UploadOptions {
   onProgress?: (percent: number) => void;
@@ -54,6 +53,8 @@ export function getValidContentType(file: File): InitBookUploadRequestBody['cont
 
 /**
  * Shared chunk execution logic for all multipart uploads.
+ * Uploads parts directly from client to presigned storage URLs (S3/Cloudflare R2),
+ * completely bypassing Vercel serverless function payload limits (4.5 MB).
  */
 async function executeUploadSession(
   file: File,
@@ -87,7 +88,7 @@ async function executeUploadSession(
       { signal: options.signal }
     );
 
-    // Upload chunk via Next.js proxy in browser to eliminate Cloudflare R2 CORS 403 Forbidden errors
+    // Upload chunk directly to the presigned storage URL
     // Wrapped in an automatic 3-attempt retry loop with exponential backoff for network resilience
     const MAX_CHUNK_RETRIES = 3;
     let attempt = 0;
@@ -100,26 +101,14 @@ async function executeUploadSession(
       }
 
       try {
-        if (typeof window !== 'undefined') {
-          uploadChunkResponse = await fetch('/internal/upload/chunk', {
-            method: 'PUT',
-            body: chunk,
-            headers: {
-              'Content-Type': contentType,
-              'x-upload-url': partUrlResponse.url,
-            },
-            signal: options.signal,
-          });
-        } else {
-          uploadChunkResponse = await fetch(partUrlResponse.url, {
-            method: 'PUT',
-            body: chunk,
-            headers: {
-              'Content-Type': contentType,
-            },
-            signal: options.signal,
-          });
-        }
+        uploadChunkResponse = await fetch(partUrlResponse.url, {
+          method: 'PUT',
+          body: chunk,
+          headers: {
+            'Content-Type': contentType,
+          },
+          signal: options.signal,
+        });
 
         if (uploadChunkResponse.ok) {
           break; // Chunk upload succeeded!
@@ -139,7 +128,14 @@ async function executeUploadSession(
         if (options.signal?.aborted) {
           throw new Error('Upload aborted by user');
         }
-        lastError = err instanceof Error ? err : new Error(String(err));
+        const errMsg = err instanceof Error ? err.message : String(err);
+        if (err instanceof TypeError && errMsg.toLowerCase().includes('failed to fetch')) {
+          lastError = new Error(
+            `Failed to upload part ${partNumber} of ${totalParts} to storage. Please ensure CORS is configured on the storage bucket (AllowedOrigins, AllowedMethods PUT, ExposeHeaders ETag). (Details: ${errMsg})`
+          );
+        } else {
+          lastError = err instanceof Error ? err : new Error(String(err));
+        }
       }
 
       attempt++;
@@ -159,16 +155,10 @@ async function executeUploadSession(
       );
     }
 
-    // Prefer the proxy's JSON body: intermediaries (e.g. Cloudflare compression) rewrite
-    // the ETag header into a weak validator (W/"..."), which S3 rejects as InvalidPart.
-    let rawEtag: string | null = null;
-    try {
-      const bodyJson = await uploadChunkResponse.clone().json();
-      if (typeof bodyJson?.etag === 'string') rawEtag = bodyJson.etag;
-    } catch {
-      // not the proxy (direct S3 PUT), fall back to the header
-    }
-    rawEtag = rawEtag || uploadChunkResponse.headers.get('ETag');
+    // Extract storage ETag (handles ETag or etag, removes quotes and weak validator W/)
+    const rawEtag =
+      uploadChunkResponse.headers.get('ETag') ||
+      uploadChunkResponse.headers.get('etag');
 
     const cleanEtag = (rawEtag || '').replace(/^W\//, '').replace(/^["']|["']$/g, '');
     if (!cleanEtag) {
@@ -303,4 +293,3 @@ export async function uploadFileDirectMultipart(
 export function resolveFileIdFromUpload(sessionId: string, _key: string): string {
   return sessionId;
 }
-

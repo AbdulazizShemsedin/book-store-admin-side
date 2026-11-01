@@ -21,6 +21,10 @@ import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import { AuthorModal } from '@/features/authors/components/author-modal';
+import { CreatePublisherModal } from '@/features/publishers/components/create-publisher-modal';
+import { toast } from 'sonner';
 import { FileDropzone } from '@/components/uploads/file-dropzone';
 import {
   BookOpen,
@@ -113,6 +117,7 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<UpdateBookFormData>({
     resolver: zodResolver(updateBookSchema),
@@ -128,6 +133,32 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
       totalPrice: book.price?.total || '',
     },
   });
+
+  // Quick Author & Publisher Modal states
+  const [isAuthorModalOpen, setIsAuthorModalOpen] = useState(false);
+  const [authorInitialName, setAuthorInitialName] = useState('');
+  const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
+  const [publisherInitialName, setPublisherInitialName] = useState('');
+
+  const handleOpenCreateAuthor = (name: string = '') => {
+    setAuthorInitialName(name);
+    setIsAuthorModalOpen(true);
+  };
+
+  const handleAuthorCreated = (newAuthor: { id: string; name: string }) => {
+    setValue('authorId', newAuthor.id, { shouldValidate: true, shouldDirty: true });
+    toast.success(`Author "${newAuthor.name}" created and selected!`);
+  };
+
+  const handleOpenCreatePublisher = (name: string = '') => {
+    setPublisherInitialName(name);
+    setIsPublisherModalOpen(true);
+  };
+
+  const handlePublisherCreated = (newPublisher: { id: string; name: string }) => {
+    setValue('publisherId', newPublisher.id, { shouldValidate: true, shouldDirty: true });
+    toast.success(`Publisher "${newPublisher.name}" registered and selected!`);
+  };
 
   // Re-sync form when author or publisher lists resolve
   useEffect(() => {
@@ -339,15 +370,22 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
                   name="authorId"
                   control={control}
                   render={({ field }) => (
-                    <Select
+                    <SearchableSelect
                       label="Author"
-                      options={[
-                        { value: '', label: 'Select author...' },
-                        ...authors.map((a) => ({ value: a.id, label: a.name })),
-                      ]}
+                      placeholder="Select or register author..."
+                      searchPlaceholder="Search author or type new name..."
+                      options={authors.map((a) => ({
+                        label: a.name,
+                        value: a.id,
+                        sublabel: a.nationality,
+                      }))}
                       value={field.value || ''}
-                      onChange={field.onChange}
+                      onChange={(val) => field.onChange(val)}
                       error={errors.authorId?.message}
+                      onQuickAddClick={() => handleOpenCreateAuthor('')}
+                      quickAddLabel="+ New Author"
+                      onCreateNew={(typed) => handleOpenCreateAuthor(typed)}
+                      createNewText="Register author"
                     />
                   )}
                 />
@@ -356,15 +394,21 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
                   name="publisherId"
                   control={control}
                   render={({ field }) => (
-                    <Select
+                    <SearchableSelect
                       label="Publisher (Optional)"
-                      options={[
-                        { value: '', label: 'Select publisher...' },
-                        ...publishers.map((p) => ({ value: p.id, label: p.name })),
-                      ]}
+                      placeholder="Select publisher (optional)..."
+                      searchPlaceholder="Search publisher or type new imprint..."
+                      options={publishers.map((p) => ({
+                        label: p.name,
+                        value: p.id,
+                      }))}
                       value={field.value || ''}
-                      onChange={field.onChange}
+                      onChange={(val) => field.onChange(val)}
                       error={errors.publisherId?.message}
+                      onQuickAddClick={() => handleOpenCreatePublisher('')}
+                      quickAddLabel="+ New Publisher"
+                      onCreateNew={(typed) => handleOpenCreatePublisher(typed)}
+                      createNewText="Register publisher"
                     />
                   )}
                 />
@@ -698,6 +742,21 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
           </div>
         </div>
       </div>
+      {/* Quick Author Registration Modal */}
+      <AuthorModal
+        isOpen={isAuthorModalOpen}
+        onClose={() => setIsAuthorModalOpen(false)}
+        initialName={authorInitialName}
+        onSuccess={handleAuthorCreated}
+      />
+
+      {/* Quick Publisher Registration Modal */}
+      <CreatePublisherModal
+        isOpen={isPublisherModalOpen}
+        onClose={() => setIsPublisherModalOpen(false)}
+        initialName={publisherInitialName}
+        onSuccess={handlePublisherCreated}
+      />
     </form>
   );
 }

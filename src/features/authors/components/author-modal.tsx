@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,8 @@ import { cn } from '@/lib/utils/cn';
 interface AuthorModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialName?: string;
+  onSuccess?: (createdAuthor: { id: string; name: string }) => void;
 }
 
 interface CreatedAuthorState {
@@ -35,7 +37,12 @@ interface CreatedAuthorState {
   nationality?: string;
 }
 
-export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
+export function AuthorModal({
+  isOpen,
+  onClose,
+  initialName = '',
+  onSuccess,
+}: AuthorModalProps) {
   const queryClient = useQueryClient();
 
   // Step 1 vs Step 2 Wizard state
@@ -63,12 +70,31 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
   } = useForm<AuthorFormData>({
     resolver: zodResolver(authorSchema),
     defaultValues: {
-      name: '',
+      name: initialName || '',
       nationality: 'Yemeni',
       bio: '',
       photoUrl: '',
     },
   });
+
+  // Re-sync form whenever modal opens or initialName changes
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        name: initialName || '',
+        nationality: 'Yemeni',
+        bio: '',
+        photoUrl: '',
+      });
+      setCurrentStep(1);
+      setCreatedAuthor(null);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      setIsAvatarUploaded(false);
+      setFormError(null);
+      setAvatarError(null);
+    }
+  }, [isOpen, initialName, reset]);
 
   const handleResetModal = () => {
     reset();
@@ -88,11 +114,17 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
     try {
       const result = await authorsApi.createRecord(data);
       queryClient.invalidateQueries({ queryKey: [AUTHORS_QUERY_KEY] });
-      setCreatedAuthor({
+      const newAuthor = {
         id: result.id,
         name: data.name,
         nationality: data.nationality,
-      });
+      };
+      setCreatedAuthor(newAuthor);
+
+      if (onSuccess) {
+        onSuccess({ id: result.id, name: data.name });
+      }
+
       setCurrentStep(2);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -225,7 +257,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
             {...register('bio')}
           />
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <Button type="button" variant="secondary" onClick={handleResetModal}>
               Cancel
             </Button>
@@ -316,7 +348,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
 
           <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
             <Button type="button" variant="ghost" onClick={handleFinish} className="text-xs text-slate-500 dark:text-slate-400">
-              Skip for now
+              Skip photo upload
             </Button>
             <Button
               type="button"
@@ -324,7 +356,7 @@ export function AuthorModal({ isOpen, onClose }: AuthorModalProps) {
               className="bg-[#1e4634] hover:bg-[#153426] text-white text-xs h-9"
               leftIcon={<Check className="w-3.5 h-3.5" weight="bold" />}
             >
-              Finish & View Directory
+              Done & Select Author
             </Button>
           </div>
         </div>

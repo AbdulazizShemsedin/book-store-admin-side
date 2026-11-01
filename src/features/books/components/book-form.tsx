@@ -17,6 +17,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import { AuthorModal } from '@/features/authors/components/author-modal';
+import { CreatePublisherModal } from '@/features/publishers/components/create-publisher-modal';
+import { toast } from 'sonner';
 import { FileDropzone } from '@/components/uploads/file-dropzone';
 import {
   BookOpen,
@@ -84,6 +88,12 @@ export function BookForm() {
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
 
+  // Quick Author & Publisher Modal states
+  const [isAuthorModalOpen, setIsAuthorModalOpen] = useState(false);
+  const [authorInitialName, setAuthorInitialName] = useState('');
+  const [isPublisherModalOpen, setIsPublisherModalOpen] = useState(false);
+  const [publisherInitialName, setPublisherInitialName] = useState('');
+
   const { data: authorsData } = useAuthors({ pageSize: 100 });
   const { data: publishersData } = usePublishers({ pageSize: 100 });
   const { data: allCategoriesData } = useAllCategories();
@@ -131,6 +141,27 @@ export function BookForm() {
   const watchedLanguage = watch('language') || 'en';
 
   const selectedAuthor = authors.find((a) => a.id === watchedAuthorId);
+
+  // Quick Create Handlers for On-the-Fly Author & Publisher Registration
+  const handleOpenCreateAuthor = (name: string = '') => {
+    setAuthorInitialName(name);
+    setIsAuthorModalOpen(true);
+  };
+
+  const handleAuthorCreated = (newAuthor: { id: string; name: string }) => {
+    setValue('authorId', newAuthor.id, { shouldValidate: true, shouldDirty: true });
+    toast.success(`Author "${newAuthor.name}" created and selected!`);
+  };
+
+  const handleOpenCreatePublisher = (name: string = '') => {
+    setPublisherInitialName(name);
+    setIsPublisherModalOpen(true);
+  };
+
+  const handlePublisherCreated = (newPublisher: { id: string; name: string }) => {
+    setValue('publisherId', newPublisher.id, { shouldValidate: true, shouldDirty: true });
+    toast.success(`Publisher "${newPublisher.name}" registered and selected!`);
+  };
 
   // STEP 1 SUBMIT: Register the initial book record and obtain the real book_id
   const onStep1Submit = async (data: BookFormData) => {
@@ -387,14 +418,23 @@ export function BookForm() {
                       name="authorId"
                       control={control}
                       render={({ field }) => (
-                        <Select
+                        <SearchableSelect
                           label="Author"
                           required
-                          placeholder="Select registered author..."
-                          options={authors.map((a) => ({ label: a.name, value: a.id }))}
-                          error={errors.authorId?.message}
+                          placeholder="Select or create author..."
+                          searchPlaceholder="Search author or type new name..."
+                          options={authors.map((a) => ({
+                            label: a.name,
+                            value: a.id,
+                            sublabel: a.nationality,
+                          }))}
                           value={field.value}
-                          onChange={(e) => field.onChange(e.target.value)}
+                          onChange={(val) => field.onChange(val)}
+                          error={errors.authorId?.message}
+                          onQuickAddClick={() => handleOpenCreateAuthor('')}
+                          quickAddLabel="+ New Author"
+                          onCreateNew={(typed) => handleOpenCreateAuthor(typed)}
+                          createNewText="Register author"
                         />
                       )}
                     />
@@ -403,13 +443,21 @@ export function BookForm() {
                       name="publisherId"
                       control={control}
                       render={({ field }) => (
-                        <Select
+                        <SearchableSelect
                           label="Publisher"
                           placeholder="Select publisher (optional)..."
-                          options={publishers.map((p) => ({ label: p.name, value: p.id }))}
-                          error={errors.publisherId?.message}
+                          searchPlaceholder="Search publisher or type new imprint..."
+                          options={publishers.map((p) => ({
+                            label: p.name,
+                            value: p.id,
+                          }))}
                           value={field.value}
-                          onChange={(e) => field.onChange(e.target.value)}
+                          onChange={(val) => field.onChange(val)}
+                          error={errors.publisherId?.message}
+                          onQuickAddClick={() => handleOpenCreatePublisher('')}
+                          quickAddLabel="+ New Publisher"
+                          onCreateNew={(typed) => handleOpenCreatePublisher(typed)}
+                          createNewText="Register publisher"
                         />
                       )}
                     />
@@ -978,6 +1026,21 @@ export function BookForm() {
           </div>
         </div>
       )}
+      {/* Quick Author Registration Modal */}
+      <AuthorModal
+        isOpen={isAuthorModalOpen}
+        onClose={() => setIsAuthorModalOpen(false)}
+        initialName={authorInitialName}
+        onSuccess={handleAuthorCreated}
+      />
+
+      {/* Quick Publisher Registration Modal */}
+      <CreatePublisherModal
+        isOpen={isPublisherModalOpen}
+        onClose={() => setIsPublisherModalOpen(false)}
+        initialName={publisherInitialName}
+        onSuccess={handlePublisherCreated}
+      />
     </div>
   );
 }
