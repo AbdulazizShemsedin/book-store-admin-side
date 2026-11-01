@@ -6,6 +6,7 @@ import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { useBook } from '@/features/books/hooks/use-books';
 import { useCategories, useAllCategories } from '@/features/categories/hooks/use-categories';
+import { usePublishers } from '@/features/publishers/hooks/use-publishers';
 import { booksApi } from '@/features/books/api/books-api';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,18 @@ export default function BookDetailsPage() {
       ? allCategoriesData
       : (categoriesData?.categories || []);
   }, [allCategoriesData, categoriesData?.categories]);
+
+  const { data: publishersData } = usePublishers({ pageSize: 100 });
+  const publishers = React.useMemo(() => publishersData?.publishers || [], [publishersData?.publishers]);
+
+  const displayPublisher = React.useMemo(() => {
+    if (book?.publisher && book.publisher !== '—') return book.publisher;
+    if (book?.publisherId) {
+      const match = publishers.find((p) => p.id === book.publisherId);
+      if (match) return match.name;
+    }
+    return book?.publisher || '—';
+  }, [book?.publisher, book?.publisherId, publishers]);
 
   const [selectedTagId, setSelectedTagId] = useState('');
   const [isAttachingTag, setIsAttachingTag] = useState(false);
@@ -273,7 +286,7 @@ export default function BookDetailsPage() {
                     </div>
                     <div>
                       <span className="text-slate-400 dark:text-slate-500 block text-[11px]">Publisher</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{book.publisher || '—'}</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">{displayPublisher}</span>
                     </div>
                     <div>
                       <span className="text-slate-400 dark:text-slate-500 block text-[11px]">Status</span>

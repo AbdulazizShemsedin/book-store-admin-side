@@ -319,6 +319,9 @@ export const handlers = [
       name: book.name,
       description: book.description,
       author: book.author || null,
+      author_id: (book as any).author_id || null,
+      publisher: (book as any).publisher || null,
+      publisher_id: (book as any).publisher_id || null,
       rating: book.rating || null,
       has_book: book.has_book,
       has_audio: book.has_audio,
@@ -351,6 +354,11 @@ export const handlers = [
 
     if (body.name) book.name = body.name;
     if (body.description) book.description = body.description;
+    if (body.publisher_id) {
+      (book as any).publisher_id = body.publisher_id;
+      const pub = mockStore.getPublisherById(body.publisher_id);
+      if (pub) (book as any).publisher = pub.string;
+    }
 
     return new HttpResponse(null, { status: 200 });
   }),
