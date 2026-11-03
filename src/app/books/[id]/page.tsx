@@ -63,12 +63,15 @@ export default function BookDetailsPage() {
   const publishers = React.useMemo(() => publishersData?.publishers || [], [publishersData?.publishers]);
 
   const displayPublisher = React.useMemo(() => {
-    if (book?.publisher && book.publisher !== '—') return book.publisher;
+    if (typeof book?.publisher === 'object' && book?.publisher !== null) {
+      return (book.publisher as any).name || '—';
+    }
+    if (typeof book?.publisher === 'string' && book.publisher !== '—') return book.publisher;
     if (book?.publisherId) {
       const match = publishers.find((p) => p.id === book.publisherId);
       if (match) return match.name;
     }
-    return book?.publisher || '—';
+    return typeof book?.publisher === 'string' ? book.publisher : '—';
   }, [book?.publisher, book?.publisherId, publishers]);
 
   const queryClient = useQueryClient();
