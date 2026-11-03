@@ -132,21 +132,27 @@ export const booksApi = {
       }
     }
 
-    const books: Book[] = rawBooks.map((item) => ({
-      id: item.id,
-      name: item.name,
-      author: item.author || '—',
-      authorId: item.author_id || undefined,
-      publisher: item.publisher || '—',
-      publisherId: item.publisher_id || (item as any).publisher_id || undefined,
-      status: item.status || 'Published',
-      hasAudiobook: Boolean(item.has_audio),
-      language: item.language || 'English',
-      thumbnail: item.thumbnail || null,
-      coverUrl: item.thumbnail || undefined,
-      createdAt: item.created_at,
-      updatedAt: item.updated_at,
-    }));
+    const books: Book[] = rawBooks.map((item) => {
+      const pubObj = typeof (item as any).publisher === 'object' && (item as any).publisher !== null ? (item as any).publisher : null;
+      const publisherName = pubObj ? pubObj.name : (typeof item.publisher === 'string' ? item.publisher : '—');
+      const publisherId = pubObj ? pubObj.id : (item.publisher_id || (item as any).publisher_id || undefined);
+
+      return {
+        id: item.id,
+        name: item.name,
+        author: item.author || '—',
+        authorId: item.author_id || undefined,
+        publisher: publisherName,
+        publisherId: publisherId,
+        status: item.status || 'Published',
+        hasAudiobook: Boolean(item.has_audio),
+        language: item.language || 'English',
+        thumbnail: item.thumbnail || null,
+        coverUrl: item.thumbnail || undefined,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      };
+    });
 
     return {
       books,
@@ -163,13 +169,17 @@ export const booksApi = {
   async getById(id: string): Promise<Book> {
     try {
       const response = await apiClient.get<GetBookAdminResponseBody>(`/admin/api/book/${id}`);
+      const pubObj = typeof response.publisher === 'object' && response.publisher !== null ? response.publisher : null;
+      const publisherName = pubObj ? pubObj.name : (typeof response.publisher === 'string' ? response.publisher : (response as any).publisher_name || '—');
+      const publisherId = pubObj ? pubObj.id : (response.publisher_id || undefined);
+
       return {
         id: response.id || id,
         name: response.name,
         author: response.author || '—',
         authorId: response.author_id || undefined,
-        publisher: response.publisher || (response as any).publisher_name || '—',
-        publisherId: response.publisher_id || undefined,
+        publisher: publisherName,
+        publisherId: publisherId,
         status: response.status || 'Published',
         pageCount: 0,
         description: response.description,
@@ -194,13 +204,17 @@ export const booksApi = {
       };
     } catch {
       const response = await apiClient.get<GetBookResponseBody>(`/api/book/${id}`);
+      const pubObj = typeof (response as any).publisher === 'object' && (response as any).publisher !== null ? (response as any).publisher : null;
+      const publisherName = pubObj ? pubObj.name : (typeof response.publisher === 'string' ? response.publisher : (response as any).publisher_name || '—');
+      const publisherId = pubObj ? pubObj.id : (response.publisher_id || undefined);
+
       return {
         id: response.id || id,
         name: response.name,
         author: response.author || '—',
         authorId: (response as any).author_id || undefined,
-        publisher: response.publisher || (response as any).publisher_name || '—',
-        publisherId: response.publisher_id || undefined,
+        publisher: publisherName,
+        publisherId: publisherId,
         status: 'Published',
         pageCount: 0,
         description: response.description,

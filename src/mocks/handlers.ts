@@ -320,7 +320,7 @@ export const handlers = [
       description: book.description,
       author: book.author || null,
       author_id: (book as any).author_id || null,
-      publisher: (book as any).publisher || null,
+      publisher: (book as any).publisher_id ? { id: (book as any).publisher_id, name: (book as any).publisher || "Tewba Publishing" } : ((book as any).publisher ? { id: "pub-default", name: (book as any).publisher } : null),
       publisher_id: (book as any).publisher_id || null,
       rating: book.rating || null,
       has_book: book.has_book,

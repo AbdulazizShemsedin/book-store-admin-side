@@ -172,12 +172,17 @@ export interface GetBookAdminResponseSeries {
   name: string;
 }
 
+export interface GetBookAdminResponsePublisher {
+  id: string; // uuid
+  name: string;
+}
+
 export interface GetBookAdminResponseBody {
   id: string;
   name: string;
   author?: string | null;
   author_id?: string | null;
-  publisher?: string | null;
+  publisher?: GetBookAdminResponsePublisher | string | null;
   publisher_id?: string | null;
   description: string;
   has_book: boolean;

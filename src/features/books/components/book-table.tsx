@@ -189,7 +189,11 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
       {/* Publisher */}
       <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
         {book.publisher ? (
-          <span className="truncate block max-w-[140px]">{book.publisher}</span>
+          <span className="truncate block max-w-[140px]">
+            {typeof book.publisher === 'object' && book.publisher !== null
+              ? (book.publisher as any).name || '—'
+              : String(book.publisher)}
+          </span>
         ) : (
           <span className="text-slate-400 dark:text-slate-600 italic text-[11px]">—</span>
         )}
