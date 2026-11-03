@@ -35,6 +35,9 @@ export const publishersApi = {
       page,
       page_size: pageSize,
     };
+    if (params.search?.trim()) {
+      queryParams.search = params.search.trim();
+    }
 
     const response = await apiClient.get<ListPublisherResponseBody>('/admin/api/publisher', {
       params: queryParams,

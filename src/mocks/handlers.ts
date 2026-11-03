@@ -659,6 +659,7 @@ export const handlers = [
 
     const allowedContentTypes = [
       'application/epub+zip',
+      'application/pdf',
       'audio/mpeg',
       'image/png',
       'image/jpeg',
@@ -749,5 +750,16 @@ export const handlers = [
     }
 
     return new HttpResponse(null, { status: 200 });
+  }),
+  // ==========================================
+  // DASHBOARD
+  // ==========================================
+  http.get('*/admin/api/dashboard/stats', () => {
+    const scenario = mockStore.getScenario();
+    if (scenario === 'SERVER_ERROR') {
+      return HttpResponse.json({ title: 'Internal Server Error', status: 500 }, { status: 500 });
+    }
+    const stats = mockStore.getDashboardStats();
+    return HttpResponse.json(stats);
   }),
 ];

@@ -26,6 +26,7 @@ import {
   ListPurchaseRecordsResponseBody,
   ListSubscriptionRecordsResponseItem,
   ListSubscriptionRecordsResponseBody,
+  GetDashboardStatsResponseBody,
 } from '@/types/api';
 
 export type ErrorScenario = 'NONE' | 'SERVER_ERROR' | 'UNAUTHORIZED' | 'VALIDATION_ERROR' | 'EMPTY_STATE';
@@ -817,6 +818,80 @@ class MockStore {
       total,
       page,
       page_size: pageSize,
+    };
+  }
+
+  getDashboardStats(): GetDashboardStatsResponseBody {
+    const totalAuthors = this.authors.length;
+    const totalPublishers = this.publishers.length;
+    const totalCategories = this.categories.length;
+    const rootCategories = this.categories.filter((c) => !c.parent_id).length;
+
+    const books = this.books;
+    const totalBooks = books.length;
+
+    let bookOnly = 0;
+    let audioOnly = 0;
+    let both = 0;
+    let neither = 0;
+
+    const privateStats = {
+      total: 0,
+      book_only: 0,
+      audio_only: 0,
+      both: 0,
+      neither: 0,
+    };
+
+    const publicStats = {
+      total: 0,
+      book_only: 0,
+      audio_only: 0,
+      both: 0,
+    };
+
+    for (const b of books) {
+      const hasBook = b.has_book ?? true;
+      const hasAudio = b.has_audio ?? false;
+      const isPrivate = b.status?.toLowerCase() === 'private';
+
+      let type: 'book_only' | 'audio_only' | 'both' | 'neither' = 'neither';
+      if (hasBook && hasAudio) type = 'both';
+      else if (hasBook) type = 'book_only';
+      else if (hasAudio) type = 'audio_only';
+
+      if (type === 'both') both++;
+      else if (type === 'book_only') bookOnly++;
+      else if (type === 'audio_only') audioOnly++;
+      else neither++;
+
+      if (isPrivate) {
+        privateStats.total++;
+        if (type === 'both') privateStats.both++;
+        else if (type === 'book_only') privateStats.book_only++;
+        else if (type === 'audio_only') privateStats.audio_only++;
+        else privateStats.neither++;
+      } else {
+        publicStats.total++;
+        if (type === 'both') publicStats.both++;
+        else if (type === 'book_only') publicStats.book_only++;
+        else if (type === 'audio_only') publicStats.audio_only++;
+      }
+    }
+
+    return {
+      authors: { total: totalAuthors },
+      publishers: { total: totalPublishers },
+      categories: { roots: rootCategories, total: totalCategories },
+      books: {
+        total: totalBooks,
+        book_only: bookOnly,
+        audio_only: audioOnly,
+        both,
+        neither,
+        private: privateStats,
+        public: publicStats,
+      },
     };
   }
 }

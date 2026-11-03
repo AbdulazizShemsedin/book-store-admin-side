@@ -22,6 +22,8 @@ import {
   DownloadSimple,
   Headphones,
   FileText,
+  Globe,
+  EyeSlash,
 } from '@phosphor-icons/react';
 import { exportToCSV, exportToJSON } from '@/lib/utils/export-utils';
 import { toast } from 'sonner';
@@ -43,15 +45,17 @@ function BooksContent() {
   const [category, setCategory] = useState('All');
   const [language, setLanguage] = useState('All');
   const [format, setFormat] = useState('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'public' | 'private'>('All');
 
   // Debounce search input to avoid firing network requests on every keystroke
   const debouncedSearch = useDebounce(search, 350);
 
-  // Query books catalog with authorId, language, and format forwarded to the server
+  // Query books catalog with authorId, language, status, and format forwarded to the server
   const { data, isLoading, isError, error, refetch } = useBooks({
     page,
     pageSize,
     search: debouncedSearch,
+    status: statusFilter !== 'All' ? statusFilter : undefined,
     category: category !== 'All' ? category : undefined,
     authorId: authorIdParam || undefined,
     language: language !== 'All' ? language : undefined,
@@ -61,9 +65,17 @@ function BooksContent() {
   const books = React.useMemo(() => data?.books || [], [data?.books]);
   const total = data?.total || 0;
 
-  // Filter books by selected language and format (three supported languages: en, am, ar)
+  // Filter books by selected language, format, and publication status
   const displayedBooks = React.useMemo(() => {
     return books.filter((book) => {
+      // Status filter
+      if (statusFilter !== 'All') {
+        const isTargetPublic = statusFilter === 'public';
+        const isBookPublic =
+          book.status?.toLowerCase() === 'public' || book.status?.toLowerCase() === 'published';
+        if (isTargetPublic !== isBookPublic) return false;
+      }
+
       // Language filter
       if (language !== 'All') {
         const lang = (book.language || '').toLowerCase().trim();
@@ -81,7 +93,7 @@ function BooksContent() {
 
       return true;
     });
-  }, [books, language, format]);
+  }, [books, statusFilter, language, format]);
 
   const handleClearAuthorFilter = () => {
     router.replace('/books');
@@ -191,6 +203,59 @@ function BooksContent() {
 
         {/* Dropdown Filters & Actions */}
         <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          {/* Quick Publication Status Pills */}
+          <div className="flex items-center p-0.5 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 backdrop-blur-md shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter('All');
+                setPage(1);
+              }}
+              className={cn(
+                'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                statusFilter === 'All'
+                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              )}
+            >
+              All Statuses
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter('public');
+                setPage(1);
+              }}
+              className={cn(
+                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                statusFilter === 'public'
+                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              )}
+              title="Show only books published to customer storefront"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>Public</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter('private');
+                setPage(1);
+              }}
+              className={cn(
+                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                statusFilter === 'private'
+                  ? 'bg-amber-600 dark:bg-amber-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              )}
+              title="Show only private / draft books"
+            >
+              <EyeSlash className="w-3.5 h-3.5" />
+              <span>Private</span>
+            </button>
+          </div>
+
           {/* Quick Format Pills */}
           <div className="flex items-center p-0.5 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 backdrop-blur-md shadow-2xs">
             <button

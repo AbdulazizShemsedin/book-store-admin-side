@@ -194,7 +194,7 @@ export interface GetBookAdminResponseBody {
 export interface UpdateBookRequestBody {
   name?: string;
   description?: string;
-  language: 'am' | 'ar' | 'en';
+  language?: 'am' | 'ar' | 'en' | string;
   author_id?: string;
   publisher_id?: string;
   status?: 'private' | 'public';
@@ -227,7 +227,7 @@ export interface GetBookResponseBody {
 // BOOK ASSETS & THUMBNAILS & TAGS
 export interface UploadBookAssetRequestBody {
   asset_type: 'book' | 'audio';
-  content_type: 'application/epub+zip' | 'audio/mpeg';
+  content_type: 'application/epub+zip' | 'application/pdf' | 'audio/mpeg';
   expected_parts: number;
   name: string;
 }
@@ -530,3 +530,52 @@ export interface ListSubscriptionRecordsResponseBody {
   total: number;
   records: ListSubscriptionRecordsResponseItem[] | null;
 }
+
+// ==========================================
+// DASHBOARD STATS
+// ==========================================
+export interface AuthorsStruct {
+  total: number;
+}
+
+export interface PublishersStruct {
+  total: number;
+}
+
+export interface CategoriesStruct {
+  roots: number;
+  total: number;
+}
+
+export interface PrivateStruct {
+  audio_only: number;
+  book_only: number;
+  both: number;
+  neither: number;
+  total: number;
+}
+
+export interface PublicStruct {
+  audio_only: number;
+  book_only: number;
+  both: number;
+  total: number;
+}
+
+export interface BooksStruct {
+  audio_only: number;
+  book_only: number;
+  both: number;
+  neither: number;
+  private: PrivateStruct;
+  public: PublicStruct;
+  total: number;
+}
+
+export interface GetDashboardStatsResponseBody {
+  authors: AuthorsStruct;
+  books: BooksStruct;
+  categories: CategoriesStruct;
+  publishers: PublishersStruct;
+}
+

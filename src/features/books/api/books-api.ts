@@ -69,21 +69,14 @@ export const booksApi = {
       responsePage = response.page || page;
       responsePageSize = response.page_size || pageSize;
     } catch (err: unknown) {
-      // If the live backend returns 422 because query parameters (language, has_audio, or author_id)
+      // If the live backend returns 422 because query parameters (status, search, language, has_audio, or author_id)
       // have not been deployed yet to the backend's validator, gracefully fall back to fetching
-      // the catalog and filtering in memory so the catalog NEVER crashes.
-      if (
-        err instanceof ApiError &&
-        err.status === 422 &&
-        (queryParams.language || queryParams.has_audio !== undefined || queryParams.author_id)
-      ) {
+      // the catalog with only page & page_size and filtering in memory so the catalog NEVER crashes.
+      if (err instanceof ApiError && err.status === 422) {
         const fallbackParams: Record<string, string | number | boolean | undefined> = {
-          ...queryParams,
-          page_size: Math.max(pageSize, 50),
+          page,
+          page_size: pageSize,
         };
-        delete fallbackParams.language;
-        delete fallbackParams.has_audio;
-        delete fallbackParams.author_id;
 
         const fallbackResponse = await apiClient.get<ListBookResponseBody>('/admin/api/book', {
           params: fallbackParams,
@@ -91,6 +84,22 @@ export const booksApi = {
         });
 
         let matched = fallbackResponse.books || [];
+
+        // Client-side fallback filter for status
+        if (params.status) {
+          const targetStatus = params.status.toLowerCase();
+          matched = matched.filter((b) => (b.status || '').toLowerCase() === targetStatus);
+        }
+
+        // Client-side fallback filter for search
+        if (params.search?.trim()) {
+          const q = params.search.trim().toLowerCase();
+          matched = matched.filter((b) =>
+            (b.name || '').toLowerCase().includes(q) ||
+            (b.author || '').toLowerCase().includes(q) ||
+            (b.publisher || '').toLowerCase().includes(q)
+          );
+        }
 
         // Client-side fallback filter for authorId
         if (params.authorId) {
