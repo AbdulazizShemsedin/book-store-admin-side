@@ -139,6 +139,21 @@ export default function DashboardPage() {
                 </span>
                 <span className="text-sm font-semibold text-emerald-200/90">Books & Audiobooks</span>
               </div>
+              {statsData?.booksBreakdown && (
+                <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 text-[11px] font-medium border border-emerald-400/25">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
+                    {statsData.booksBreakdown.public.total.toLocaleString()} Public
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 text-[11px] font-medium border border-amber-400/25">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300" />
+                    {statsData.booksBreakdown.private.total.toLocaleString()} Private
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-emerald-100/90 text-[11px] font-medium">
+                    {statsData.booksBreakdown.bookOnly} E-books • {statsData.booksBreakdown.audioOnly} Audio • {statsData.booksBreakdown.both} Bundles
+                  </span>
+                </div>
+              )}
               <p className="text-xs text-emerald-100/70 mt-2.5 max-w-md leading-relaxed">
                 Centralized multi-lingual repository supporting Amharic, Oromo, Tigrinya, Arabic, English, and Somali literature.
               </p>

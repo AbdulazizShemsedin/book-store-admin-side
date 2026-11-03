@@ -40,6 +40,9 @@ export const categoriesApi = {
     if (params.parentId) {
       queryParams.parent_id = params.parentId;
     }
+    if (params.search?.trim()) {
+      queryParams.search = params.search.trim();
+    }
 
     try {
       const response = await apiClient.get<ListCategoryAdminResponseBody>(

@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { Book } from '@/types/domain';
 import {
   Eye,
+  EyeSlash,
+  Globe,
   Book as BookIcon,
   Headphones,
   FileText,
@@ -17,6 +19,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { cn } from '@/lib/utils/cn';
 import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { toast } from 'sonner';
 import { BOOKS_QUERY_KEY } from '../hooks/use-books';
 import { booksApi } from '../api/books-api';
 
@@ -45,6 +48,30 @@ interface BookTableRowProps {
 }
 
 function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
+  const queryClient = useQueryClient();
+  const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
+  const isPublic = book.status?.toLowerCase() === 'public' || book.status?.toLowerCase() === 'published';
+
+  const handleToggleRowStatus = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const nextStatus = isPublic ? 'private' : 'public';
+    try {
+      setIsUpdatingStatus(true);
+      await booksApi.update(book.id, { status: nextStatus });
+      queryClient.invalidateQueries({ queryKey: [BOOKS_QUERY_KEY] });
+      toast.success(
+        nextStatus === 'public'
+          ? `"${book.name}" is now Public on the storefront.`
+          : `"${book.name}" is now Private.`
+      );
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update book publication status.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const createdDate = book.createdAt
     ? new Date(book.createdAt).toLocaleDateString('en-US', {
         month: 'short',
@@ -108,6 +135,21 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
           </span>
         ) : (
           <span className="text-slate-300 dark:text-slate-600 italic text-[11px]">—</span>
+        )}
+      </td>
+
+      {/* Publication Status */}
+      <td className="py-3 px-4 whitespace-nowrap">
+        {isPublic ? (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>Public</span>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span>Private</span>
+          </span>
         )}
       </td>
 
@@ -177,14 +219,43 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
 
       {/* Actions */}
       <td className="py-3 px-5 text-right whitespace-nowrap">
-        <Link
-          href={`/books/${book.id}`}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-900 dark:hover:text-emerald-300 bg-white/70 dark:bg-white/[0.06] hover:bg-white dark:hover:bg-white/[0.12] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
-          title="View book details"
-        >
-          <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-400" />
-          <span>Details</span>
-        </Link>
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={handleToggleRowStatus}
+            disabled={isUpdatingStatus}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all active:scale-[0.98]',
+              isPublic
+                ? 'text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20'
+                : 'text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20'
+            )}
+            title={isPublic ? 'Click to make Private (hide from storefront)' : 'Click to Publish to storefront'}
+          >
+            {isUpdatingStatus ? (
+              <Spinner size="sm" />
+            ) : isPublic ? (
+              <>
+                <EyeSlash className="w-3.5 h-3.5" weight="bold" />
+                <span>Private</span>
+              </>
+            ) : (
+              <>
+                <Globe className="w-3.5 h-3.5" weight="bold" />
+                <span>Publish</span>
+              </>
+            )}
+          </button>
+
+          <Link
+            href={`/books/${book.id}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-900 dark:hover:text-emerald-300 bg-white/70 dark:bg-white/[0.06] hover:bg-white dark:hover:bg-white/[0.12] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
+            title="View book details"
+          >
+            <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-400" />
+            <span>Details</span>
+          </Link>
+        </div>
       </td>
     </tr>
   );
@@ -200,12 +271,13 @@ function BookTableSkeleton() {
               <th className="py-3.5 px-4 w-16 text-center">Cover</th>
               <th className="py-3.5 px-5">Book Title</th>
               <th className="py-3.5 px-4">Language</th>
+              <th className="py-3.5 px-4">Status</th>
               <th className="py-3.5 px-4">Categories / Tags</th>
               <th className="py-3.5 px-4">Author</th>
               <th className="py-3.5 px-4">Publisher</th>
               <th className="py-3.5 px-4">Format</th>
               <th className="py-3.5 px-4">Registered</th>
-              <th className="py-3.5 px-5 text-right w-28">Actions</th>
+              <th className="py-3.5 px-5 text-right w-36">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.04]">
@@ -220,6 +292,9 @@ function BookTableSkeleton() {
                 </td>
                 <td className="py-3 px-4">
                   <div className="h-4 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-16" />
+                </td>
+                <td className="py-3 px-4">
+                  <div className="h-4 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-14" />
                 </td>
                 <td className="py-3 px-4">
                   <div className="h-4 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-24" />
@@ -315,12 +390,13 @@ export function BookTable({
               <th className="py-3.5 px-4 w-16 text-center">Cover</th>
               <th className="py-3.5 px-5">Book Title</th>
               <th className="py-3.5 px-4">Language</th>
+              <th className="py-3.5 px-4">Status</th>
               <th className="py-3.5 px-4">Categories / Tags</th>
               <th className="py-3.5 px-4">Author</th>
               <th className="py-3.5 px-4">Publisher</th>
               <th className="py-3.5 px-4">Format</th>
               <th className="py-3.5 px-4">Registered</th>
-              <th className="py-3.5 px-5 text-right w-28">Actions</th>
+              <th className="py-3.5 px-5 text-right w-36">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -328,7 +404,7 @@ export function BookTable({
               <>
                 {paddingTop > 0 && (
                   <tr>
-                    <td colSpan={9} style={{ height: `${paddingTop}px` }} />
+                    <td colSpan={10} style={{ height: `${paddingTop}px` }} />
                   </tr>
                 )}
                 {virtualRows.map((virtualRow) => {
@@ -351,7 +427,7 @@ export function BookTable({
                 })}
                 {paddingBottom > 0 && (
                   <tr>
-                    <td colSpan={9} style={{ height: `${paddingBottom}px` }} />
+                    <td colSpan={10} style={{ height: `${paddingBottom}px` }} />
                   </tr>
                 )}
               </>

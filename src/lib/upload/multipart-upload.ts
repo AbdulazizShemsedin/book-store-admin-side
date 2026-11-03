@@ -33,6 +33,9 @@ export function getValidContentType(file: File): InitBookUploadRequestBody['cont
   if (type === 'application/epub+zip' || name.endsWith('.epub')) {
     return 'application/epub+zip';
   }
+  if (type === 'application/pdf' || name.endsWith('.pdf')) {
+    return 'application/pdf';
+  }
   if (type === 'audio/mpeg' || type === 'audio/mp3' || name.endsWith('.mp3')) {
     return 'audio/mpeg';
   }
@@ -47,7 +50,7 @@ export function getValidContentType(file: File): InitBookUploadRequestBody['cont
   }
 
   throw new Error(
-    `Unsupported file type "${file.type || name}". Allowed formats: EPUB, MP3, PNG, JPEG, WEBP.`
+    `Unsupported file type "${file.type || name}". Allowed formats: EPUB, PDF, MP3, PNG, JPEG, WEBP.`
   );
 }
 

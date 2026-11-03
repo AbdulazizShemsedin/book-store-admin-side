@@ -37,12 +37,9 @@ export function buildCategoryTree(categories: Category[]): CategoryTreeNode[] {
     const rawChildren = childrenByParent.get(cat.id) || [];
 
     const childrenNodes: CategoryTreeNode[] = [];
-    // Only nest up to depth 5
-    if (depth < 5) {
-      for (const child of rawChildren) {
-        if (!visited.has(child.id)) {
-          childrenNodes.push(buildNode(child, depth + 1, currentPath, new Set(visited)));
-        }
+    for (const child of rawChildren) {
+      if (!visited.has(child.id)) {
+        childrenNodes.push(buildNode(child, depth + 1, currentPath, new Set(visited)));
       }
     }
 
@@ -88,7 +85,7 @@ export function getCategoryDepth(categoryId: string, categories: Category[]): nu
   let curr = byId.get(categoryId);
   const visited = new Set<string>();
 
-  while (curr && curr.parentId && byId.has(curr.parentId) && !visited.has(curr.id) && depth < 5) {
+  while (curr && curr.parentId && byId.has(curr.parentId) && !visited.has(curr.id) && depth < 100) {
     visited.add(curr.id);
     curr = byId.get(curr.parentId);
     depth++;

@@ -57,11 +57,8 @@ export function CreateCategoryModal({
   const categoryTree = useMemo(() => buildCategoryTree(effectiveCategories), [effectiveCategories]);
   const flatNodes = useMemo(() => flattenCategoryTree(categoryTree), [categoryTree]);
 
-  // Max depth is 5, so parents can only be up to depth 4
-  const eligibleParents = useMemo(
-    () => flatNodes.filter((n) => n.depth < 5),
-    [flatNodes]
-  );
+  // Parents can be at any depth (unlimited nesting hierarchy)
+  const eligibleParents = flatNodes;
 
   // Form states
   const [isSubcategory, setIsSubcategory] = useState(false);

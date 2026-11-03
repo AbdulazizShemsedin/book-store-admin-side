@@ -37,6 +37,7 @@ import {
   TreeStructure,
   Folder,
   UploadSimple,
+  X,
 } from '@phosphor-icons/react';
 import { ApiError } from '@/lib/api/error-handler';
 import { cn } from '@/lib/utils/cn';
@@ -175,58 +176,117 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
     });
   }, [book, authors, publishers, reset, initialAuthorId, initialPublisherId, initialLang, initialStatus]);
 
+  // Abort Controllers for in-flight file uploads
+  const manuscriptAbortRef = React.useRef<AbortController | null>(null);
+  const audioAbortRef = React.useRef<AbortController | null>(null);
+  const coverAbortRef = React.useRef<AbortController | null>(null);
+
+  const handleCancelManuscript = () => {
+    if (manuscriptAbortRef.current) {
+      manuscriptAbortRef.current.abort();
+      manuscriptAbortRef.current = null;
+    }
+    setIsUploadingManuscript(false);
+    setManuscriptProgress(0);
+    setManuscriptError('Manuscript upload cancelled.');
+  };
+
+  const handleCancelAudio = () => {
+    if (audioAbortRef.current) {
+      audioAbortRef.current.abort();
+      audioAbortRef.current = null;
+    }
+    setIsUploadingAudio(false);
+    setAudioProgress(0);
+    setAudioError('Audio narration upload cancelled.');
+  };
+
+  const handleCancelCover = () => {
+    if (coverAbortRef.current) {
+      coverAbortRef.current.abort();
+      coverAbortRef.current = null;
+    }
+    setIsUploadingCover(false);
+    setCoverProgress(0);
+    setCoverError('Cover artwork upload cancelled.');
+  };
+
   // Handle Cover Replacement
   const handleUploadCover = async (file: File) => {
+    const controller = new AbortController();
+    coverAbortRef.current = controller;
     setIsUploadingCover(true);
     setCoverError(null);
     setCoverSuccess(false);
     setCoverProgress(0);
     try {
       await uploadBookThumbnail(book.id, file, {
+        signal: controller.signal,
         onProgress: (pct) => setCoverProgress(pct),
       });
       setCoverSuccess(true);
       setCurrentCoverUrl(URL.createObjectURL(file));
     } catch (err: any) {
-      setCoverError(err.message || 'Failed to upload cover artwork.');
+      if (controller.signal.aborted) {
+        setCoverError('Cover artwork upload cancelled.');
+      } else {
+        setCoverError(err.message || 'Failed to upload cover artwork.');
+      }
     } finally {
       setIsUploadingCover(false);
+      coverAbortRef.current = null;
     }
   };
 
   // Handle Manuscript Replacement
   const handleUploadManuscript = async (file: File) => {
+    const controller = new AbortController();
+    manuscriptAbortRef.current = controller;
     setIsUploadingManuscript(true);
     setManuscriptError(null);
     setManuscriptSuccess(false);
     setManuscriptProgress(0);
     try {
       await uploadBookAsset(book.id, 'book', file, {
+        signal: controller.signal,
         onProgress: (pct) => setManuscriptProgress(pct),
       });
       setManuscriptSuccess(true);
     } catch (err: any) {
-      setManuscriptError(err.message || 'Failed to upload manuscript file.');
+      if (controller.signal.aborted) {
+        setManuscriptError('Manuscript upload cancelled.');
+      } else {
+        setManuscriptError(err.message || 'Failed to upload manuscript file.');
+      }
     } finally {
       setIsUploadingManuscript(false);
+      manuscriptAbortRef.current = null;
     }
   };
 
   // Handle Audio Replacement
   const handleUploadAudio = async (file: File) => {
+    const controller = new AbortController();
+    audioAbortRef.current = controller;
     setIsUploadingAudio(true);
     setAudioError(null);
     setAudioSuccess(false);
     setAudioProgress(0);
     try {
       await uploadBookAsset(book.id, 'audio', file, {
+        signal: controller.signal,
         onProgress: (pct) => setAudioProgress(pct),
       });
       setAudioSuccess(true);
     } catch (err: any) {
-      setAudioError(err.message || 'Failed to upload narration audio track.');
+      if (controller.signal.aborted) {
+        setAudioError('Audio narration upload cancelled.');
+      } else {
+        setAudioError(err.message || 'Failed to upload narration audio track.');
+      }
     } finally {
       setIsUploadingAudio(false);
+      audioAbortRef.current = null;
     }
   };
 
@@ -503,11 +563,26 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
                 />
 
                 {isUploadingManuscript && (
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-[#1e4634] dark:bg-emerald-500 h-2 transition-all duration-300"
-                      style={{ width: `${manuscriptProgress}%` }}
-                    />
+                  <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="text-slate-800 dark:text-slate-200">
+                        Uploading manuscript... {manuscriptProgress}%
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCancelManuscript}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 hover:text-red-700 dark:text-red-400 px-2 py-0.5 rounded-md hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" weight="bold" />
+                        <span>Cancel Upload</span>
+                      </button>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-[#1e4634] dark:bg-emerald-500 h-2 transition-all duration-300 rounded-full"
+                        style={{ width: `${manuscriptProgress}%` }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -557,11 +632,26 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
                 />
 
                 {isUploadingAudio && (
-                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-[#1e4634] h-2 transition-all duration-300"
-                      style={{ width: `${audioProgress}%` }}
-                    />
+                  <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="text-slate-800 dark:text-slate-200">
+                        Uploading audio narration master... {audioProgress}%
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCancelAudio}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 hover:text-red-700 dark:text-red-400 px-2 py-0.5 rounded-md hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" weight="bold" />
+                        <span>Cancel Upload</span>
+                      </button>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-[#1e4634] dark:bg-emerald-500 h-2 transition-all duration-300 rounded-full"
+                        style={{ width: `${audioProgress}%` }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -683,11 +773,19 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
                 )}
 
                 {isUploadingCover && (
-                  <div className="absolute inset-0 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center p-3 text-center z-20">
+                  <div className="absolute inset-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xs flex flex-col items-center justify-center p-3 text-center z-20 space-y-2">
                     <Spinner size="md" />
-                    <span className="text-xs font-semibold text-[#1e4634] dark:text-emerald-400 mt-2">
-                      Uploading {coverProgress}%...
+                    <span className="text-xs font-semibold text-[#1e4634] dark:text-emerald-400">
+                      Uploading cover {coverProgress}%...
                     </span>
+                    <button
+                      type="button"
+                      onClick={handleCancelCover}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 hover:text-red-700 dark:text-red-400 px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-950/60 transition-colors"
+                    >
+                      <X className="w-3 h-3" weight="bold" />
+                      <span>Cancel</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -708,11 +806,26 @@ export function BookEditForm({ book, onSuccess }: BookEditFormProps) {
               />
 
               {isUploadingCover && (
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="bg-[#1e4634] h-2 transition-all duration-300"
-                    style={{ width: `${coverProgress}%` }}
-                  />
+                <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-800 dark:text-slate-200">
+                      Uploading cover... {coverProgress}%
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCancelCover}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 hover:text-red-700 dark:text-red-400 px-2 py-0.5 rounded-md hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" weight="bold" />
+                      <span>Cancel</span>
+                    </button>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-[#1e4634] dark:bg-emerald-500 h-2 transition-all duration-300 rounded-full"
+                      style={{ width: `${coverProgress}%` }}
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>
