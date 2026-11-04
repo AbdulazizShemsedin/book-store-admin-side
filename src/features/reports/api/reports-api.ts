@@ -45,22 +45,13 @@ export const reportsApi = {
 
     if (periodParam === 'today') {
       apiPeriod = 'day';
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      date_start = startOfToday.toISOString();
-      date_end = now.toISOString();
       salesPeriodLabel = `Today: ${now.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
     } else if (periodParam === '7d') {
       apiPeriod = 'week';
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      date_start = sevenDaysAgo.toISOString();
-      date_end = now.toISOString();
-      salesPeriodLabel = `${sevenDaysAgo.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${now.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      salesPeriodLabel = 'Last 7 Days';
     } else if (periodParam === '30d') {
       apiPeriod = 'month';
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      date_start = thirtyDaysAgo.toISOString();
-      date_end = now.toISOString();
-      salesPeriodLabel = `${thirtyDaysAgo.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${now.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      salesPeriodLabel = 'Last 30 Days';
     } else if (periodParam === 'custom') {
       if (startDateParam) date_start = new Date(startDateParam).toISOString();
       if (endDateParam) {
@@ -74,29 +65,26 @@ export const reportsApi = {
     const queryParams: Record<string, string | number | undefined> = {
       page: 1,
       page_size: 100,
-      period: apiPeriod,
-      date_start,
-      date_end,
     };
+
+    if (apiPeriod) {
+      queryParams.period = apiPeriod;
+    }
+    if (date_start) {
+      queryParams.date_start = date_start;
+    }
+    if (date_end) {
+      queryParams.date_end = date_end;
+    }
 
     // Concurrent parallel queries for minimal network latency
     const [purchaseRes, subRes] = await Promise.all([
-      apiClient
-        .get<ListPurchaseRecordsResponseBody>('/admin/api/reports/records/purchase', {
-          params: queryParams,
-        })
-        .catch((err) => {
-          console.warn('Failed to fetch purchase records from backend:', err);
-          return { page: 1, page_size: 100, total: 0, records: [] };
-        }),
-      apiClient
-        .get<ListSubscriptionRecordsResponseBody>('/admin/api/reports/records/subscription', {
-          params: queryParams,
-        })
-        .catch((err) => {
-          console.warn('Failed to fetch subscription records from backend:', err);
-          return { page: 1, page_size: 100, total: 0, records: [] };
-        }),
+      apiClient.get<ListPurchaseRecordsResponseBody>('/admin/api/reports/records/purchase', {
+        params: queryParams,
+      }),
+      apiClient.get<ListSubscriptionRecordsResponseBody>('/admin/api/reports/records/subscription', {
+        params: queryParams,
+      }),
     ]);
 
     const rawPurchases = purchaseRes.records || [];
