@@ -94,7 +94,7 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
       className="glass-table-row group relative"
     >
       {/* Cover Thumbnail */}
-      <td className="py-3 px-4 text-center">
+      <td className="py-3 px-3 text-center w-14">
         <div className="w-10 h-14 mx-auto rounded-lg bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-white/10 flex items-center justify-center text-slate-400 dark:text-slate-500 overflow-hidden shadow-xs relative group-hover:shadow-md transition-all">
           {bookCover ? (
             <Image
@@ -112,7 +112,7 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
       </td>
 
       {/* Book Title */}
-      <td className="py-3 px-5">
+      <td className="py-3 px-3 min-w-[170px]">
         <Link
           href={`/books/${book.id}`}
           className="font-bold text-slate-900 dark:text-slate-100 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors block text-xs leading-snug group-hover:underline"
@@ -124,10 +124,13 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
             {book.description}
           </p>
         )}
+        <span className="xl:hidden text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 block">
+          {createdDate}
+        </span>
       </td>
 
       {/* Language */}
-      <td className="py-3 px-4 whitespace-nowrap">
+      <td className="py-3 px-3 whitespace-nowrap">
         {langLabel ? (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/70 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/10 backdrop-blur-sm">
             <Translate className="w-3 h-3 text-slate-500 dark:text-slate-400" />
@@ -139,7 +142,7 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
       </td>
 
       {/* Publication Status */}
-      <td className="py-3 px-4 whitespace-nowrap">
+      <td className="py-3 px-3 whitespace-nowrap">
         {isPublic ? (
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 backdrop-blur-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -153,10 +156,10 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
         )}
       </td>
 
-      {/* Categories / Tags */}
-      <td className="py-3 px-4">
+      {/* Categories / Tags (hidden on < 2xl) */}
+      <td className="py-3 px-3 hidden 2xl:table-cell">
         {book.tags && book.tags.length > 0 ? (
-          <div className="flex flex-wrap gap-1 max-w-[200px]">
+          <div className="flex flex-wrap gap-1 max-w-[180px]">
             {book.tags.slice(0, 2).map((t, i) => (
               <span
                 key={i}
@@ -178,18 +181,18 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
       </td>
 
       {/* Author */}
-      <td className="py-3 px-4 text-slate-700 dark:text-slate-300 font-medium">
+      <td className="py-3 px-3 text-slate-700 dark:text-slate-300 font-medium">
         {book.author ? (
-          <span className="truncate block max-w-[140px]">{book.author}</span>
+          <span className="truncate block max-w-[130px]">{book.author}</span>
         ) : (
           <span className="text-slate-400 dark:text-slate-600 italic text-[11px]">—</span>
         )}
       </td>
 
-      {/* Publisher */}
-      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+      {/* Publisher (hidden on < md) */}
+      <td className="py-3 px-3 text-slate-600 dark:text-slate-400 hidden md:table-cell">
         {book.publisher ? (
-          <span className="truncate block max-w-[140px]">
+          <span className="truncate block max-w-[130px]">
             {typeof book.publisher === 'object' && book.publisher !== null
               ? (book.publisher as any).name || '—'
               : String(book.publisher)}
@@ -199,8 +202,8 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
         )}
       </td>
 
-      {/* Format */}
-      <td className="py-3 px-4 whitespace-nowrap">
+      {/* Format (hidden on < sm) */}
+      <td className="py-3 px-3 whitespace-nowrap hidden sm:table-cell">
         <div className="flex flex-col gap-1 items-start">
           {book.hasAudiobook ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 backdrop-blur-sm">
@@ -216,13 +219,13 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
         </div>
       </td>
 
-      {/* Created Date */}
-      <td className="py-3 px-4 text-slate-500 dark:text-slate-400 whitespace-nowrap text-[11px] font-mono tabular-nums">
+      {/* Created Date (hidden on < xl) */}
+      <td className="py-3 px-3 text-slate-500 dark:text-slate-400 whitespace-nowrap text-[11px] font-mono tabular-nums hidden xl:table-cell">
         {createdDate}
       </td>
 
-      {/* Actions */}
-      <td className="py-3 px-5 text-right whitespace-nowrap">
+      {/* Sticky Actions Column */}
+      <td className="sticky right-0 z-10 py-3 px-4 text-right whitespace-nowrap w-44 bg-white/95 dark:bg-[#0c121d]/95 backdrop-blur-xl border-l border-slate-200/80 dark:border-white/10 shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.4)] group-hover:bg-[#f0fdf4]/95 dark:group-hover:bg-[#0f1f1a]/95 transition-colors">
         <div className="flex items-center justify-end gap-1.5">
           <button
             type="button"
@@ -269,54 +272,56 @@ function BookTableSkeleton() {
   return (
     <div className="glass-panel rounded-3xl overflow-hidden transition-colors duration-150">
       <div className="overflow-x-auto max-h-[calc(100vh-320px)] min-h-[380px]">
-        <table className="w-full text-left border-collapse text-xs">
+        <table className="w-full text-left border-collapse text-xs min-w-[760px] lg:min-w-full">
           <thead>
-            <tr className="sticky top-0 z-10 glass-table-th">
-              <th className="py-3.5 px-4 w-16 text-center">Cover</th>
-              <th className="py-3.5 px-5">Book Title</th>
-              <th className="py-3.5 px-4">Language</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-4">Categories / Tags</th>
-              <th className="py-3.5 px-4">Author</th>
-              <th className="py-3.5 px-4">Publisher</th>
-              <th className="py-3.5 px-4">Format</th>
-              <th className="py-3.5 px-4">Registered</th>
-              <th className="py-3.5 px-5 text-right w-36">Actions</th>
+            <tr className="sticky top-0 z-20 glass-table-th backdrop-blur-2xl">
+              <th className="py-3 px-3 w-14 text-center">Cover</th>
+              <th className="py-3 px-3 min-w-[170px]">Book Title</th>
+              <th className="py-3 px-3 whitespace-nowrap">Language</th>
+              <th className="py-3 px-3 whitespace-nowrap">Status</th>
+              <th className="py-3 px-3 hidden 2xl:table-cell">Categories / Tags</th>
+              <th className="py-3 px-3">Author</th>
+              <th className="py-3 px-3 hidden md:table-cell">Publisher</th>
+              <th className="py-3 px-3 whitespace-nowrap hidden sm:table-cell">Format</th>
+              <th className="py-3 px-3 whitespace-nowrap hidden xl:table-cell">Registered</th>
+              <th className="sticky right-0 z-30 py-3 px-4 text-right w-44 bg-white/95 dark:bg-[#0c121d]/95 backdrop-blur-xl border-l border-slate-200/80 dark:border-white/10 shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.4)]">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.04]">
             {Array.from({ length: 6 }).map((_, i) => (
               <tr key={i} className="animate-pulse">
-                <td className="py-3 px-4 text-center">
+                <td className="py-3 px-3 text-center w-14">
                   <div className="w-10 h-14 mx-auto rounded-lg bg-slate-200/60 dark:bg-white/[0.06]" />
                 </td>
-                <td className="py-3 px-5 space-y-2">
+                <td className="py-3 px-3 space-y-2 min-w-[170px]">
                   <div className="h-3.5 bg-slate-200/80 dark:bg-white/[0.08] rounded-md w-3/4" />
                   <div className="h-2.5 bg-slate-200/50 dark:bg-white/[0.04] rounded-md w-1/2" />
                 </td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-3">
                   <div className="h-4 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-16" />
                 </td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-3">
                   <div className="h-4 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-14" />
                 </td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-3 hidden 2xl:table-cell">
                   <div className="h-4 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-24" />
                 </td>
-                <td className="py-3 px-4">
-                  <div className="h-3.5 bg-slate-200/70 dark:bg-white/[0.06] rounded-md w-28" />
-                </td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-3">
                   <div className="h-3.5 bg-slate-200/70 dark:bg-white/[0.06] rounded-md w-24" />
                 </td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-3 hidden md:table-cell">
+                  <div className="h-3.5 bg-slate-200/70 dark:bg-white/[0.06] rounded-md w-20" />
+                </td>
+                <td className="py-3 px-3 hidden sm:table-cell">
                   <div className="h-4 bg-slate-200/60 dark:bg-white/[0.06] rounded-full w-16" />
                 </td>
-                <td className="py-3 px-4">
+                <td className="py-3 px-3 hidden xl:table-cell">
                   <div className="h-3 bg-slate-200/50 dark:bg-white/[0.04] rounded-md w-20" />
                 </td>
-                <td className="py-3 px-5 text-right">
-                  <div className="h-6 bg-slate-200/60 dark:bg-white/[0.06] rounded-xl w-16 ml-auto" />
+                <td className="sticky right-0 z-10 py-3 px-4 text-right w-44 bg-white/95 dark:bg-[#0c121d]/95 backdrop-blur-xl border-l border-slate-200/80 dark:border-white/10 shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.4)]">
+                  <div className="h-6 bg-slate-200/60 dark:bg-white/[0.06] rounded-xl w-28 ml-auto" />
                 </td>
               </tr>
             ))}
@@ -388,19 +393,21 @@ export function BookTable({
         ref={parentRef}
         className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] min-h-[380px] relative scroll-smooth overscroll-contain"
       >
-        <table className="w-full text-left border-collapse text-xs">
+        <table className="w-full text-left border-collapse text-xs min-w-[760px] lg:min-w-full">
           <thead>
-            <tr className="sticky top-0 z-10 glass-table-th backdrop-blur-2xl">
-              <th className="py-3.5 px-4 w-16 text-center">Cover</th>
-              <th className="py-3.5 px-5">Book Title</th>
-              <th className="py-3.5 px-4">Language</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-4">Categories / Tags</th>
-              <th className="py-3.5 px-4">Author</th>
-              <th className="py-3.5 px-4">Publisher</th>
-              <th className="py-3.5 px-4">Format</th>
-              <th className="py-3.5 px-4">Registered</th>
-              <th className="py-3.5 px-5 text-right w-36">Actions</th>
+            <tr className="sticky top-0 z-20 glass-table-th backdrop-blur-2xl">
+              <th className="py-3 px-3 w-14 text-center">Cover</th>
+              <th className="py-3 px-3 min-w-[170px]">Book Title</th>
+              <th className="py-3 px-3 whitespace-nowrap">Language</th>
+              <th className="py-3 px-3 whitespace-nowrap">Status</th>
+              <th className="py-3 px-3 hidden 2xl:table-cell">Categories / Tags</th>
+              <th className="py-3 px-3">Author</th>
+              <th className="py-3 px-3 hidden md:table-cell">Publisher</th>
+              <th className="py-3 px-3 whitespace-nowrap hidden sm:table-cell">Format</th>
+              <th className="py-3 px-3 whitespace-nowrap hidden xl:table-cell">Registered</th>
+              <th className="sticky right-0 z-30 py-3 px-4 text-right w-44 bg-white/95 dark:bg-[#0c121d]/95 backdrop-blur-xl border-l border-slate-200/80 dark:border-white/10 shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.06)] dark:shadow-[-6px_0_12px_-4px_rgba(0,0,0,0.4)]">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
