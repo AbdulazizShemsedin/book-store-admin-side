@@ -103,7 +103,10 @@ export const booksApi = {
 
         // Client-side fallback filter for authorId
         if (params.authorId) {
-          matched = matched.filter((b) => b.author_id === params.authorId);
+          const hasExplicitAuthorIds = matched.some((b) => Boolean(b.author_id));
+          if (hasExplicitAuthorIds) {
+            matched = matched.filter((b) => b.author_id === params.authorId);
+          }
         }
 
         // Client-side fallback filter for language

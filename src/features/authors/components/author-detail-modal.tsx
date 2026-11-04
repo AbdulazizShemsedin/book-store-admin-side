@@ -36,10 +36,8 @@ function getInitials(name: string): string {
 
 export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDetailModalProps) {
   // Lazily query books catalog only when modal is open, filtering by authorId
-  const { data: booksData, isLoading: isLoadingBooks } = useBooks(
-    {
-      authorId: author?.id,
-      pageSize: 8,
+  const { data: booksData, isLoading: isLoadingBooks } = useBooks({
+      pageSize: 100,
     },
     {
       enabled: isOpen && Boolean(author?.id),
