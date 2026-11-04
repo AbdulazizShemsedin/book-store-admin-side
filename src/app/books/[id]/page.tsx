@@ -44,6 +44,7 @@ import {
 } from '@/features/categories/utils/category-tree';
 import { uploadBookThumbnail } from '@/lib/upload/multipart-upload';
 import { cn } from '@/lib/utils/cn';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 
 export default function BookDetailsPage() {
   const params = useParams();
@@ -217,6 +218,24 @@ export default function BookDetailsPage() {
   }
 
   const attachedTags = book.tags || [];
+
+  const categorySelectOptions = React.useMemo(() => {
+    return flatCategoryNodes.map((node) => {
+      const isAlreadyAttached = attachedTags.some(
+        (t) => t.toLowerCase() === node.name.toLowerCase()
+      );
+      const levelLabel = node.depth === 1 ? 'Master Category' : `Level ${node.depth}`;
+      const badge = isAlreadyAttached ? '✓ Attached' : levelLabel;
+
+      return {
+        value: node.id,
+        label: node.name,
+        sublabel: node.depth > 1 ? node.fullPath : undefined,
+        badge,
+        disabled: isAlreadyAttached,
+      };
+    });
+  }, [flatCategoryNodes, attachedTags]);
 
   return (
     <AdminShell>
@@ -661,7 +680,7 @@ export default function BookDetailsPage() {
           </Card>
 
           {/* Categories Card */}
-          <Card className="overflow-hidden">
+          <Card className="overflow-visible relative z-20">
             <CardHeader
               title={
                 <div className="flex items-center gap-1.5">
@@ -675,7 +694,7 @@ export default function BookDetailsPage() {
                 </span>
               }
             />
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 overflow-visible">
               {/* Attached Category Badges */}
               <div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
@@ -729,31 +748,14 @@ export default function BookDetailsPage() {
                 )}
 
                 <div className="space-y-2.5">
-                  <div className="relative">
-                    <select
-                      value={selectedTagId}
-                      onChange={(e) => setSelectedTagId(e.target.value)}
-                      className="w-full h-9.5 px-3 pr-8 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1e4634]/20 dark:focus:ring-emerald-500/20 focus:border-[#1e4634] dark:focus:border-emerald-500 transition-colors truncate"
-                    >
-                      <option value="">Select category to attach...</option>
-                      {flatCategoryNodes.map((node) => {
-                        const isAlreadyAttached = attachedTags.some(
-                          (t) => t.toLowerCase() === node.name.toLowerCase()
-                        );
-                        const indent = node.depth > 1 ? `${'— '.repeat(node.depth - 1)}` : '';
-                        const levelLabel = node.depth === 1 ? '(Master)' : `(L${node.depth})`;
-                        return (
-                          <option
-                            key={node.id}
-                            value={node.id}
-                            disabled={isAlreadyAttached}
-                          >
-                            {indent}{node.name} {isAlreadyAttached ? '✓ Already Attached' : levelLabel}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
+                  <SearchableSelect
+                    value={selectedTagId}
+                    onChange={setSelectedTagId}
+                    options={categorySelectOptions}
+                    placeholder="Select category to attach..."
+                    searchPlaceholder="Search category name or path..."
+                    emptyText="No matching categories found."
+                  />
 
                   <Button
                     type="button"
