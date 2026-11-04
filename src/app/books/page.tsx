@@ -181,203 +181,227 @@ function BooksContent() {
       )}
 
       {/* Search & Filter Toolbar */}
-      <div className="glass-panel p-3.5 rounded-2xl mb-4 relative z-10 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Search Input */}
-        <div className="w-full lg:w-80 relative">
-          <MagnifyingGlass className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search by title, author, or publisher..."
-            className="w-full h-9 pl-10 pr-9 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
-            <Funnel className="w-3.5 h-3.5" />
+      <div className="glass-panel p-3.5 rounded-2xl mb-4 relative z-10 shadow-xs space-y-3">
+        {/* Primary Controls Row: Search + Category + Language + Exports */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Search Input */}
+          <div className="w-full sm:max-w-md relative flex-1">
+            <MagnifyingGlass className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search by title, author, or publisher..."
+              className="w-full h-9 pl-10 pr-9 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
+            />
+            {search ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  setPage(1);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
+                <Funnel className="w-3.5 h-3.5" />
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown Filters & Actions */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Category Dropdown */}
+            <div className="w-32">
+              <Select
+                size="sm"
+                value={category}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setPage(1);
+                }}
+                options={[
+                  { label: 'Category: All', value: 'All' },
+                  { label: 'Fiction', value: 'Fiction' },
+                  { label: 'Tafsir', value: 'Tafsir' },
+                  { label: 'History', value: 'History' },
+                  { label: 'Literature', value: 'Literature' },
+                ]}
+              />
+            </div>
+
+            {/* Language Filter */}
+            <div className="w-32">
+              <Select
+                size="sm"
+                value={language}
+                onChange={(e) => {
+                  setLanguage(e.target.value);
+                  setPage(1);
+                }}
+                options={[
+                  { label: 'Language: All', value: 'All' },
+                  { label: 'English', value: 'en' },
+                  { label: 'Amharic', value: 'am' },
+                  { label: 'Arabic', value: 'ar' },
+                ]}
+              />
+            </div>
+
+            {/* Export Dropdown Group */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                title="Export current view to CSV"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 h-9 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
+              >
+                <DownloadSimple className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                <span>CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportJSON}
+                title="Export current view to JSON"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 h-9 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
+              >
+                <span>JSON</span>
+              </button>
+            </div>
+
+            {/* Refresh Action */}
+            <button
+              type="button"
+              onClick={() => refetch()}
+              aria-label="Refresh table"
+              title="Refresh books list"
+              className="p-2 h-9 w-9 flex items-center justify-center bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl hover:bg-white dark:hover:bg-white/[0.1] transition-all shadow-2xs backdrop-blur-md flex-shrink-0"
+            >
+              <ArrowClockwise className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Dropdown Filters & Actions */}
-        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-          {/* Quick Publication Status Pills */}
-          <div className="flex items-center p-0.5 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 backdrop-blur-md shadow-2xs">
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter('All');
-                setPage(1);
-              }}
-              className={cn(
-                'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
-                statusFilter === 'All'
-                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              )}
-            >
-              All Statuses
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter('public');
-                setPage(1);
-              }}
-              className={cn(
-                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
-                statusFilter === 'public'
-                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              )}
-              title="Show only books published to customer storefront"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Public</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter('private');
-                setPage(1);
-              }}
-              className={cn(
-                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
-                statusFilter === 'private'
-                  ? 'bg-amber-600 dark:bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              )}
-              title="Show only private / draft books"
-            >
-              <EyeSlash className="w-3.5 h-3.5" />
-              <span>Private</span>
-            </button>
+        {/* Secondary Row: Quick Pills for Status & Format */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-white/60 dark:border-white/10">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Quick Publication Status Pills */}
+            <div className="flex items-center p-0.5 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 backdrop-blur-md shadow-2xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter('All');
+                  setPage(1);
+                }}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                  statusFilter === 'All'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+              >
+                All Statuses
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter('public');
+                  setPage(1);
+                }}
+                className={cn(
+                  'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                  statusFilter === 'public'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+                title="Show only books published to customer storefront"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Public</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusFilter('private');
+                  setPage(1);
+                }}
+                className={cn(
+                  'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                  statusFilter === 'private'
+                    ? 'bg-amber-600 dark:bg-amber-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+                title="Show only private / draft books"
+              >
+                <EyeSlash className="w-3.5 h-3.5" />
+                <span>Private</span>
+              </button>
+            </div>
+
+            {/* Quick Format Pills */}
+            <div className="flex items-center p-0.5 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 backdrop-blur-md shadow-2xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setFormat('All');
+                  setPage(1);
+                }}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                  format === 'All'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+              >
+                All Formats
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormat('Audiobook');
+                  setPage(1);
+                }}
+                className={cn(
+                  'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                  format === 'Audiobook'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+              >
+                <Headphones className="w-3.5 h-3.5" />
+                <span>Audiobook</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormat('Text');
+                  setPage(1);
+                }}
+                className={cn(
+                  'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
+                  format === 'Text'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>E-Book</span>
+              </button>
+            </div>
           </div>
 
-          {/* Quick Format Pills */}
-          <div className="flex items-center p-0.5 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 backdrop-blur-md shadow-2xs">
-            <button
-              type="button"
-              onClick={() => {
-                setFormat('All');
-                setPage(1);
-              }}
-              className={cn(
-                'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
-                format === 'All'
-                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              )}
-            >
-              All Formats
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setFormat('Audiobook');
-                setPage(1);
-              }}
-              className={cn(
-                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
-                format === 'Audiobook'
-                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              )}
-            >
-              <Headphones className="w-3.5 h-3.5" />
-              <span>Audiobook</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setFormat('Text');
-                setPage(1);
-              }}
-              className={cn(
-                'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all',
-                format === 'Text'
-                  ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              )}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>E-Book</span>
-            </button>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+            Showing <span className="font-semibold text-slate-800 dark:text-slate-200">{displayedBooks.length}</span> of <span className="font-semibold text-slate-800 dark:text-slate-200">{total}</span> catalog titles
           </div>
-
-          {/* Category Dropdown */}
-          <div className="w-32">
-            <Select
-              size="sm"
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value);
-                setPage(1);
-              }}
-              options={[
-                { label: 'Category: All', value: 'All' },
-                { label: 'Fiction', value: 'Fiction' },
-                { label: 'Tafsir', value: 'Tafsir' },
-                { label: 'History', value: 'History' },
-                { label: 'Literature', value: 'Literature' },
-              ]}
-            />
-          </div>
-
-          {/* Language Filter */}
-          <div className="w-32">
-            <Select
-              size="sm"
-              value={language}
-              onChange={(e) => {
-                setLanguage(e.target.value);
-                setPage(1);
-              }}
-              options={[
-                { label: 'Language: All', value: 'All' },
-                { label: 'English', value: 'en' },
-                { label: 'Amharic', value: 'am' },
-                { label: 'Arabic', value: 'ar' },
-              ]}
-            />
-          </div>
-
-          {/* Export Dropdown Group */}
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              title="Export current view to CSV"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 h-9 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
-            >
-              <DownloadSimple className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-              <span>CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleExportJSON}
-              title="Export current view to JSON"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 h-9 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md transition-all active:scale-[0.98]"
-            >
-              <span>JSON</span>
-            </button>
-          </div>
-
-          {/* Refresh Action */}
-          <button
-            type="button"
-            onClick={() => refetch()}
-            aria-label="Refresh table"
-            title="Refresh books list"
-            className="p-2 h-9 w-9 flex items-center justify-center bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl hover:bg-white dark:hover:bg-white/[0.1] transition-all shadow-2xs backdrop-blur-md"
-          >
-            <ArrowClockwise className="w-4 h-4" />
-          </button>
         </div>
-      </div>
 
       {/* Active Filters Row */}
       {(language !== 'All' || format !== 'All') && (
