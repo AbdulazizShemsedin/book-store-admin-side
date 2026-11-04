@@ -53,7 +53,6 @@ export default function AuthorDetailPage() {
   });
 
   const { data: booksData, isLoading: isLoadingBooks } = useBooks({
-    authorId,
     pageSize: 100,
   });
 

@@ -51,7 +51,12 @@ export function AuthorEditModal({ author, isOpen, onClose }: AuthorEditModalProp
 
   const linkedBooks = useMemo(() => {
     if (!author || !booksData?.books) return [];
-    return booksData.books.filter((b) => b.authorId === author.id);
+    const targetName = author.name.trim().toLowerCase();
+    return booksData.books.filter((b) => {
+      if (b.authorId && b.authorId === author.id) return true;
+      if (b.author && b.author.trim().toLowerCase() === targetName) return true;
+      return false;
+    });
   }, [author, booksData?.books]);
 
   const authorSuggestion = useMemo(() => {
