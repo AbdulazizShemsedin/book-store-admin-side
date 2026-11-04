@@ -139,7 +139,7 @@ export function TransactionsTable({ transactions, totalRecords }: TransactionsTa
 
                   {/* Amount Paid */}
                   <td className="py-3.5 px-6 text-right font-bold text-slate-900 dark:text-slate-100 text-xs font-mono">
-                    ${tx.income.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {tx.income.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
                   </td>
                 </tr>
               ))

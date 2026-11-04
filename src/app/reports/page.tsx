@@ -222,6 +222,22 @@ export default function ReportsPage() {
         )}
       </div>
 
+      {totalTransactions === 0 && (
+        <div className="mb-6 p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/50 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-[#1e4634] dark:text-emerald-300 flex items-center justify-center flex-shrink-0 mt-0.5 font-bold text-xs">
+            ETB
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+              No live transactions recorded for this period
+            </h4>
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+              The reporting system is connected and live. When customers purchase books or start subscriptions via the mobile app, transaction entries and sales trend analytics will stream in automatically.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         {/* Card 1: Total income */}
@@ -234,15 +250,15 @@ export default function ReportsPage() {
                   Total income
                 </span>
                 <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                  ${summary.totalIncome.toLocaleString()}
+                  {summary.totalIncome.toLocaleString()} <span className="text-lg font-semibold text-slate-500 dark:text-slate-400">ETB</span>
                 </span>
                 <div className="flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-2">
                   <TrendUp className="w-3.5 h-3.5" />
                   <span>+{summary.totalIncomeGrowthPercent}% vs previous 30 days</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 flex items-center justify-center">
-                <CurrencyDollar className="w-5 h-5" weight="bold" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-[#1e4634] dark:text-emerald-400 flex items-center justify-center font-bold text-xs">
+                ETB
               </div>
             </div>
           </CardContent>
