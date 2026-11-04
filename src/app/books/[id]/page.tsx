@@ -163,6 +163,26 @@ export default function BookDetailsPage() {
   const categoryTree = React.useMemo(() => buildCategoryTree(allCategories), [allCategories]);
   const flatCategoryNodes = React.useMemo(() => flattenCategoryTree(categoryTree), [categoryTree]);
 
+  const attachedTags = React.useMemo(() => book?.tags || [], [book?.tags]);
+
+  const categorySelectOptions = React.useMemo(() => {
+    return flatCategoryNodes.map((node) => {
+      const isAlreadyAttached = attachedTags.some(
+        (t) => t.toLowerCase() === node.name.toLowerCase()
+      );
+      const levelLabel = node.depth === 1 ? 'Master Category' : `Level ${node.depth}`;
+      const badge = isAlreadyAttached ? '✓ Attached' : levelLabel;
+
+      return {
+        value: node.id,
+        label: node.name,
+        sublabel: node.depth > 1 ? node.fullPath : undefined,
+        badge,
+        disabled: isAlreadyAttached,
+      };
+    });
+  }, [flatCategoryNodes, attachedTags]);
+
   const selectedNode = flatCategoryNodes.find((n) => n.id === selectedTagId);
 
   const handleAttachCategory = async () => {
@@ -217,25 +237,7 @@ export default function BookDetailsPage() {
     );
   }
 
-  const attachedTags = book.tags || [];
 
-  const categorySelectOptions = React.useMemo(() => {
-    return flatCategoryNodes.map((node) => {
-      const isAlreadyAttached = attachedTags.some(
-        (t) => t.toLowerCase() === node.name.toLowerCase()
-      );
-      const levelLabel = node.depth === 1 ? 'Master Category' : `Level ${node.depth}`;
-      const badge = isAlreadyAttached ? '✓ Attached' : levelLabel;
-
-      return {
-        value: node.id,
-        label: node.name,
-        sublabel: node.depth > 1 ? node.fullPath : undefined,
-        badge,
-        disabled: isAlreadyAttached,
-      };
-    });
-  }, [flatCategoryNodes, attachedTags]);
 
   return (
     <AdminShell>
