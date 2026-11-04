@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { BookTable } from '@/features/books/components/book-table';
+import { BookCardGrid } from '@/features/books/components/book-card-grid';
 import { useBooks } from '@/features/books/hooks/use-books';
 import { Pagination } from '@/components/tables/pagination';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ import {
   FileText,
   Globe,
   EyeSlash,
+  Rows,
+  SquaresFour,
 } from '@phosphor-icons/react';
 import { exportToCSV, exportToJSON } from '@/lib/utils/export-utils';
 import { toast } from 'sonner';
@@ -46,6 +49,24 @@ function BooksContent() {
   const [language, setLanguage] = useState('All');
   const [format, setFormat] = useState('All');
   const [statusFilter, setStatusFilter] = useState<'All' | 'public' | 'private'>('All');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+
+  // Load persisted view mode preference
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('tewba_books_view_mode') as 'table' | 'grid' | null;
+      if (saved === 'table' || saved === 'grid') {
+        setViewMode(saved);
+      }
+    } catch (_) {}
+  }, []);
+
+  const handleViewModeChange = (mode: 'table' | 'grid') => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem('tewba_books_view_mode', mode);
+    } catch (_) {}
+  };
 
   // Debounce search input to avoid firing network requests on every keystroke
   const debouncedSearch = useDebounce(search, 350);
@@ -287,6 +308,38 @@ function BooksContent() {
             >
               <ArrowClockwise className="w-4 h-4" />
             </button>
+
+            {/* View Mode Toggle: Table vs Cards */}
+            <div className="flex items-center p-0.5 rounded-xl bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('table')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  viewMode === 'table'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+                title="Table view with dense columns"
+              >
+                <Rows className="w-3.5 h-3.5" weight="bold" />
+                <span className="hidden md:inline">Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('grid')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  viewMode === 'grid'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+                title="Visual Card Grid view"
+              >
+                <SquaresFour className="w-3.5 h-3.5" weight="bold" />
+                <span className="hidden md:inline">Cards</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -457,15 +510,25 @@ function BooksContent() {
       )}
       </div>
 
-      {/* Books Table & Pagination */}
-      <div className="space-y-0">
-        <BookTable
-          books={displayedBooks}
-          isLoading={isLoading}
-          isError={isError}
-          error={error}
-          onRetry={() => refetch()}
-        />
+      {/* Books Display (Table vs Grid) & Pagination */}
+      <div className="space-y-4">
+        {viewMode === 'table' ? (
+          <BookTable
+            books={displayedBooks}
+            isLoading={isLoading}
+            isError={isError}
+            error={error}
+            onRetry={() => refetch()}
+          />
+        ) : (
+          <BookCardGrid
+            books={displayedBooks}
+            isLoading={isLoading}
+            isError={isError}
+            error={error}
+            onRetry={() => refetch()}
+          />
+        )}
 
         <Pagination
           currentPage={page}

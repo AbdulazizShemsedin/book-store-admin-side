@@ -4,12 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { AdminShell } from '@/components/layout/admin-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { AuthorTable } from '@/features/authors/components/author-table';
+import { AuthorCardGrid } from '@/features/authors/components/author-card-grid';
+import { AuthorEditModal } from '@/features/authors/components/author-edit-modal';
 import { AuthorModal } from '@/features/authors/components/author-modal';
 import { useAuthors, useDeleteAuthor } from '@/features/authors/hooks/use-authors';
 import { Pagination } from '@/components/tables/pagination';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, DownloadSimple, MagnifyingGlass, Funnel, ArrowsDownUp } from '@phosphor-icons/react';
+import { Plus, DownloadSimple, MagnifyingGlass, Funnel, ArrowsDownUp, Rows, SquaresFour } from '@phosphor-icons/react';
+import { cn } from '@/lib/utils/cn';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { exportToCSV, exportToJSON } from '@/lib/utils/export-utils';
 import { toast } from 'sonner';
@@ -19,6 +22,24 @@ export default function AuthorsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAuthor, setEditingAuthor] = useState<any | null>(null);
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('tewba_authors_view_mode') as 'table' | 'grid' | null;
+      if (saved === 'table' || saved === 'grid') {
+        setViewMode(saved);
+      }
+    } catch (_) {}
+  }, []);
+
+  const handleViewModeChange = (mode: 'table' | 'grid') => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem('tewba_authors_view_mode', mode);
+    } catch (_) {}
+  };
 
   // Debounce search input to avoid spamming network on every keystroke
   const debouncedSearch = useDebounce(search, 350);
@@ -115,36 +136,90 @@ export default function AuthorsPage() {
         }
       />
 
-      {/* Search Bar */}
+      {/* Search & View Switcher Bar */}
       <div className="glass-panel p-3.5 rounded-2xl mb-4 relative z-10 shadow-xs">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="w-full sm:w-80 relative">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="w-full sm:max-w-md relative flex-1">
             <MagnifyingGlass className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               placeholder="Search author by name, ID, or bio..."
               className="w-full h-9 pl-10 pr-3 text-xs bg-white/70 dark:bg-white/[0.05] border border-white/90 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 dark:focus:ring-emerald-500/20 focus:border-emerald-700 dark:focus:border-emerald-500 transition-colors shadow-2xs backdrop-blur-md"
             />
           </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {/* View Mode Toggle: Table vs Cards */}
+            <div className="flex items-center p-0.5 rounded-xl bg-white/70 dark:bg-white/[0.05] border border-white/80 dark:border-white/10 shadow-2xs backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('table')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  viewMode === 'table'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+                title="Table view with dense rows"
+              >
+                <Rows className="w-3.5 h-3.5" weight="bold" />
+                <span className="hidden sm:inline">Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleViewModeChange('grid')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                  viewMode === 'grid'
+                    ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                )}
+                title="Visual Card Grid view"
+              >
+                <SquaresFour className="w-3.5 h-3.5" weight="bold" />
+                <span className="hidden sm:inline">Cards</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Authors Table & Pagination */}
-      <div className="space-y-0">
-        <AuthorTable
-          authors={authors}
-          isLoading={isLoading}
-          isError={isError}
-          error={error}
-          onRetry={() => refetch()}
-          onDelete={(author) => {
-            if (confirm(`Remove author "${author.name}"? This action cannot be undone.`)) {
-              deleteAuthorMutation.mutate(author.id);
-            }
-          }}
-        />
+      {/* Authors Display (Table vs Grid) & Pagination */}
+      <div className="space-y-4">
+        {viewMode === 'table' ? (
+          <AuthorTable
+            authors={authors}
+            isLoading={isLoading}
+            isError={isError}
+            error={error}
+            onRetry={() => refetch()}
+            onEdit={(author) => setEditingAuthor(author)}
+            onDelete={(author) => {
+              if (confirm(`Remove author "${author.name}"? This action cannot be undone.`)) {
+                deleteAuthorMutation.mutate(author.id);
+              }
+            }}
+          />
+        ) : (
+          <AuthorCardGrid
+            authors={authors}
+            isLoading={isLoading}
+            isError={isError}
+            error={error}
+            onRetry={() => refetch()}
+            onEdit={(author) => setEditingAuthor(author)}
+            onDelete={(author) => {
+              if (confirm(`Remove author "${author.name}"? This action cannot be undone.`)) {
+                deleteAuthorMutation.mutate(author.id);
+              }
+            }}
+          />
+        )}
 
         <Pagination
           currentPage={page}
@@ -161,6 +236,15 @@ export default function AuthorsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+
+      {/* Author Edit Modal */}
+      {editingAuthor && (
+        <AuthorEditModal
+          author={editingAuthor}
+          isOpen={Boolean(editingAuthor)}
+          onClose={() => setEditingAuthor(null)}
+        />
+      )}
     </AdminShell>
   );
 }

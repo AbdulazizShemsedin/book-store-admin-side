@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { TewbaLogo } from '@/components/ui/tewba-logo';
 
 interface MswProviderProps {
   children: React.ReactNode;
@@ -54,18 +55,33 @@ export function MswProvider({ children }: MswProviderProps) {
   }, []);
 
   if (!isReady) {
-    // Clean bootstrap placeholder while MSW activates at the network boundary
+    // Luxury Glassmorphic Brand Bootstrapper
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f8fafc]">
-        <div className="w-10 h-10 rounded-xl bg-[#1e4634] flex items-center justify-center text-white mb-3 shadow-md animate-pulse">
-          <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-[#edf2ef] dark:bg-[#06090e] text-slate-900 dark:text-slate-100 overflow-hidden font-sans antialiased">
+        {/* Optical Ambient Aurora Glow */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent blur-[120px] transform-gpu animate-pulse [animation-duration:5s]" />
+          <div className="absolute inset-0 bg-noise-overlay opacity-50" />
         </div>
-        <p className="text-xs font-semibold text-slate-600 tracking-wide">
-          Loading Environment...
-        </p>
+
+        {/* Floating Frosted Glass Card */}
+        <div className="relative z-10 glass-panel p-8 rounded-3xl border border-white/80 dark:border-white/10 shadow-2xl flex flex-col items-center text-center max-w-sm w-full mx-4 backdrop-blur-2xl transition-all">
+          <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 shadow-md mb-4 flex items-center justify-center">
+            <TewbaLogo variant="full" size="md" priority />
+          </div>
+
+          <span className="text-[10px] font-bold tracking-[0.25em] text-emerald-800 dark:text-emerald-400 uppercase">
+            TEWBA Admin Portal
+          </span>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-6">
+            Initializing digital bookstore environment...
+          </p>
+
+          {/* Luxury Hairline Shimmer Progress Track */}
+          <div className="w-full h-1.5 bg-slate-200/80 dark:bg-white/10 rounded-full overflow-hidden relative shadow-inner">
+            <div className="absolute inset-y-0 left-0 w-2/5 bg-gradient-to-r from-emerald-600 via-teal-400 to-emerald-500 rounded-full animate-pulse" />
+          </div>
+        </div>
       </div>
     );
   }
