@@ -10,7 +10,6 @@ export function ThemeToggle({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -31,94 +30,6 @@ export function ThemeToggle({ className }: { className?: string }) {
     };
   }, [isOpen]);
 
-  /**
-   * Switches theme with a full-page circular radial reveal animation
-   * expanding from the touch/click origin across the entire viewport.
-   */
-  const switchThemeWithAnimation = (
-    targetTheme: string,
-    event?: React.MouseEvent | React.TouchEvent
-  ) => {
-    // Determine the target resolved theme (dark or light)
-    const nextResolvedTheme =
-      targetTheme === 'system'
-        ? typeof window !== 'undefined' &&
-          window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light'
-        : targetTheme;
-
-    // Check if View Transition API is supported and motion is not reduced
-    const isViewTransitionSupported =
-      typeof document !== 'undefined' &&
-      'startViewTransition' in document &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (!isViewTransitionSupported) {
-      setTheme(targetTheme);
-      return;
-    }
-
-    // Determine the center origin of the circular wave
-    let x = 0;
-    let y = 0;
-
-    if (event) {
-      if ('clientX' in event && event.clientX) {
-        x = event.clientX;
-        y = event.clientY;
-      } else if ('touches' in event && (event as any).touches?.[0]) {
-        x = (event as any).touches[0].clientX;
-        y = (event as any).touches[0].clientY;
-      }
-    }
-
-    if (!x && !y && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      x = rect.left + rect.width / 2;
-      y = rect.top + rect.height / 2;
-    }
-
-    // Fallback if coordinates couldn't be computed
-    if (!x && !y && typeof window !== 'undefined') {
-      x = window.innerWidth - 100;
-      y = 30;
-    }
-
-    // Calculate maximum radius to reach the furthest corner of the viewport
-    const endRadius = Math.hypot(
-      Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y)
-    );
-
-    // Execute View Transition
-    const transition = (document as any).startViewTransition(async () => {
-      setTheme(targetTheme);
-      // Synchronously sync root dark class so snapshot captures new theme immediately
-      if (nextResolvedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    });
-
-    transition.ready.then(() => {
-      document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(${endRadius}px at ${x}px ${y}px)`,
-          ],
-        },
-        {
-          duration: 850,
-          easing: 'cubic-bezier(0.2, 0, 0.1, 1)',
-          pseudoElement: '::view-transition-new(root)',
-        }
-      );
-    });
-  };
-
   if (!mounted) {
     // Clean placeholder during SSR to prevent layout shift
     return (
@@ -137,40 +48,46 @@ export function ThemeToggle({ className }: { className?: string }) {
     { value: 'system', label: 'System', icon: Desktop },
   ] as const;
 
-  const currentIcon =
-    resolvedTheme === 'dark' ? (
-      <MoonStars
-        className="w-4 h-4 text-emerald-400 transition-transform duration-300 active:rotate-12"
-        weight="fill"
-      />
-    ) : (
-      <Sun
-        className="w-4 h-4 text-amber-500 transition-transform duration-300 active:rotate-45"
-        weight="fill"
-      />
-    );
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <div ref={dropdownRef} className="relative inline-flex items-center text-left">
-      {/* 1-Touch Toggle Button with Circular Wave Fill */}
+      {/* 1-Touch Toggle Button: Instant 60fps switch with icon morph */}
       <button
-        ref={buttonRef}
         type="button"
-        onClick={(e) => {
-          const next = resolvedTheme === 'dark' ? 'light' : 'dark';
-          switchThemeWithAnimation(next, e);
+        onClick={() => {
+          setTheme(isDark ? 'light' : 'dark');
         }}
         aria-label={`Toggle theme: current is ${theme}. Click to switch theme.`}
-        title={`Theme: ${resolvedTheme === 'dark' ? 'Switch to Light' : 'Switch to Dark'} (or click arrow for System)`}
+        title={`Theme: ${isDark ? 'Switch to Light' : 'Switch to Dark'} (or click arrow for System)`}
         className={cn(
           'p-2 rounded-l-xl border-y border-l border-slate-200/90 dark:border-slate-800',
           'bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300',
           'hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white',
-          'shadow-2xs transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer',
+          'shadow-2xs transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer group',
           className
         )}
       >
-        {currentIcon}
+        <span className="relative flex items-center justify-center w-4 h-4">
+          <Sun
+            className={cn(
+              'w-4 h-4 text-amber-500 absolute transition-all duration-200 ease-out',
+              isDark
+                ? 'opacity-0 -rotate-90 scale-50 pointer-events-none'
+                : 'opacity-100 rotate-0 scale-100 group-hover:rotate-45'
+            )}
+            weight="fill"
+          />
+          <MoonStars
+            className={cn(
+              'w-4 h-4 text-emerald-400 absolute transition-all duration-200 ease-out',
+              isDark
+                ? 'opacity-100 rotate-0 scale-100 group-hover:-rotate-12'
+                : 'opacity-0 rotate-90 scale-50 pointer-events-none'
+            )}
+            weight="fill"
+          />
+        </span>
       </button>
 
       {/* Menu Caret to Access System Mode */}
@@ -203,8 +120,8 @@ export function ThemeToggle({ className }: { className?: string }) {
               <button
                 key={value}
                 type="button"
-                onClick={(e) => {
-                  switchThemeWithAnimation(value, e);
+                onClick={() => {
+                  setTheme(value);
                   setIsOpen(false);
                 }}
                 className={cn(
