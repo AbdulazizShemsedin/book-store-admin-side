@@ -31,21 +31,21 @@ async function startMswWorker(): Promise<void> {
   return mswInitPromise;
 }
 
+const isDemoMode =
+  process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+  process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+
 /**
  * Environment-controlled Mock Service Worker Provider.
  * Activates when NEXT_PUBLIC_DEMO_MODE=true (local dev and Vercel demo preview).
  * In production or when demo mode is false, immediately renders children with zero mock overhead.
  */
 export function MswProvider({ children }: MswProviderProps) {
-  const [isReady, setIsReady] = useState(false);
+  // If not in demo/mock mode, immediately render children with zero splash delay
+  const [isReady, setIsReady] = useState(!isDemoMode);
 
   useEffect(() => {
-    const isDemoMode =
-      process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
-
     if (!isDemoMode) {
-      setIsReady(true);
       return;
     }
 

@@ -98,8 +98,8 @@ function BookCardItem({ book, onPrefetch }: BookCardItemProps) {
               src={coverSrc}
               alt={book.name}
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 200px"
               className="object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
-              unoptimized
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center">

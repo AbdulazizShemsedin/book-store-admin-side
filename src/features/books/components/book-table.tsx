@@ -103,7 +103,7 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
               width={40}
               height={56}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200 ease-out"
-              unoptimized
+              sizes="40px"
             />
           ) : (
             <BookIcon className="w-5 h-5 text-slate-300 dark:text-slate-600" weight="duotone" />

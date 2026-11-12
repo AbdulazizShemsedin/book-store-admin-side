@@ -562,7 +562,7 @@ export default function DashboardPage() {
                                 width={36}
                                 height={48}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                unoptimized
+                                sizes="36px"
                               />
                             ) : (
                               <BookOpen className="w-4 h-4 text-slate-300 dark:text-slate-600" weight="duotone" />

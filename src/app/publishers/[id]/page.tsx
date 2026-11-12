@@ -268,7 +268,7 @@ export default function PublisherDetailPage() {
                                 alt={book.name}
                                 width={32}
                                 height={44}
-                                unoptimized
+                                sizes="32px"
                                 className="w-8 h-11 rounded object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
                               />
                             ) : (
