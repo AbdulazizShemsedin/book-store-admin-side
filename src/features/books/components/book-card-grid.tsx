@@ -202,12 +202,12 @@ function BookCardItem({ book, onPrefetch }: BookCardItemProps) {
           ) : isPublic ? (
             <>
               <EyeSlash className="w-3 h-3" weight="bold" />
-              <span>Private</span>
+              <span>Make Private</span>
             </>
           ) : (
             <>
               <Globe className="w-3 h-3" weight="bold" />
-              <span>Publish</span>
+              <span>Make Public</span>
             </>
           )}
         </button>

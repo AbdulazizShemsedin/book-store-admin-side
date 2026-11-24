@@ -244,12 +244,12 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
             ) : isPublic ? (
               <>
                 <EyeSlash className="w-3.5 h-3.5" weight="bold" />
-                <span>Private</span>
+                <span>Make Private</span>
               </>
             ) : (
               <>
                 <Globe className="w-3.5 h-3.5" weight="bold" />
-                <span>Publish</span>
+                <span>Make Public</span>
               </>
             )}
           </button>
