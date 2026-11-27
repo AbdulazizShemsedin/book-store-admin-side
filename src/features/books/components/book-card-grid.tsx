@@ -114,18 +114,35 @@ function BookCardItem({ book, onPrefetch }: BookCardItemProps) {
 
           {/* Compact Top Floating Badges: Format & Status */}
           <div className="absolute top-1.5 inset-x-1.5 flex items-center justify-between pointer-events-none z-10">
-            {/* Format Pill */}
-            {book.hasAudiobook ? (
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-950/85 text-indigo-200 border border-indigo-400/30 backdrop-blur-md shadow-xs">
-                <Headphones className="w-2.5 h-2.5 text-indigo-300" weight="bold" />
-                <span>Audio</span>
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-950/85 text-emerald-200 border border-emerald-400/30 backdrop-blur-md shadow-xs">
-                <FileText className="w-2.5 h-2.5 text-emerald-300" weight="bold" />
-                <span>E-Book</span>
-              </span>
-            )}
+            {/* Format Pills */}
+            <div className="flex items-center gap-1">
+              {(book.hasBook !== false || book.assets?.book) && (
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold backdrop-blur-md shadow-xs border',
+                    book.assets?.book?.toLowerCase().includes('.pdf') || book.format?.toLowerCase() === 'pdf'
+                      ? 'bg-rose-950/85 text-rose-200 border-rose-400/30'
+                      : 'bg-emerald-950/85 text-emerald-200 border-emerald-400/30'
+                  )}
+                >
+                  <FileText className="w-2.5 h-2.5" weight="bold" />
+                  <span>
+                    {book.assets?.book?.toLowerCase().includes('.pdf') || book.format?.toLowerCase() === 'pdf'
+                      ? 'PDF'
+                      : book.assets?.book?.toLowerCase().includes('.epub') || book.format?.toLowerCase() === 'epub'
+                      ? 'EPUB'
+                      : 'E-Book'}
+                  </span>
+                </span>
+              )}
+
+              {book.hasAudiobook && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-950/85 text-indigo-200 border border-indigo-400/30 backdrop-blur-md shadow-xs">
+                  <Headphones className="w-2.5 h-2.5 text-indigo-300" weight="bold" />
+                  <span>Audio</span>
+                </span>
+              )}
+            </div>
 
             {/* Publication Status Pill */}
             {isPublic ? (

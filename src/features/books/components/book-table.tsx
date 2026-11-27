@@ -204,17 +204,38 @@ function BookTableRow({ book, onPrefetch, measureRef }: BookTableRowProps) {
 
       {/* Format (hidden on < sm) */}
       <td className="py-3 px-3 whitespace-nowrap hidden sm:table-cell">
-        <div className="flex flex-col gap-1 items-start">
-          {book.hasAudiobook ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 backdrop-blur-sm">
+        <div className="flex flex-wrap gap-1 items-center max-w-[140px]">
+          {/* Manuscript Badge (Detect EPUB vs PDF if asset or format available) */}
+          {(book.hasBook !== false || book.assets?.book) && (
+            <span
+              className={cn(
+                'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border backdrop-blur-sm',
+                book.assets?.book?.toLowerCase().includes('.pdf') || book.format?.toLowerCase() === 'pdf'
+                  ? 'bg-rose-500/10 text-rose-800 dark:text-rose-300 border-rose-500/20'
+                  : 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/20'
+              )}
+            >
+              <FileText className="w-3 h-3" weight="bold" />
+              <span>
+                {book.assets?.book?.toLowerCase().includes('.pdf') || book.format?.toLowerCase() === 'pdf'
+                  ? 'PDF'
+                  : book.assets?.book?.toLowerCase().includes('.epub') || book.format?.toLowerCase() === 'epub'
+                  ? 'EPUB'
+                  : 'E-Book'}
+              </span>
+            </span>
+          )}
+
+          {/* Audiobook Badge */}
+          {book.hasAudiobook && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 backdrop-blur-sm">
               <Headphones className="w-3 h-3 text-indigo-600 dark:text-indigo-400" weight="bold" />
-              <span>Audiobook</span>
+              <span>Audio</span>
             </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 backdrop-blur-sm">
-              <FileText className="w-3 h-3 text-emerald-700 dark:text-emerald-400" weight="bold" />
-              <span>E-Book</span>
-            </span>
+          )}
+
+          {!book.hasAudiobook && book.hasBook === false && !book.assets?.book && (
+            <span className="text-slate-400 dark:text-slate-600 text-[11px] italic">—</span>
           )}
         </div>
       </td>

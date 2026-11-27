@@ -33,6 +33,8 @@ export interface Book {
   subcategory?: string;
   subcategoryId?: string;
   hasAudiobook?: boolean;
+  hasBook?: boolean;
+  format?: 'EPUB' | 'PDF' | 'Both' | 'Audiobook' | string;
   narrator?: string;
   coverUrl?: string;
   thumbnail?: string | null;
