@@ -7,6 +7,7 @@ import {
   ArrowSquareOut,
   FilePdf,
 } from '@phosphor-icons/react';
+import { getReaderProxyUrl } from '@/lib/utils/asset-resolver';
 
 interface PdfPreviewModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface PdfPreviewModalProps {
 
 export function PdfPreviewModal({ isOpen, onClose, url, bookTitle }: PdfPreviewModalProps) {
   if (!isOpen || !url) return null;
+  const streamUrl = getReaderProxyUrl(url) || url;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
@@ -74,7 +76,7 @@ export function PdfPreviewModal({ isOpen, onClose, url, bookTitle }: PdfPreviewM
         {/* Embedded PDF View */}
         <div className="relative flex-1 w-full h-full bg-slate-100 dark:bg-slate-950">
           <iframe
-            src={`${url}#toolbar=1&navpanes=0`}
+            src={`${streamUrl}#toolbar=1&navpanes=0`}
             className="w-full h-full border-none"
             title={`${bookTitle} PDF`}
           />

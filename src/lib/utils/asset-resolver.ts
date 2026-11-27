@@ -45,3 +45,17 @@ export function getAssetFormat(
   }
   return 'unknown';
 }
+
+/**
+ * Returns an internal proxy URL for manuscript files (EPUB/PDF)
+ * to bypass browser CORS when reading or previewing private Cloudflare R2 assets.
+ */
+export function getReaderProxyUrl(pathOrUrl: string | null | undefined): string | null {
+  const resolved = resolveAssetUrl(pathOrUrl);
+  if (!resolved) return null;
+  if (resolved.startsWith('blob:') || resolved.startsWith('data:') || resolved.startsWith('/internal/')) {
+    return resolved;
+  }
+  return `/internal/read/book?url=${encodeURIComponent(resolved)}`;
+}
+

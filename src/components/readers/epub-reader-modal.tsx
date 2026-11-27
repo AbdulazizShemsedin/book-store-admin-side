@@ -17,6 +17,7 @@ import {
 } from '@phosphor-icons/react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils/cn';
+import { getReaderProxyUrl } from '@/lib/utils/asset-resolver';
 
 interface TocItem {
   label: string;
@@ -28,15 +29,17 @@ interface EpubReaderModalProps {
   onClose: () => void;
   url: string;
   bookTitle: string;
+  onSwitchToPdf?: () => void;
 }
 
-export function EpubReaderModal({ isOpen, onClose, url, bookTitle }: EpubReaderModalProps) {
+export function EpubReaderModal({ isOpen, onClose, url, bookTitle, onSwitchToPdf }: EpubReaderModalProps) {
   const viewerRef = useRef<HTMLDivElement>(null);
   const bookInstanceRef = useRef<any>(null);
   const renditionRef = useRef<any>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isDetectedAsPdf, setIsDetectedAsPdf] = useState(false);
   const [toc, setToc] = useState<TocItem[]>([]);
   const [currentChapter, setCurrentChapter] = useState<string>('');
   const [isTocOpen, setIsTocOpen] = useState(false);
@@ -63,6 +66,7 @@ export function EpubReaderModal({ isOpen, onClose, url, bookTitle }: EpubReaderM
     let isMounted = true;
     setIsLoading(true);
     setLoadError(null);
+    setIsDetectedAsPdf(false);
     setCurrentChapter('');
 
     // Destroy existing instance
@@ -83,71 +87,96 @@ export function EpubReaderModal({ isOpen, onClose, url, bookTitle }: EpubReaderM
       bookInstanceRef.current = null;
     }
 
-    try {
-      const book = (ePub as any)(url);
-      bookInstanceRef.current = book;
+    const loadBookAsset = async () => {
+      try {
+        // 1. Resolve through internal proxy to bypass browser CORS on Cloudflare R2
+        const streamUrl = getReaderProxyUrl(url) || url;
+        const res = await fetch(streamUrl);
 
-      if (!viewerRef.current) return;
-
-      const rendition = book.renderTo(viewerRef.current, {
-        width: '100%',
-        height: '100%',
-        flow: 'paginated',
-        spread: 'auto',
-      });
-      renditionRef.current = rendition;
-
-      // Register reader themes
-      rendition.themes.register('light', {
-        body: { background: '#ffffff !important', color: '#1e293b !important', 'font-family': 'system-ui, sans-serif !important' },
-      });
-      rendition.themes.register('dark', {
-        body: { background: '#0b0f17 !important', color: '#f1f5f9 !important', 'font-family': 'system-ui, sans-serif !important' },
-      });
-      rendition.themes.register('sepia', {
-        body: { background: '#fbf0d9 !important', color: '#5f4b32 !important', 'font-family': 'system-ui, sans-serif !important' },
-      });
-
-      rendition.display().then(() => {
-        if (!isMounted) return;
-        setIsLoading(false);
-      }).catch((err: any) => {
-        if (!isMounted) return;
-        console.error('Failed to display EPUB:', err);
-        setLoadError(err?.message || 'Failed to render EPUB. File may be encrypted or blocked by CORS.');
-        setIsLoading(false);
-      });
-
-      // Load Navigation / TOC
-      book.loaded.navigation.then((nav: any) => {
-        if (!isMounted) return;
-        if (nav && Array.isArray(nav.toc)) {
-          const items: TocItem[] = nav.toc.map((t: any) => ({
-            label: t.label?.trim() || 'Untitled Section',
-            href: t.href,
-          }));
-          setToc(items);
+        if (!res.ok) {
+          throw new Error(`Failed to load file from storage (HTTP ${res.status}: ${res.statusText})`);
         }
-      }).catch(() => {
-        // ignore navigation errors
-      });
 
-      // Track location changes
-      rendition.on('relocated', (location: any) => {
+        const buffer = await res.arrayBuffer();
         if (!isMounted) return;
-        if (location?.start?.href && book.navigation) {
-          const chapter = book.navigation.get(location.start.href);
-          if (chapter?.label) {
-            setCurrentChapter(chapter.label.trim());
+
+        // 2. Inspect magic bytes: PDF begins with '%PDF' (0x25, 0x50, 0x44, 0x46)
+        const header = new Uint8Array(buffer.slice(0, 4));
+        const isPdf =
+          header[0] === 0x25 &&
+          header[1] === 0x50 &&
+          header[2] === 0x44 &&
+          header[3] === 0x46;
+
+        if (isPdf) {
+          setIsDetectedAsPdf(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // 3. Initialize ePub with the ArrayBuffer directly (in-memory, 0 network hops, 0 CORS)
+        const book = (ePub as any)(buffer);
+        bookInstanceRef.current = book;
+
+        if (!viewerRef.current) return;
+
+        const rendition = book.renderTo(viewerRef.current, {
+          width: '100%',
+          height: '100%',
+          flow: 'paginated',
+          spread: 'auto',
+        });
+        renditionRef.current = rendition;
+
+        // Register reader themes
+        rendition.themes.register('light', {
+          body: { background: '#ffffff !important', color: '#1e293b !important', 'font-family': 'system-ui, sans-serif !important' },
+        });
+        rendition.themes.register('dark', {
+          body: { background: '#0b0f17 !important', color: '#f1f5f9 !important', 'font-family': 'system-ui, sans-serif !important' },
+        });
+        rendition.themes.register('sepia', {
+          body: { background: '#fbf0d9 !important', color: '#5f4b32 !important', 'font-family': 'system-ui, sans-serif !important' },
+        });
+
+        await rendition.display();
+        if (!isMounted) return;
+        setIsLoading(false);
+
+        // Load Navigation / TOC
+        book.loaded.navigation.then((nav: any) => {
+          if (!isMounted) return;
+          if (nav && Array.isArray(nav.toc)) {
+            const items: TocItem[] = nav.toc.map((t: any) => ({
+              label: t.label?.trim() || 'Untitled Section',
+              href: t.href,
+            }));
+            setToc(items);
           }
+        }).catch(() => {
+          // ignore navigation errors
+        });
+
+        // Track location changes
+        rendition.on('relocated', (location: any) => {
+          if (!isMounted) return;
+          if (location?.start?.href && book.navigation) {
+            const chapter = book.navigation.get(location.start.href);
+            if (chapter?.label) {
+              setCurrentChapter(chapter.label.trim());
+            }
+          }
+        });
+      } catch (err: any) {
+        if (isMounted) {
+          console.error('Failed to load EPUB:', err);
+          setLoadError(err?.message || 'Unable to open EPUB reader.');
+          setIsLoading(false);
         }
-      });
-    } catch (err: any) {
-      if (isMounted) {
-        setLoadError(err?.message || 'Unable to open EPUB reader.');
-        setIsLoading(false);
       }
-    }
+    };
+
+    loadBookAsset();
 
     return () => {
       isMounted = false;
@@ -445,6 +474,38 @@ export function EpubReaderModal({ isOpen, onClose, url, bookTitle }: EpubReaderM
                     </button>
                   ))
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Detected PDF Overlay */}
+          {isDetectedAsPdf && (
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 border border-rose-500/20 flex items-center justify-center mb-3">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold mb-1">PDF Document Detected</h3>
+              <p className="text-xs text-slate-500 max-w-sm mb-4">
+                This manuscript is formatted as a PDF document rather than an EPUB. Open it in the built-in PDF viewer for full document layout.
+              </p>
+              <div className="flex items-center gap-2">
+                {onSwitchToPdf && (
+                  <button
+                    type="button"
+                    onClick={onSwitchToPdf}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition-all active:scale-95"
+                  >
+                    <span>Open in PDF Previewer</span>
+                  </button>
+                )}
+                <a
+                  href={url}
+                  download={`${bookTitle}.pdf`}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <DownloadSimple className="w-4 h-4" />
+                  <span>Download PDF</span>
+                </a>
               </div>
             </div>
           )}

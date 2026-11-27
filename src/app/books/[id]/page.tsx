@@ -929,6 +929,10 @@ export default function BookDetailsPage() {
           onClose={() => setIsEpubReaderOpen(false)}
           url={manuscriptUrl}
           bookTitle={book.name}
+          onSwitchToPdf={() => {
+            setIsEpubReaderOpen(false);
+            setIsPdfPreviewOpen(true);
+          }}
         />
       )}
 
