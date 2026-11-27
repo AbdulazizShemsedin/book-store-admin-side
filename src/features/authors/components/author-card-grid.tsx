@@ -61,7 +61,7 @@ function AuthorCardItem({ author, onPrefetch, onEdit, onDelete }: AuthorCardItem
                 alt={author.name}
                 width={56}
                 height={56}
-                unoptimized
+                sizes="56px"
                 className="w-14 h-14 rounded-2xl object-cover border-2 border-white/90 dark:border-white/10 shadow-sm group-hover/avatar:scale-105 transition-transform duration-200"
               />
             ) : (

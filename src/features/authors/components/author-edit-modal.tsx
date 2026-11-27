@@ -226,7 +226,8 @@ export function AuthorEditModal({ author, isOpen, onClose }: AuthorEditModalProp
                 alt={author.name}
                 width={56}
                 height={56}
-                unoptimized
+                sizes="56px"
+                unoptimized={avatarPreview.startsWith('blob:')}
                 className="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm"
               />
             ) : (

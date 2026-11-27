@@ -150,7 +150,7 @@ export default function AuthorDetailPage() {
                   alt={author.name}
                   width={64}
                   height={64}
-                  unoptimized
+                  sizes="64px"
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-700 shadow-xs flex-shrink-0"
                 />
               ) : (
@@ -310,7 +310,7 @@ export default function AuthorDetailPage() {
                                 alt={book.name}
                                 width={32}
                                 height={44}
-                                unoptimized
+                                sizes="32px"
                                 className="w-8 h-11 rounded object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
                               />
                             ) : (

@@ -23,8 +23,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const isDemoMode =
-      process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
-      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+      process.env.NODE_ENV !== 'production' &&
+      (process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true');
 
     const hasAuth = authService.isAuthenticated();
 
@@ -40,6 +41,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const storedUser = authService.getUser();
+      if (typeof document !== 'undefined' && !document.cookie.includes('tewba_session_active=')) {
+        const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
+        document.cookie = `tewba_session_active=true; path=/; max-age=86400; SameSite=Lax${isSecure ? '; Secure' : ''}`;
+      }
       setUser(storedUser);
       setIsAuthenticated(true);
     } else if (isDemoMode) {

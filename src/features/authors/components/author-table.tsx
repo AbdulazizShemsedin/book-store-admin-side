@@ -63,7 +63,7 @@ function AuthorTableRow({
               alt={author.name}
               width={40}
               height={40}
-              unoptimized
+              sizes="40px"
               className="w-10 h-10 rounded-full object-cover border border-slate-200/80 dark:border-white/10 flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform duration-200 ease-out"
             />
           ) : (

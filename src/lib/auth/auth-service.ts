@@ -49,6 +49,10 @@ class AuthService {
     if (refreshToken) {
       sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     }
+    if (typeof document !== 'undefined') {
+      const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      document.cookie = `${SESSION_ACTIVE_KEY}=true; path=/; max-age=86400; SameSite=Lax${isSecure ? '; Secure' : ''}`;
+    }
   }
 
   getToken(): string | null {
@@ -94,6 +98,9 @@ class AuthService {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(SESSION_ACTIVE_KEY);
+    if (typeof document !== 'undefined') {
+      document.cookie = `${SESSION_ACTIVE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+    }
   }
 }
 

@@ -33,6 +33,9 @@ import {
   EyeSlash,
   Globe,
   X,
+  Eye,
+  DownloadSimple,
+  FilePdf,
 } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { seriesApi } from '@/features/series/api/series-api';
@@ -45,6 +48,9 @@ import {
 import { uploadBookThumbnail } from '@/lib/upload/multipart-upload';
 import { cn } from '@/lib/utils/cn';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { EpubReaderModal } from '@/components/readers/epub-reader-modal';
+import { PdfPreviewModal } from '@/components/readers/pdf-preview-modal';
+import { resolveAssetUrl, getAssetFormat } from '@/lib/utils/asset-resolver';
 
 export default function BookDetailsPage() {
   const params = useParams();
@@ -107,6 +113,15 @@ export default function BookDetailsPage() {
   const [seriesActionError, setSeriesActionError] = useState<string | null>(null);
   const [tagError, setTagError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Readers and Audio Player
+  const [isEpubReaderOpen, setIsEpubReaderOpen] = useState(false);
+  const [isPdfPreviewOpen, setIsPdfPreviewOpen] = useState(false);
+  const [showAudioPlayer, setShowAudioPlayer] = useState(false);
+
+  const manuscriptUrl = resolveAssetUrl(book?.assets?.book);
+  const manuscriptFormat = getAssetFormat(book?.assets?.book);
+  const audioUrl = resolveAssetUrl(book?.assets?.audio);
 
   // Cover image upload state with cancellation support
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -482,54 +497,148 @@ export default function BookDetailsPage() {
           <Card>
             <CardHeader title="Digital Media Assets" />
             <CardContent className="space-y-4">
-              {/* Asset 1: EPUB Manuscript */}
-              <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+              {/* Asset 1: Manuscript (EPUB or PDF) */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 flex items-center justify-center">
-                    <BookOpen className="w-5 h-5" weight="fill" />
+                  <div
+                    className={cn(
+                      'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
+                      manuscriptFormat === 'pdf'
+                        ? 'bg-rose-100/80 dark:bg-rose-950/60 text-rose-800 dark:text-rose-400'
+                        : 'bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400'
+                    )}
+                  >
+                    {manuscriptFormat === 'pdf' ? (
+                      <FilePdf className="w-5 h-5" weight="fill" />
+                    ) : (
+                      <BookOpen className="w-5 h-5" weight="fill" />
+                    )}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                      Digital E-Book (EPUB)
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                        {manuscriptFormat === 'pdf'
+                          ? 'Digital Document (PDF)'
+                          : manuscriptFormat === 'epub'
+                          ? 'Digital E-Book (EPUB)'
+                          : 'Digital Manuscript'}
+                      </p>
+                      {manuscriptFormat !== 'unknown' && (
+                        <span
+                          className={cn(
+                            'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border',
+                            manuscriptFormat === 'pdf'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-900'
+                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900'
+                          )}
+                        >
+                          {manuscriptFormat}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Manuscript reader file for mobile and tablet reading
+                      {manuscriptFormat === 'pdf'
+                        ? 'Fixed-layout document manuscript for print and desktop'
+                        : 'Reflowable manuscript for mobile, tablet, and e-reader devices'}
                     </p>
                   </div>
                 </div>
-                <div>
-                  <Badge
-                    variant={book.assets?.book ? 'success' : 'default'}
-                    size="sm"
-                  >
-                    {book.assets?.book ? 'Active File' : 'Not Attached'}
-                  </Badge>
+
+                <div className="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                  {book.assets?.book && manuscriptUrl ? (
+                    <>
+                      {manuscriptFormat === 'pdf' ? (
+                        <button
+                          type="button"
+                          onClick={() => setIsPdfPreviewOpen(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors shadow-2xs"
+                        >
+                          <Eye className="w-3.5 h-3.5" weight="bold" />
+                          <span>Preview PDF</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setIsEpubReaderOpen(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors shadow-2xs"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" weight="bold" />
+                          <span>Read EPUB</span>
+                        </button>
+                      )}
+
+                      <a
+                        href={manuscriptUrl}
+                        download={`${book.name}.${manuscriptFormat !== 'unknown' ? manuscriptFormat : 'epub'}`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.12] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 transition-colors shadow-2xs"
+                        title="Download manuscript directly"
+                      >
+                        <DownloadSimple className="w-3.5 h-3.5" />
+                        <span className="hidden md:inline">Download</span>
+                      </a>
+                    </>
+                  ) : (
+                    <Badge variant="default" size="sm">
+                      Not Attached
+                    </Badge>
+                  )}
                 </div>
               </div>
 
               {/* Asset 2: Audiobook Master */}
-              <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 flex items-center justify-center">
-                    <Headphones className="w-5 h-5" weight="fill" />
+              <div className="flex flex-col p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                      <Headphones className="w-5 h-5" weight="fill" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                        Audiobook Master (MP3 / Narration)
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        High-fidelity narration audio stream for mobile listening
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                      Audiobook Master (MP3)
-                    </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Audio narration stream for mobile audiobook player
-                    </p>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                    {book.assets?.audio && audioUrl ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setShowAudioPlayer(!showAudioPlayer)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors shadow-2xs"
+                        >
+                          <Headphones className="w-3.5 h-3.5" weight="bold" />
+                          <span>{showAudioPlayer ? 'Hide Player' : 'Listen Sample'}</span>
+                        </button>
+                        <a
+                          href={audioUrl}
+                          download={`${book.name}.mp3`}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.12] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 transition-colors shadow-2xs"
+                          title="Download audio stream"
+                        >
+                          <DownloadSimple className="w-3.5 h-3.5" />
+                          <span className="hidden md:inline">Download</span>
+                        </a>
+                      </>
+                    ) : (
+                      <Badge variant={book.hasAudiobook ? 'info' : 'default'} size="sm">
+                        {book.hasAudiobook ? 'Configured (No Stream)' : 'Not Configured'}
+                      </Badge>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <Badge
-                    variant={book.assets?.audio || book.hasAudiobook ? 'success' : 'default'}
-                    size="sm"
-                  >
-                    {book.assets?.audio ? 'Active Stream' : book.hasAudiobook ? 'Configured' : 'Not Configured'}
-                  </Badge>
-                </div>
+
+                {/* Inline HTML5 Audio Player */}
+                {showAudioPlayer && audioUrl && (
+                  <div className="pt-2 border-t border-slate-200/60 dark:border-white/10 animate-in fade-in duration-200">
+                    <audio controls className="w-full h-9 rounded-lg" src={audioUrl}>
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                )}
               </div>
 
               {/* Asset 3: Storefront Thumbnail */}
@@ -812,6 +921,26 @@ export default function BookDetailsPage() {
         bookName={book.name}
         onSuccess={() => refetch()}
       />
+
+      {/* In-Browser EPUB Reader Modal (Solution 2) */}
+      {manuscriptUrl && (
+        <EpubReaderModal
+          isOpen={isEpubReaderOpen}
+          onClose={() => setIsEpubReaderOpen(false)}
+          url={manuscriptUrl}
+          bookTitle={book.name}
+        />
+      )}
+
+      {/* PDF Document Preview Modal */}
+      {manuscriptUrl && (
+        <PdfPreviewModal
+          isOpen={isPdfPreviewOpen}
+          onClose={() => setIsPdfPreviewOpen(false)}
+          url={manuscriptUrl}
+          bookTitle={book.name}
+        />
+      )}
     </AdminShell>
   );
 }

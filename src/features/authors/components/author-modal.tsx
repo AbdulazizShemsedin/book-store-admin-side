@@ -309,7 +309,8 @@ export function AuthorModal({
                     alt="Author preview"
                     width={96}
                     height={96}
-                    unoptimized
+                    sizes="96px"
+                    unoptimized={avatarPreview.startsWith('blob:')}
                     className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-md"
                   />
                   {isUploadingAvatar && (

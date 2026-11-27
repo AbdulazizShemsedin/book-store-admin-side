@@ -11,6 +11,20 @@ import { isAllowedUploadUrl } from '@/lib/upload/upload-security';
  * Eliminates browser CORS 403 Forbidden errors when uploading directly to Cloudflare R2 storage URLs.
  */
 export async function PUT(request: NextRequest) {
+  // Defend against Unauthorized Proxy Abuse
+  const isDemo =
+    process.env.NODE_ENV !== 'production' &&
+    (process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ||
+      process.env.NEXT_PUBLIC_USE_MOCK_API === 'true');
+  const hasAuthHeader = Boolean(request.headers.get('authorization'));
+  const hasSessionCookie = request.cookies.get('tewba_session_active')?.value === 'true';
+
+  if (!isDemo && !hasAuthHeader && !hasSessionCookie) {
+    return NextResponse.json(
+      { error: 'Unauthorized: Admin authentication required to proxy upload chunks' },
+      { status: 401 }
+    );
+  }
   const targetUrl = request.headers.get('x-upload-url') || request.nextUrl.searchParams.get('url');
 
   if (!targetUrl) {

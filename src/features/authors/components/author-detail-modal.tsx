@@ -75,7 +75,7 @@ export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDet
               alt={author.name}
               width={64}
               height={64}
-              unoptimized
+              sizes="64px"
               className="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-md flex-shrink-0"
             />
           ) : (
@@ -161,7 +161,7 @@ export function AuthorDetailModal({ author, isOpen, onClose, onEdit }: AuthorDet
                       alt={book.name}
                       width={36}
                       height={48}
-                      unoptimized
+                      sizes="36px"
                       className="w-9 h-12 rounded object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
                     />
                   ) : (
